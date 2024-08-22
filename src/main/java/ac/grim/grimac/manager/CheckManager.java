@@ -16,10 +16,7 @@ import ac.grim.grimac.checks.impl.misc.ClientBrand;
 import ac.grim.grimac.checks.impl.misc.FastBreak;
 import ac.grim.grimac.checks.impl.misc.GhostBlockMitigation;
 import ac.grim.grimac.checks.impl.movement.*;
-import ac.grim.grimac.checks.impl.packetorder.PacketOrderA;
-import ac.grim.grimac.checks.impl.packetorder.PacketOrderB;
-import ac.grim.grimac.checks.impl.packetorder.PacketOrderC;
-import ac.grim.grimac.checks.impl.packetorder.PacketOrderD;
+import ac.grim.grimac.checks.impl.packetorder.*;
 import ac.grim.grimac.checks.impl.prediction.DebugHandler;
 import ac.grim.grimac.checks.impl.prediction.NoFallB;
 import ac.grim.grimac.checks.impl.prediction.OffsetHandler;
@@ -131,6 +128,7 @@ public class CheckManager {
                 .put(GhostBlockDetector.class, new GhostBlockDetector(player))
                 .put(Phase.class, new Phase(player))
                 .put(PacketOrderA.class, new PacketOrderA(player))
+                .put(PacketOrderE.class, new PacketOrderE(player))
                 .put(NoFallB.class, new NoFallB(player))
                 .put(OffsetHandler.class, new OffsetHandler(player))
                 .put(SuperDebug.class, new SuperDebug(player))
