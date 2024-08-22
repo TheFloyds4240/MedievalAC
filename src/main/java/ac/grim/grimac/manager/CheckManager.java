@@ -16,9 +16,11 @@ import ac.grim.grimac.checks.impl.groundspoof.NoFall;
 import ac.grim.grimac.checks.impl.misc.ClientBrand;
 import ac.grim.grimac.checks.impl.misc.FastBreak;
 import ac.grim.grimac.checks.impl.misc.GhostBlockMitigation;
-import ac.grim.grimac.checks.impl.misc.TransactionOrder;
 import ac.grim.grimac.checks.impl.movement.*;
 import ac.grim.grimac.checks.impl.multiactions.*;
+import ac.grim.grimac.checks.impl.packetorder.PacketOrderB;
+import ac.grim.grimac.checks.impl.packetorder.PacketOrderC;
+import ac.grim.grimac.checks.impl.packetorder.PacketOrderD;
 import ac.grim.grimac.checks.impl.post.Post;
 import ac.grim.grimac.checks.impl.prediction.DebugHandler;
 import ac.grim.grimac.checks.impl.prediction.GroundSpoof;
@@ -87,12 +89,10 @@ public class CheckManager {
                 .put(BadPacketsE.class, new BadPacketsE(player))
                 .put(BadPacketsF.class, new BadPacketsF(player))
                 .put(BadPacketsG.class, new BadPacketsG(player))
-                .put(BadPacketsH.class, new BadPacketsH(player))
                 .put(BadPacketsI.class, new BadPacketsI(player))
                 .put(BadPacketsJ.class, new BadPacketsJ(player))
                 .put(BadPacketsK.class, new BadPacketsK(player))
                 .put(BadPacketsL.class, new BadPacketsL(player))
-                .put(BadPacketsM.class, new BadPacketsM(player))
                 .put(BadPacketsN.class, new BadPacketsN(player))
                 .put(BadPacketsP.class, new BadPacketsP(player))
                 .put(BadPacketsQ.class, new BadPacketsQ(player))
@@ -107,7 +107,10 @@ public class CheckManager {
                 .put(MultiActionsC.class, new MultiActionsC(player))
                 .put(MultiActionsD.class, new MultiActionsD(player))
                 .put(MultiActionsE.class, new MultiActionsE(player))
-                .put(TransactionOrder.class, new TransactionOrder(player))
+                .put(FastBreak.class, new FastBreak(player))
+                .put(PacketOrderB.class, new PacketOrderB(player))
+                .put(PacketOrderC.class, new PacketOrderC(player))
+                .put(PacketOrderD.class, new PacketOrderD(player))
                 .put(NoSlowB.class, new NoSlowB(player))
                 .put(SetbackBlocker.class, new SetbackBlocker(player)) // Must be last class otherwise we can't check while blocking packets
                 .build();
