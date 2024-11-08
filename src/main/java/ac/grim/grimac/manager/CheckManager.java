@@ -17,6 +17,7 @@ import ac.grim.grimac.checks.impl.misc.FastBreak;
 import ac.grim.grimac.checks.impl.misc.GhostBlockMitigation;
 import ac.grim.grimac.checks.impl.movement.*;
 import ac.grim.grimac.checks.impl.packetorder.*;
+import ac.grim.grimac.checks.impl.post.Post;
 import ac.grim.grimac.checks.impl.prediction.DebugHandler;
 import ac.grim.grimac.checks.impl.prediction.NoFallB;
 import ac.grim.grimac.checks.impl.prediction.OffsetHandler;
@@ -129,7 +130,7 @@ public class CheckManager {
                 .put(GhostBlockDetector.class, new GhostBlockDetector(player))
                 .put(Phase.class, new Phase(player))
                 .put(PacketOrderProcessor.class, player.packetOrderProcessor)
-                .put(PacketOrderA.class, new PacketOrderA(player))
+                .put(Post.class, new Post(player))
                 .put(PacketOrderE.class, new PacketOrderE(player))
                 .put(PacketOrderF.class, new PacketOrderF(player))
                 .put(PacketOrderG.class, new PacketOrderG(player))

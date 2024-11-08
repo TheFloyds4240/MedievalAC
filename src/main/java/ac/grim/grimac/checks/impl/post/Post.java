@@ -1,4 +1,4 @@
-package ac.grim.grimac.checks.impl.packetorder;
+package ac.grim.grimac.checks.impl.post;
 
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
@@ -23,8 +23,8 @@ import java.util.Locale;
 
 import static com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.*;
 
-@CheckData(name = "PacketOrderA")
-public class PacketOrderA extends Check implements PostPredictionCheck {
+@CheckData(name = "Post")
+public class Post extends Check implements PostPredictionCheck {
     private final ArrayDeque<PacketTypeCommon> post = new ArrayDeque<>();
     // Due to 1.9+ missing the idle packet, we must queue flags
     // 1.8 clients will have the same logic for simplicity, although it's not needed
@@ -32,7 +32,7 @@ public class PacketOrderA extends Check implements PostPredictionCheck {
     private boolean sentFlying = false;
     private int isExemptFromSwingingCheck = Integer.MIN_VALUE;
 
-    public PacketOrderA(GrimPlayer playerData) {
+    public Post(GrimPlayer playerData) {
         super(playerData);
     }
 
