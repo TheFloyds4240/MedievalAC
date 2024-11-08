@@ -9,55 +9,39 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderF", experimental = true)
 public class PacketOrderF extends Check implements PostPredictionCheck {
-    public PacketOrderF(final GrimPlayer player) {
+    public PacketOrderF(GrimPlayer player) {
         super(player);
     }
 
-    private int invalid = 0;
-    private boolean sent = false;
+    private int invalid;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
-            if (sent) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
-                    if (flagAndAlert() && shouldModifyPackets()) {
-                        event.setCancelled(true);
-                        player.onPacketCancel();
-                    }
-                } else {
-                    invalid++;
+        if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY
+                || event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT
+                || event.getPacketType() == PacketType.Play.Client.USE_ITEM
+                || event.getPacketType() == PacketType.Play.Client.PICK_ITEM
+                || event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
+                || (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS
+                && new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT)
+        ) if (player.packetOrderProcessor.isSprinting() || player.packetOrderProcessor.isSneaking()) {
+            if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                if (flagAndAlert() && shouldModifyPackets()) {
+                    if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
+                            && new WrapperPlayClientPlayerDigging(event).getAction() == DiggingAction.RELEASE_USE_ITEM
+                    ) return; // don't cause a noslow
+
+                    event.setCancelled(true);
+                    player.onPacketCancel();
                 }
+            } else {
+                invalid++;
             }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
-            WrapperPlayClientEntityAction.Action action = new WrapperPlayClientEntityAction(event).getAction();
-
-            if (action == WrapperPlayClientEntityAction.Action.STOP_SPRINTING
-                    || action == WrapperPlayClientEntityAction.Action.START_SPRINTING
-                    || action == WrapperPlayClientEntityAction.Action.STOP_SNEAKING
-                    || action == WrapperPlayClientEntityAction.Action.START_SNEAKING
-            ) {
-                sent = true;
-            }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
-            DiggingAction action = new WrapperPlayClientPlayerDigging(event).getAction();
-            if (action == DiggingAction.START_DIGGING || action == DiggingAction.CANCELLED_DIGGING || action == DiggingAction.FINISHED_DIGGING || action == DiggingAction.RELEASE_USE_ITEM) {
-                sent = true;
-            }
-        }
-
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            sent = false;
         }
     }
 
@@ -73,6 +57,5 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
         }
 
         invalid = 0;
-        sent = false;
     }
 }

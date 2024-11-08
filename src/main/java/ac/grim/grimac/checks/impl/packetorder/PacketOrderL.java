@@ -1,19 +1,16 @@
 package ac.grim.grimac.checks.impl.packetorder;
 
-import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PostPredictionCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
-import ac.grim.grimac.utils.nmsutil.BlockBreakSpeed;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
+import com.github.retrooper.packetevents.protocol.player.DiggingAction;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderL", experimental = true)
 public class PacketOrderL extends Check implements PostPredictionCheck {
@@ -21,58 +18,25 @@ public class PacketOrderL extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    // fixes issues with pvp clients
-    private static boolean exemptBreaking;
-
-    private int invalid = 0;
-    private boolean sent = false;
+    private int invalid;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
-            WrapperPlayClientPlayerDigging packet = new WrapperPlayClientPlayerDigging(event);
-
-            switch (packet.getAction()) {
-                case START_DIGGING:
-                    double damage = BlockBreakSpeed.getBlockDamage(player, packet.getBlockPosition());
-                    if (damage >= 1 || damage <= 0 && player.gamemode == GameMode.CREATIVE) {
-                        return; // can false on insta-break blocks, and unbreakable blocks in creative mode
-                    }
-                case CANCELLED_DIGGING:
-                case FINISHED_DIGGING:
-                    if (exemptBreaking || player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
-                        return; // valid on 1.7
-                    }
-                case RELEASE_USE_ITEM:
-                    sent = true;
-            }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
-            WrapperPlayClientEntityAction.Action action = new WrapperPlayClientEntityAction(event).getAction();
-            if (action == WrapperPlayClientEntityAction.Action.START_SNEAKING
-                    || action == WrapperPlayClientEntityAction.Action.STOP_SNEAKING
-                    || action == WrapperPlayClientEntityAction.Action.START_SPRINTING
-                    || action == WrapperPlayClientEntityAction.Action.STOP_SPRINTING) {
-                sent = true;
-            }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
-            if (sent) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
-                    if (flagAndAlert() && shouldModifyPackets()) {
-                        event.setCancelled(true);
-                        player.onPacketCancel();
-                    }
-                } else {
-                    invalid++;
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
+            if (new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT) {
+                if (player.packetOrderProcessor.isDropping() && flagAndAlert("inventory") && shouldModifyPackets()) {
+                    event.setCancelled(true);
+                    player.onPacketCancel();
                 }
             }
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            sent = false;
+        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
+            if (new WrapperPlayClientPlayerDigging(event).getAction() == DiggingAction.SWAP_ITEM_WITH_OFFHAND) {
+                if (player.packetOrderProcessor.isDropping()) {
+                    invalid++;
+                }
+            }
         }
     }
 
@@ -83,16 +47,10 @@ public class PacketOrderL extends Check implements PostPredictionCheck {
 
         if (!player.skippedTickInActualMovement && predictionComplete.isChecked()) {
             for (; invalid >= 1; invalid--) {
-                flagAndAlert();
+                flagAndAlert("swap");
             }
         }
 
         invalid = 0;
-        sent = false;
-    }
-
-    @Override
-    public void onReload(ConfigManager config) {
-        exemptBreaking = config.getBooleanElse(getConfigName() + ".exempt-breaking", false);
     }
 }

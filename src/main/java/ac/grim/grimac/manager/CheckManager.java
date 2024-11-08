@@ -128,6 +128,7 @@ public class CheckManager {
                 .put(KnockbackHandler.class, new KnockbackHandler(player))
                 .put(GhostBlockDetector.class, new GhostBlockDetector(player))
                 .put(Phase.class, new Phase(player))
+                .put(PacketOrderProcessor.class, player.packetOrderProcessor)
                 .put(PacketOrderA.class, new PacketOrderA(player))
                 .put(PacketOrderE.class, new PacketOrderE(player))
                 .put(PacketOrderF.class, new PacketOrderF(player))
