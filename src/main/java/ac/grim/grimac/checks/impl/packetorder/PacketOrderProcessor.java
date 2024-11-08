@@ -30,6 +30,8 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
     private boolean placing;
     private boolean using;
     private boolean picking;
+    private boolean clickingInInventory;
+    private boolean closingInventory;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -79,6 +81,14 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             picking = true;
         }
 
+        if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
+            clickingInInventory = true;
+        }
+
+        if (event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
+            closingInventory = true;
+        }
+
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
             onTick();
         }
@@ -104,6 +114,8 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
         picking = false;
         sprinting = false;
         sneaking = false;
+        clickingInInventory = false;
+        closingInventory = false;
     }
 
     // PacketOrderI (releasing & attacking & interact)
