@@ -134,6 +134,7 @@ public class CheckManager {
                 .put(GhostBlockDetector.class, new GhostBlockDetector(player))
                 .put(Phase.class, new Phase(player))
                 .put(Post.class, new Post(player))
+                .put(PacketOrderProcessor.class, player.packetOrderProcessor)
                 .put(PacketOrderE.class, new PacketOrderE(player))
                 .put(PacketOrderF.class, new PacketOrderF(player))
                 .put(PacketOrderG.class, new PacketOrderG(player))

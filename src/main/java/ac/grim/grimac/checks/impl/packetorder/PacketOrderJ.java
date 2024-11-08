@@ -8,8 +8,6 @@ import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderJ", experimental = true)
 public class PacketOrderJ extends Check implements PostPredictionCheck {
@@ -17,22 +15,12 @@ public class PacketOrderJ extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    private int invalid = 0;
-    private boolean interact = false;
-    private boolean attack = false;
+    private int invalid;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
-            if (new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
-                attack = true;
-            } else {
-                interact = true;
-            }
-        }
-
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
-            if (attack && !interact) {
+            if (player.packetOrderProcessor.isAttacking() && !player.packetOrderProcessor.isInteracting()) {
                 if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
                     if (flagAndAlert() && shouldModifyPackets()) {
                         event.setCancelled(true);
@@ -42,10 +30,6 @@ public class PacketOrderJ extends Check implements PostPredictionCheck {
                     invalid++;
                 }
             }
-        }
-
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            interact = attack = false;
         }
     }
 
@@ -61,6 +45,5 @@ public class PacketOrderJ extends Check implements PostPredictionCheck {
         }
 
         invalid = 0;
-        interact = attack = false;
     }
 }

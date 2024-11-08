@@ -15,13 +15,12 @@ public class PacketOrderK extends Check implements PacketCheck {
         super(player);
     }
 
-    private boolean opened, clickedOrClosed;
+    private boolean clickedOrClosed;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
             if (new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT) {
-                opened = true;
                 if (clickedOrClosed) {
                     flagAndAlert();
                 }
@@ -30,14 +29,14 @@ public class PacketOrderK extends Check implements PacketCheck {
 
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW || event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
             clickedOrClosed = true;
-            if (opened && flagAndAlert() && shouldModifyPackets()) {
+            if (player.packetOrderProcessor.isOpeningInventory() && flagAndAlert() && shouldModifyPackets()) {
                 event.setCancelled(true);
                 player.onPacketCancel();
             }
         }
 
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && !player.packetStateData.lastPacketWasTeleport) {
-            opened = clickedOrClosed = false;
+            clickedOrClosed = false;
         }
     }
 }

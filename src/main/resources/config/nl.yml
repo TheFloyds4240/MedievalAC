@@ -138,9 +138,9 @@ TimerVehicle:
 EntityControl:
   setbackvl: 25
 
-PacketOrderL:
+PacketOrderI:
   # enable if players are getting flagged for using 1.7 animations mods
-  exempt-breaking: false
+  exempt-digging: false
 
 Reach:
   # Met hoeveel moeten we hitboxes uitbreiden? 0.0005 moet 3.0005+ bereik detecteren

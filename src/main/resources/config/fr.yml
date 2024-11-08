@@ -139,9 +139,9 @@ TimerVehicle:
 EntityControl:
   setbackvl: 25
 
-PacketOrderL:
+PacketOrderI:
   # enable if players are getting flagged for using 1.7 animations mods
-  exempt-breaking: false
+  exempt-digging: false
 
 Reach:
   # De combien devrions-nous agrandir les hitboxes ? Une augmentation de 0,0005 devrait détecter une portée de 3,0005 ou plus.
