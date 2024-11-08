@@ -6,6 +6,7 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
@@ -32,16 +33,20 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
     private boolean picking;
     private boolean clickingInInventory;
     private boolean closingInventory;
+    private boolean quickMoveClicking;
+    private boolean pickUpClicking;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
+        final PacketTypeCommon packetType = event.getPacketType();
+
+        if (packetType == PacketType.Play.Client.CLIENT_STATUS) {
             if (new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT) {
                 openingInventory = true;
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
+        if (packetType == PacketType.Play.Client.INTERACT_ENTITY) {
             if (new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
                 attacking = true;
             } else {
@@ -49,7 +54,7 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
+        if (packetType == PacketType.Play.Client.PLAYER_DIGGING) {
             switch (new WrapperPlayClientPlayerDigging(event).getAction()) {
                 case SWAP_ITEM_WITH_OFFHAND -> swapping = true;
                 case DROP_ITEM, DROP_ITEM_STACK -> dropping = true;
@@ -58,18 +63,18 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
+        if (packetType == PacketType.Play.Client.ENTITY_ACTION) {
             switch (new WrapperPlayClientEntityAction(event).getAction()) {
                 case START_SPRINTING, STOP_SPRINTING -> sprinting = true;
                 case STOP_SNEAKING, START_SNEAKING -> sneaking = true;
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
+        if (packetType == PacketType.Play.Client.USE_ITEM) {
             using = true;
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
+        if (packetType == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             if (new WrapperPlayClientPlayerBlockPlacement(event).getFace() == BlockFace.OTHER) {
                 using = true;
             } else {
@@ -77,15 +82,20 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.PICK_ITEM) {
+        if (packetType == PacketType.Play.Client.PICK_ITEM) {
             picking = true;
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
+        if (packetType == PacketType.Play.Client.CLICK_WINDOW) {
             clickingInInventory = true;
+
+            switch (new WrapperPlayClientClickWindow(event).getWindowClickType()) {
+                case QUICK_MOVE -> quickMoveClicking = true;
+                case PICKUP, PICKUP_ALL -> pickUpClicking = true;
+            }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
+        if (packetType == PacketType.Play.Client.CLOSE_WINDOW) {
             closingInventory = true;
         }
 
@@ -116,6 +126,8 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
         sneaking = false;
         clickingInInventory = false;
         closingInventory = false;
+        quickMoveClicking = false;
+        pickUpClicking = false;
     }
 
     // PacketOrderI (releasing & attacking & interact)
