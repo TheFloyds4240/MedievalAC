@@ -139,9 +139,9 @@ TimerVehicle:
 EntityControl:
   setbackvl: 25
 
-PacketOrderL:
+PacketOrderI:
   # enable if players are getting flagged for using 1.7 animations mods
-  exempt-breaking: false
+  exempt-digging: false
 
 Reach:
   # На сколько мы должны расширить хитбоксы? 0.0005 должно определять 3.0005+ дополнительное достижение

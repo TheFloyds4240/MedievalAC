@@ -9,7 +9,6 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderH", experimental = true)
 public class PacketOrderH extends Check implements PostPredictionCheck {
@@ -17,31 +16,22 @@ public class PacketOrderH extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    private int invalid = 0;
-    private boolean sent = false;
+    private int invalid;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
             switch (new WrapperPlayClientEntityAction(event).getAction()) {
-                case START_SPRINTING:
-                case STOP_SPRINTING:
-                    if (sent) {
+                case START_SPRINTING, STOP_SPRINTING -> {
+                    if (player.packetOrderProcessor.isSneaking()) {
                         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
                             flagAndAlert();
                         } else {
                             invalid++;
                         }
                     }
-                    break;
-                case START_SNEAKING:
-                case STOP_SNEAKING:
-                    sent = true;
+                }
             }
-        }
-
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            sent = false;
         }
     }
 
@@ -57,6 +47,5 @@ public class PacketOrderH extends Check implements PostPredictionCheck {
         }
 
         invalid = 0;
-        sent = false;
     }
 }
