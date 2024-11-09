@@ -130,11 +130,6 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
         pickUpClicking = false;
     }
 
-    // PacketOrderI (releasing & attacking & interact)
-    public boolean hasSentMouseInput() {
-        return releasing || attacking || picking || digging || isRightClicking();
-    }
-
     @Contract(pure = true)
     public boolean isRightClicking() {
         return placing || using || interacting;
