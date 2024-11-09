@@ -23,7 +23,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    private boolean exemptDigging;
+    private boolean exemptPlacingWhileDigging;
 
     private boolean setback;
     private boolean digging; // for placing
@@ -94,9 +94,10 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                         return;
                     }
                 case CANCELLED_DIGGING, FINISHED_DIGGING:
-                    if (exemptDigging || player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
+                    if (exemptPlacingWhileDigging || player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
                         return;
                     }
+                    digging = true;
             }
         }
 
@@ -127,6 +128,6 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
 
     @Override
     public void onReload(ConfigManager config) {
-        exemptDigging = config.getBooleanElse(getConfigName() + ".exempt-digging", false);
+        exemptPlacingWhileDigging = config.getBooleanElse(getConfigName() + ".exempt-placing-while-digging", false);
     }
 }
