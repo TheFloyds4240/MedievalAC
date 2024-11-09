@@ -130,7 +130,7 @@ EntityControl:
 
 PacketOrderI:
   # enable if players are getting flagged for using 1.7 animations mods
-  exempt-digging: false
+  exempt-placing-while-digging: false
 
 Reach:
   # Limite per rilevare un attacco oltre la distanza massima
