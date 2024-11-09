@@ -140,7 +140,7 @@ EntityControl:
 
 PacketOrderI:
   # enable if players are getting flagged for using 1.7 animations mods
-  exempt-digging: false
+  exempt-placing-while-digging: false
 
 Reach:
   # How much should we expand hitboxes by? 0.0005 should detect 3.0005+ reach
