@@ -166,6 +166,7 @@ public class CheckManager {
                 .put(FabricatedPlace.class, new FabricatedPlace(player))
                 .put(PositionPlace.class, new PositionPlace(player))
                 .put(RotationPlace.class, new RotationPlace(player))
+                .put(PacketOrderN.class, new PacketOrderN(player))
                 .put(DuplicateRotPlace.class, new DuplicateRotPlace(player))
                 .put(GhostBlockMitigation.class, new GhostBlockMitigation(player))
                 .build();
