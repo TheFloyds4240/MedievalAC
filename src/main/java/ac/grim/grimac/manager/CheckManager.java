@@ -110,6 +110,7 @@ public class CheckManager {
                 .put(PacketOrderC.class, new PacketOrderC(player))
                 .put(PacketOrderD.class, new PacketOrderD(player))
                 .put(PacketOrderK.class, new PacketOrderK(player))
+                .put(PacketOrderP.class, new PacketOrderP(player))
                 .put(NoSlowB.class, new NoSlowB(player))
                 .put(SetbackBlocker.class, new SetbackBlocker(player)) // Must be last class otherwise we can't check while blocking packets
                 .build();
