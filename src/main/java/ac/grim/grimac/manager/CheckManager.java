@@ -106,6 +106,7 @@ public class CheckManager {
                 .put(PacketOrderC.class, new PacketOrderC(player))
                 .put(PacketOrderD.class, new PacketOrderD(player))
                 .put(PacketOrderK.class, new PacketOrderK(player))
+                .put(PacketOrderP.class, new PacketOrderP(player))
                 .put(NoSlowB.class, new NoSlowB(player))
                 .put(SetbackBlocker.class, new SetbackBlocker(player)) // Must be last class otherwise we can't check while blocking packets
                 .build();
@@ -167,6 +168,7 @@ public class CheckManager {
                 .put(PositionPlace.class, new PositionPlace(player))
                 .put(RotationPlace.class, new RotationPlace(player))
                 .put(PacketOrderN.class, new PacketOrderN(player))
+                .put(PacketOrderO.class, new PacketOrderO(player))
                 .put(DuplicateRotPlace.class, new DuplicateRotPlace(player))
                 .put(GhostBlockMitigation.class, new GhostBlockMitigation(player))
                 .build();
