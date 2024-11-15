@@ -226,6 +226,8 @@ public class Reach extends Check implements PacketCheck {
             }
         }
 
+        // We raytrace for > the player's reach distance so in the case a player is hacking
+        // We can return in the flag the distance of the reach hit instead of a generic "player failed reach check"
         // +3 would be 3 + 3 = 6, which is the pre-1.20.5 behaviour, preventing "Missed Hitbox"
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE) + 3;
         final double[] possibleEyeHeights = player.getPossibleEyeHeights();
