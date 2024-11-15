@@ -148,6 +148,8 @@ Reach:
   # 我们应该取消我们知道不可能的命中吗？
   # 3.00-3.03 命中可能会通过，但仍会被标记，因为数据包顺序限制
   block-impossible-hits: true
+  # Only apply reach checks if the target is a player
+  ignore-non-player-targets: false
   # 这将在每个ticks结束时发送一个额外的数据包，以检查作弊的可能性
   # 这会注入服务器的连接列表以在服务器刷新之前发送最终数据包
   # 启用这将增加所有玩家的带宽使用

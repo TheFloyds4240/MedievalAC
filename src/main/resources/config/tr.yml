@@ -147,6 +147,8 @@ Reach:
   # İmkansız olduğunu bildiğimiz vuruşları iptal etmeli miyiz?
   # Paket sırası sınırlamaları nedeniyle 3.00-3.03 arası vuruşlar gerçekleşebilir, ancak yine de işaretlenebilir
   block-impossible-hits: true
+  # Only apply reach checks if the target is a player
+  ignore-non-player-targets: false
   # Bu, hileleri yakalama olasılığını artırmak için her tikin sonunda ek bir paket gönderecektir
   # Bu, sunucunun bağlantı listesine enjekte edilerek sunucu boşaltmadan hemen önce son bir paket göndermek için yapılır
   # Bunu etkinleştirmek, tüm oyuncular için bant genişliği kullanımını artıracaktır
