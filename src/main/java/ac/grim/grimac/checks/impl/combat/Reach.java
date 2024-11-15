@@ -21,10 +21,11 @@ import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
+import ac.grim.grimac.utils.data.BlockHitData;
+import ac.grim.grimac.utils.data.EntityHitData;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.data.Pair;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
-import ac.grim.grimac.utils.data.packetentity.PacketEntitySelf;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import ac.grim.grimac.utils.data.packetentity.dragon.PacketEntityEnderDragonPart;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
@@ -266,7 +267,11 @@ public class Reach extends Check implements PacketCheck {
         if ((!blacklisted.contains(reachEntity.getType()) && reachEntity.isLivingEntity()) || reachEntity.getType() == EntityTypes.END_CRYSTAL) {
             if (minDistance == Double.MIN_VALUE && foundHitData != null) {
                 cancelBuffer = 1;
-                return "Hit block block=" + foundHitData.getState().getType().getName();
+                if (foundHitData instanceof BlockHitData) {
+                    return "Hit block block=" + ((BlockHitData) foundHitData).getState().getType().getName();
+                } else { // entity hit data
+                    return "Hit entity entity=" + ((EntityHitData) foundHitData).getEntity().getType().getName();
+                }
             } else if (minDistance == Double.MAX_VALUE) {
                 cancelBuffer = 1;
                 return "Missed hitbox";
@@ -301,14 +306,16 @@ public class Reach extends Check implements PacketCheck {
             for (double eye : player.getPossibleEyeHeights()) {
                 Vector eyes = new Vector(from.getX(), from.getY() + eye, from.getZ());
                 final double reach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
-                final HitData hitResult = BlockRayTrace.getNearestReachHitResult(player, eyes, lookVec, minDistance, reach);
+                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, eyes, lookVec, minDistance, reach);
                 if (hitResult == null) {
                     return null;
                 }
 
                 final double distance = eyes.distanceSquared(hitResult.getBlockHitLocation());
                 // Block changes are uncertain, can't check this tick
-                if (distance < (minDistance * minDistance) && blocksChangedThisTick.contains(hitResult.getPosition())) {
+                if (distance < (minDistance * minDistance)
+                        && hitResult instanceof BlockHitData
+                        && blocksChangedThisTick.contains(((BlockHitData) hitResult).getPosition())) {
                     return null;
                 }
 

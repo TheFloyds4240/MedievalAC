@@ -6,7 +6,7 @@ import ac.grim.grimac.checks.type.BlockPlaceCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.BlockPlace;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
-import ac.grim.grimac.utils.data.HitData;
+import ac.grim.grimac.utils.data.BlockHitData;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -170,7 +170,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     }
 
     private boolean getTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
-        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, false);
+        BlockHitData hitData = BlockRayTrace.getNearestHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, false);
 
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
