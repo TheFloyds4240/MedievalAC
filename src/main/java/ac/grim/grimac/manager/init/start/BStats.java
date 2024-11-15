@@ -8,7 +8,7 @@ public class BStats implements Initable {
     public void start() {
         int pluginId = 12820; // <-- Replace with the id of your plugin!
         try {
-            new io.github.retrooper.packetevents.bstats.Metrics(GrimAPI.INSTANCE.getPlugin(), pluginId);
+            new io.github.retrooper.packetevents.bstats.bukkit.Metrics(GrimAPI.INSTANCE.getPlugin(), pluginId);
         } catch (Exception ignored) {
         }
     }
