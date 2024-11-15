@@ -166,16 +166,24 @@ public class CompensatedInventory extends Check implements PacketCheck {
     }
 
     private ItemStack getByEquipmentType(EquipmentType type) {
-        return switch (type) {
-            case HEAD -> getHelmet();
-            case CHEST -> getChestplate();
-            case LEGS -> getLeggings();
-            case FEET -> getBoots();
-            case OFFHAND -> getOffHand();
-            case MAINHAND -> getHeldItem();
-            default -> ItemStack.EMPTY;
-        };
+        switch (type) {
+            case HEAD:
+                return getHelmet();
+            case CHEST:
+                return getChestplate();
+            case LEGS:
+                return getLeggings();
+            case FEET:
+                return getBoots();
+            case OFFHAND:
+                return getOffHand();
+            case MAINHAND:
+                return getHeldItem();
+            default:
+                return ItemStack.EMPTY;
+        }
     }
+
 
     public boolean hasItemType(ItemType type) {
         if (isPacketInventoryActive || player.bukkitPlayer == null) return inventory.hasItemType(type);

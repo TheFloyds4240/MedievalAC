@@ -17,7 +17,8 @@ public class GrimStopSpectating extends BaseCommand {
     @CommandCompletion("here")
     public void onStopSpectate(CommandSender sender, String[] args) {
         String string = args.length > 0 ? args[0] : null;
-        if (!(sender instanceof Player player)) return;
+        if (!(sender instanceof Player)) return;
+        Player player = (Player) sender;
         if (GrimAPI.INSTANCE.getSpectateManager().isSpectating(player.getUniqueId())) {
             boolean teleportBack = string == null || !string.equalsIgnoreCase("here");
             GrimAPI.INSTANCE.getSpectateManager().disable(player, teleportBack);

@@ -133,8 +133,8 @@ public class PredictionEngine {
 
             // Returns pair of primary push movement, and then outputvel
             Pair<Vector, Vector> output = doSeekingWallCollisions(player, primaryPushMovement, originalClientVel, clientVelAfterInput);
-            primaryPushMovement = output.first();
-            Vector outputVel = clampMovementToHardBorder(player, output.second());
+            primaryPushMovement = output.getFirst();
+            Vector outputVel = clampMovementToHardBorder(player, output.getSecond());
 
             double resultAccuracy = outputVel.distanceSquared(player.actualMovement);
 

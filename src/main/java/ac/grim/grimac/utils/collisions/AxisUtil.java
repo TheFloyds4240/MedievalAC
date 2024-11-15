@@ -54,22 +54,36 @@ public enum AxisUtil {
     }
 
     public static AxisSelect getAxis(BlockFace face) {
-        return switch (face) {
-            case EAST -> EAST.select;
-            case WEST -> WEST.select;
-            case NORTH -> NORTH.select;
-            case SOUTH -> SOUTH.select;
-            case UP -> UP.select;
-            default -> DOWN.select;
-        };
+        switch (face) {
+            case EAST:
+                return EAST.select;
+            case WEST:
+                return WEST.select;
+            case NORTH:
+                return NORTH.select;
+            case SOUTH:
+                return SOUTH.select;
+            case UP:
+                return UP.select;
+            case DOWN:
+            default:
+                return DOWN.select;
+        }
     }
 
     public static boolean isSameAxis(BlockFace one, BlockFace two) {
-        return switch (one) {
-            case WEST, EAST -> two == BlockFace.WEST || two == BlockFace.EAST;
-            case NORTH, SOUTH -> two == BlockFace.NORTH || two == BlockFace.SOUTH;
-            case UP, DOWN -> two == BlockFace.UP || two == BlockFace.DOWN;
-            default -> false;
-        };
+        switch (one) {
+        case WEST:
+        case EAST:
+            return two == BlockFace.WEST || two == BlockFace.EAST;
+        case NORTH:
+        case SOUTH:
+            return two == BlockFace.NORTH || two == BlockFace.SOUTH;
+        case UP:
+        case DOWN:
+            return two == BlockFace.UP || two == BlockFace.DOWN;
+        default:
+            return false;
+        }
     }
 }

@@ -107,11 +107,17 @@ public class ConsumesBlockPlace {
             Attachment attachment = bell.getAttachment();
             BlockFace dir2 = BlockFace.valueOf(direction.name());
 
-            return switch (attachment) {
-                case FLOOR -> AxisUtil.isSameAxis(dir, dir2);
-                case SINGLE_WALL, DOUBLE_WALL -> !AxisUtil.isSameAxis(dir, dir2);
-                case CEILING -> true;
-            };
+            switch (attachment) {
+                case FLOOR:
+                    return AxisUtil.isSameAxis(dir, dir2);
+                case SINGLE_WALL:
+                case DOUBLE_WALL:
+                    return !AxisUtil.isSameAxis(dir, dir2);
+                case CEILING:
+                    return true;
+                default:
+                    return false;
+            }
         } else {
             return false;
         }

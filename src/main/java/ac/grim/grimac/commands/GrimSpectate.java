@@ -23,7 +23,8 @@ public class GrimSpectate extends BaseCommand {
     @CommandPermission("grim.spectate")
     @CommandCompletion("@players")
     public void onSpectate(CommandSender sender, @Optional OnlinePlayer target) {
-        if (!(sender instanceof Player player)) return;
+        if (!(sender instanceof Player)) return;
+        Player player = (Player) sender;
 
         if (target != null && target.getPlayer().getUniqueId().equals(player.getUniqueId())) {
             String message = GrimAPI.INSTANCE.getConfigManager().getConfig().getStringElse("cannot-run-on-self", "%prefix% &cYou cannot use this command on yourself!");

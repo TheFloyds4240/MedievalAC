@@ -71,8 +71,14 @@ public class SpectateManager implements Initable {
         spectatingPlayers.remove(uuid);
     }
 
-    private record PreviousState(org.bukkit.GameMode gameMode, Location location) {
+    private static class PreviousState {
+        public PreviousState(org.bukkit.GameMode gameMode, Location location) {
+            this.gameMode = gameMode;
+            this.location = location;
+        }
 
+        private final org.bukkit.GameMode gameMode;
+        private final Location location;
     }
 
 }
