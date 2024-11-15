@@ -1,6 +1,5 @@
 package ac.grim.grimac.predictionengine;
 
-import ac.grim.grimac.checks.impl.movement.NoSlowC;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.attribute.ValuedAttribute;
@@ -88,8 +87,6 @@ public class PlayerBaseTick {
 
         if (player.compensatedEntities.getSelf().inVehicle()) player.isSlowMovement = false;
 
-        if (wasSlowMovement != player.isSlowMovement) player.checkManager.getPostPredictionCheck(NoSlowC.class).startedSprintingBeforeSlowMovement = player.isSlowMovement && player.isSprinting;
-
         // Players in boats don't care about being in blocks
         if (!player.compensatedEntities.getSelf().inVehicle()) {
             this.moveTowardsClosestSpace(player.lastX - (player.boundingBox.maxX - player.boundingBox.minX) * 0.35, player.lastZ + (player.boundingBox.maxZ - player.boundingBox.minZ) * 0.35);
@@ -154,7 +151,7 @@ public class PlayerBaseTick {
 
         // Might be null after respawn?
         final Optional<WrapperPlayServerUpdateAttributes.Property> property = playerSpeed.property();
-        if (!property.isPresent()) return;
+        if (property.isEmpty()) return;
 
         // The client first desync's this attribute
         property.get().getModifiers().removeIf(modifier -> modifier.getUUID().equals(CompensatedEntities.SNOW_MODIFIER_UUID) || modifier.getName().getKey().equals("powder_snow"));
@@ -363,22 +360,12 @@ public class PlayerBaseTick {
             double d7 = direction2 == BlockFace.WEST || direction2 == BlockFace.EAST ? relativeXMovement : relativeZMovement;
             d6 = direction2 == BlockFace.EAST || direction2 == BlockFace.SOUTH ? 1.0 - d7 : d7;
             // d7 and d6 flip the movement direction based on desired movement direction
-            boolean doesSuffocate;
-            switch (direction2) {
-                case EAST:
-                    doesSuffocate = this.suffocatesAt(blockX + 1, blockZ);
-                    break;
-                case WEST:
-                    doesSuffocate = this.suffocatesAt(blockX - 1, blockZ);
-                    break;
-                case NORTH:
-                    doesSuffocate = this.suffocatesAt(blockX, blockZ - 1);
-                    break;
-                default:
-                case SOUTH:
-                    doesSuffocate = this.suffocatesAt(blockX, blockZ + 1);
-                    break;
-            }
+            boolean doesSuffocate = switch (direction2) {
+                case EAST -> this.suffocatesAt(blockX + 1, blockZ);
+                case WEST -> this.suffocatesAt(blockX - 1, blockZ);
+                case NORTH -> this.suffocatesAt(blockX, blockZ - 1);
+                default -> this.suffocatesAt(blockX, blockZ + 1);
+            };
 
             if (d6 >= lowestValue || doesSuffocate) continue;
             lowestValue = d6;

@@ -2,7 +2,6 @@ package ac.grim.grimac.events.packets;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.checks.impl.movement.NoSlowA;
-import ac.grim.grimac.checks.impl.movement.NoSlowD;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
@@ -23,7 +22,6 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
-import org.bukkit.Bukkit;
 
 public class PacketPlayerDigging extends PacketListenerAbstract {
 
@@ -172,10 +170,12 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
 
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             final GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
-            if (player == null) return;
-
-            if (!player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
-                if (player.packetStateData.isSlowedByUsingItem() && player.packetStateData.eatingHand != InteractionHand.OFF_HAND && player.packetStateData.getSlowedByUsingItemSlot() != player.packetStateData.lastSlotSelected) {
+            if (player != null && player.packetStateData.isSlowedByUsingItem()
+                    && !player.packetStateData.lastPacketWasTeleport
+                    && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
+                if (player.packetStateData.eatingHand != InteractionHand.OFF_HAND
+                        && player.packetStateData.getSlowedByUsingItemSlot() != player.packetStateData.lastSlotSelected
+                        || player.getInventory().getItemInHand(player.packetStateData.eatingHand).isEmpty()) {
                     player.packetStateData.setSlowedByUsingItem(false);
                     player.checkManager.getPostPredictionCheck(NoSlowA.class).didSlotChangeLastTick = true;
                 }
@@ -220,13 +220,7 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
             final ItemStack item = hand == InteractionHand.MAIN_HAND ?
                     player.getInventory().getHeldItem() : player.getInventory().getOffHand();
 
-            final boolean wasSlow = player.packetStateData.isSlowedByUsingItem();
-
             handleUseItem(player, item, hand);
-
-            if (!wasSlow) {
-                player.checkManager.getPostPredictionCheck(NoSlowD.class).startedSprintingBeforeUse = player.packetStateData.isSlowedByUsingItem() && player.isSprinting;
-            }
         }
     }
 }

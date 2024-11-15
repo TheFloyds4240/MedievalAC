@@ -31,7 +31,6 @@ import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
-import com.github.retrooper.packetevents.protocol.world.states.defaulttags.BlockTags;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateValue;
@@ -43,6 +42,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgeBlockChanges;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+
+import java.util.function.Function;
 
 public class CheckManagerListener extends PacketListenerAbstract {
 
@@ -144,7 +145,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
         }
     }
 
-    private static void handleBlockPlaceOrUseItem(PacketWrapper packet, GrimPlayer player) {
+    private static void handleBlockPlaceOrUseItem(PacketWrapper<?> packet, GrimPlayer player) {
         // Legacy "use item" packet
         if (packet instanceof WrapperPlayClientPlayerBlockPlacement &&
                 PacketEvents.getAPI().getServerManager().getVersion().isOlderThan(ServerVersion.V_1_9)) {
@@ -295,6 +296,11 @@ public class CheckManagerListener extends PacketListenerAbstract {
         return false;
     }
 
+    // Manual filter on FINISH_DIGGING to prevent clients setting non-breakable blocks to air
+    private static final Function<StateType, Boolean> BREAKABLE = type -> {
+        return !type.isAir() && type.getHardness() != -1.0f && type != StateTypes.WATER && type != StateTypes.LAVA;
+    };
+
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getConnectionState() != ConnectionState.PLAY) return;
@@ -376,22 +382,24 @@ public class CheckManagerListener extends PacketListenerAbstract {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
-            WrappedBlockState block = player.compensatedWorld.getWrappedBlockStateAt(dig.getBlockPosition());
+            final Vector3i digPosition = dig.getBlockPosition();
+            WrappedBlockState block = player.compensatedWorld.getWrappedBlockStateAt(digPosition);
+            final StateType type = block.getType();
 
-            player.checkManager.getPacketCheck(BadPacketsX.class).handle(event, dig, block.getType());
+            player.checkManager.getPacketCheck(BadPacketsX.class).handle(event, dig, type);
             player.checkManager.getPacketCheck(BadPacketsZ.class).handle(event, dig);
 
             if (dig.getAction() == DiggingAction.FINISHED_DIGGING) {
                 // Not unbreakable
-                if (!block.getType().isAir() && block.getType().getHardness() != -1.0f && !event.isCancelled()) {
+                if (BREAKABLE.apply(type) && !event.isCancelled()) {
                     player.compensatedWorld.startPredicting();
-                    player.compensatedWorld.updateBlock(dig.getBlockPosition().getX(), dig.getBlockPosition().getY(), dig.getBlockPosition().getZ(), 0);
+                    player.compensatedWorld.updateBlock(digPosition.getX(), digPosition.getY(), digPosition.getZ(), 0);
                     player.compensatedWorld.stopPredicting(dig);
                 }
             }
 
             if (dig.getAction() == DiggingAction.START_DIGGING && !event.isCancelled()) {
-                double damage = BlockBreakSpeed.getBlockDamage(player, dig.getBlockPosition());
+                double damage = BlockBreakSpeed.getBlockDamage(player, digPosition);
 
                 //Instant breaking, no damage means it is unbreakable by creative players (with swords)
                 if (damage >= 1) {
@@ -399,9 +407,9 @@ public class CheckManagerListener extends PacketListenerAbstract {
                     if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), block)) {
                         // Vanilla uses a method to grab water flowing, but as you can't break flowing water
                         // We can simply treat all waterlogged blocks or source blocks as source blocks
-                        player.compensatedWorld.updateBlock(dig.getBlockPosition(), StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
+                        player.compensatedWorld.updateBlock(digPosition, StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
                     } else {
-                        player.compensatedWorld.updateBlock(dig.getBlockPosition().getX(), dig.getBlockPosition().getY(), dig.getBlockPosition().getZ(), 0);
+                        player.compensatedWorld.updateBlock(digPosition.getX(), digPosition.getY(), digPosition.getZ(), 0);
                     }
                     player.compensatedWorld.stopPredicting(dig);
                 }
@@ -705,9 +713,5 @@ public class CheckManagerListener extends PacketListenerAbstract {
         if (player == null) return;
 
         player.checkManager.onPacketSend(event);
-    }
-
-    private static boolean isFence(StateType state) {
-        return BlockTags.FENCES.contains(state);
     }
 }
