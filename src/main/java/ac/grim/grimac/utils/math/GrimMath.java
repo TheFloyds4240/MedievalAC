@@ -1,7 +1,5 @@
 package ac.grim.grimac.utils.math;
 
-import com.github.retrooper.packetevents.protocol.world.BlockFace;
-import com.github.retrooper.packetevents.util.Vector3d;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;

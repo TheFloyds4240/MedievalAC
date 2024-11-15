@@ -5,8 +5,6 @@ import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.BlockPlaceCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.BlockPlace;
-import ac.grim.grimac.utils.collisions.HitboxData;
-import ac.grim.grimac.utils.collisions.RaycastData;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
@@ -17,7 +15,6 @@ import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
-import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.List;
