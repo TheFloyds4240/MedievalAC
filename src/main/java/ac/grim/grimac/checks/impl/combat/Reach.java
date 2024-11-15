@@ -24,6 +24,7 @@ import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.data.Pair;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
+import ac.grim.grimac.utils.data.packetentity.PacketEntitySelf;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import ac.grim.grimac.utils.data.packetentity.dragon.PacketEntityEnderDragonPart;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
@@ -65,6 +66,7 @@ public class Reach extends Check implements PacketCheck {
             EntityTypes.CHEST_BOAT,
             EntityTypes.SHULKER);
 
+    private boolean ignoreNonPlayerTargets;
     private boolean cancelImpossibleHits;
     private double threshold;
     private double cancelBuffer; // For the next 4 hits after using reach, we aggressively cancel reach
@@ -95,6 +97,10 @@ public class Reach extends Check implements PacketCheck {
                     event.setCancelled(true);
                     player.onPacketCancel();
                 }
+                return;
+            }
+
+            if (ignoreNonPlayerTargets && !entity.getType().equals(EntityTypes.PLAYER)) {
                 return;
             }
 
@@ -314,6 +320,7 @@ public class Reach extends Check implements PacketCheck {
 
     @Override
     public void onReload(ConfigManager config) {
+        this.ignoreNonPlayerTargets = config.getBooleanElse("Reach.ignore-non-player-targets", false);
         this.cancelImpossibleHits = config.getBooleanElse("Reach.block-impossible-hits", true);
         this.threshold = config.getDoubleElse("Reach.threshold", 0.0005);
     }

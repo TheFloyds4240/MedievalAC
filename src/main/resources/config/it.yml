@@ -176,6 +176,8 @@ Reach:
   threshold: 0.0005
   # Annulla gli attacchi impossibili
   block-impossible-hits: true
+  # Only apply reach checks if the target is a player
+  ignore-non-player-targets: false
   # Abilita l'invio di pacchetti aggiuntivi per il rilevamento degli attacchi
   enable-post-packet: false
 
