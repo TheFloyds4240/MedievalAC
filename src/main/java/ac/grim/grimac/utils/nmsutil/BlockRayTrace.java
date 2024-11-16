@@ -12,6 +12,7 @@ import ac.grim.grimac.utils.data.EntityHitData;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.data.Pair;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
+import ac.grim.grimac.utils.data.packetentity.TypedPacketEntity;
 import ac.grim.grimac.utils.math.GrimMath;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class BlockRayTrace {
 
@@ -292,7 +294,7 @@ public class BlockRayTrace {
         PacketEntity closestEntity = null;
 
         // Check entities
-        for (PacketEntity entity : player.compensatedEntities.entityMap.values()) {
+        for (PacketEntity entity : player.compensatedEntities.entityMap.values().stream().filter(TypedPacketEntity::canHit).collect(Collectors.toList())) {
             SimpleCollisionBox box = null;
             // 1.7 and 1.8 players get a bit of extra hitbox (this is why you should use 1.8 on cross version servers)
             // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
