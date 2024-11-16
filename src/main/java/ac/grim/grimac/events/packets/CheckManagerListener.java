@@ -195,7 +195,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 // Should we raytrace ignoring entities?
                 HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
                 if (!(hitData instanceof BlockHitData)) {
-                    throw new IllegalArgumentException("Error while getting hitdata in trapdoorhandler for CheckManagerListener");
+                    throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in trapdoorhandler for CheckManagerListener.");
                 }
                 BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), place.getFace(), placedWith, (BlockHitData) hitData);
 
@@ -242,7 +242,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
             // Should we raytrace ignoring entities?
             HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
             if (!(hitData instanceof BlockHitData)) {
-                throw new IllegalArgumentException("Error while getting hitdata in trapdoorhandler for CheckManagerListener");
+                throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " fire charge handler in CheckManagerListener");
             }
 
             BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), face, placedWith, (BlockHitData) hitData);
@@ -456,7 +456,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 // Should we raytrace ignoring entities?
                 HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
                 if (!(hitData instanceof BlockHitData)) {
-                    throw new IllegalArgumentException("Error while getting hitdata in anti-air place for CheckManagerListener");
+                    throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in anti-air place for CheckManagerListener");
                 }
 
                 // Anti-air place
