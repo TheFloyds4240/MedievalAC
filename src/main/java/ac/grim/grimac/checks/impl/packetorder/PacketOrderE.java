@@ -16,7 +16,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    private int invalidSlots = 0;
+    private int invalid = 0;
     private boolean sent = false;
 
     @Override
@@ -24,7 +24,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
             if (sent || player.packetOrderProcessor.isAttacking() || player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isOpeningInventory() || player.packetOrderProcessor.isSwapping() || player.packetOrderProcessor.isDropping() || player.packetOrderProcessor.isReleasing()) {
                 if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8) || flagAndAlert()) {
-                    invalidSlots++;
+                    invalid++;
                 }
             }
         }
@@ -41,23 +41,23 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
-            if (invalidSlots > 0) {
+            if (invalid > 0) {
                 setbackIfAboveSetbackVL();
             }
 
-            invalidSlots = 0;
+            invalid = 0;
             return;
         }
 
         if (!player.skippedTickInActualMovement && predictionComplete.isChecked()) {
-            for (; invalidSlots >= 1; invalidSlots--) {
+            for (; invalid >= 1; invalid--) {
                 if (flagAndAlert()) {
                     setbackIfAboveSetbackVL();
                 }
             }
         }
 
-        invalidSlots = 0;
+        invalid = 0;
         sent = false;
     }
 }
