@@ -194,7 +194,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
                 // Should we raytrace ignoring entities?
                 HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-                if (!(hitData instanceof BlockHitData)) {
+                if (hitData instanceof EntityHitData) {
                     throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in trapdoorhandler for CheckManagerListener.");
                 }
                 BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), place.getFace(), placedWith, (BlockHitData) hitData);
@@ -241,7 +241,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
             // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
             // Should we raytrace ignoring entities?
             HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-            if (!(hitData instanceof BlockHitData)) {
+            if (hitData instanceof EntityHitData) {
                 throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " fire charge handler in CheckManagerListener");
             }
 
@@ -455,7 +455,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
                 // Should we raytrace ignoring entities?
                 HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-                if (!(hitData instanceof BlockHitData)) {
+                if (hitData instanceof EntityHitData) {
                     throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in anti-air place for CheckManagerListener");
                 }
 
