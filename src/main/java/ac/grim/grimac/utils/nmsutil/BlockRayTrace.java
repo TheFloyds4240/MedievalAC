@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import static ac.grim.grimac.utils.nmsutil.ReachUtilsPrimitives.distanceSquared;
+
 public class BlockRayTrace {
 
     // Copied from MCP...
@@ -175,7 +177,7 @@ public class BlockRayTrace {
     }
 
     @Nullable
-    public static HitData getNearestReachHitResult(GrimPlayer player, double[] startPos, double[] lookVec, double currentDistance, double maxDistance, int[] targetBlockVec, boolean raycastContext) {
+    public static HitData getNearestReachHitResult(GrimPlayer player, double[] startPos, double[] lookVec, double currentDistance, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace, SimpleCollisionBox[] boxes, boolean raycastContext) {
         double[] endPos = new double[]{
                 startPos[0] + lookVec[0] * maxDistance,
                 startPos[1] + lookVec[1] * maxDistance,
@@ -190,14 +192,14 @@ public class BlockRayTrace {
                 data = RaycastData.getBlockHitbox(player, null, player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
             }
             if (data == NoCollisionBox.INSTANCE) return null;
-            SimpleCollisionBox[] boxes = new SimpleCollisionBox[15]; // 15 is the highest possible number of boxes; 1.19 cauldron
             int size = data.downCast(boxes);
 
             double bestHitResult = Double.MAX_VALUE;
             double[] bestHitLoc = null;
             BlockFace bestFace = null;
 
-            if (Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec)) {
+            boolean isTargetBlock = Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec);
+            if (isTargetBlock) {
                 // BEWARE OF https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
                 // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
                 if (block.getType() == StateTypes.BREWING_STAND && player.getClientVersion().equals(ClientVersion.V_1_8)) {
@@ -223,6 +225,9 @@ public class BlockRayTrace {
                     bestHitResult = distSq;
                     bestHitLoc = hitLoc;
                     bestFace = intercept.getSecond();
+                    if (isTargetBlock && bestFace == expectedBlockFace) {
+                        return new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block);
+                    }
                 }
             }
 
@@ -239,7 +244,7 @@ public class BlockRayTrace {
             if (bestHitLoc != null) {
                 HitData hitData = new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block);
                 if (!raycastContext) {
-                    HitData hitData2 = BlockRayTrace.getNearestReachHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, true);
+                    HitData hitData2 = BlockRayTrace.getNearestReachHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, true);
                     if (hitData2 != null) {
                         Vector startVector = new Vector(startPos[0], startPos[1], startPos[2]);
                         if (hitData2.getBlockHitLocation().subtract(startVector).lengthSquared() <

@@ -32,6 +32,11 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     private boolean useBlockWhitelist;
     private HashSet<StateType> blockWhitelist;
 
+    // 15 is the maximum set of Collision boxes that will be used in the ray trace check
+    // it corresponds to the size of the collision boxes from the modern Cauldron
+    // Since this is used per-player we can avoid calling new[] by allocating it per-player in the check
+    private final SimpleCollisionBox[] collisionBoxBuffer = new SimpleCollisionBox[15];
+
     public final Set<Triple<Vector3i, WrappedBlockState, Byte>> blocksChangedList = ConcurrentHashMap.newKeySet();
 
     public LineOfSightPlace(GrimPlayer player) {
@@ -186,10 +191,10 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     }
 
     private boolean didRayTraceHitTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
-        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, false);
+        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, false);
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
-        return hitData != null && new Vector3i(targetBlockVec[0], targetBlockVec[1], targetBlockVec[2]).equals(hitData.getPosition()) && hitData.getClosestDirection() == expectedBlockFace;
+        return hitData != null;
     }
 
     private boolean isBlockTypeWhitelisted(StateType type) {
