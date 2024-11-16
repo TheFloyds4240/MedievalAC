@@ -55,6 +55,10 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         // Only flag (which will only happen in post) if we miss pre
         if (didRayTraceHit(place)) {
             ignorePost = true;
+        } else if (flagBuffer > 0) {
+            if (flagAndAlert("pre-flying: " + player.compensatedWorld.getWrappedBlockStateAt(place.getPlacedAgainstBlockLocation()).getType()) && shouldModifyPackets() && shouldCancel()) {
+                place.resync();  // Deny the block placement.
+            }
         }
     }
 
@@ -73,12 +77,12 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         boolean hit = didRayTraceHit(place);
         // This can false with rapidly moving yaw in 1.8+ clients
         if (!hit) {
-//            flagBuffer = 1;
+            flagBuffer = 1;
             flagAndAlert("post-flying: " + player.compensatedWorld.getWrappedBlockStateAt(place.getPlacedAgainstBlockLocation()).getType());
         }
-//        else {
-//            flagBuffer = Math.max(0, flagBuffer - 0.1);
-//        }
+        else {
+            flagBuffer = Math.max(0, flagBuffer - 0.1);
+        }
         blocksChangedList.clear();
     }
 
