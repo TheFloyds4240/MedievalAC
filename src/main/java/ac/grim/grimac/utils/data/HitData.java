@@ -15,12 +15,22 @@ public class HitData {
     Vector blockHitLocation;
     WrappedBlockState state;
     BlockFace closestDirection;
+    public Boolean success;
 
     public HitData(Vector3i position, Vector blockHitLocation, BlockFace closestDirection, WrappedBlockState state) {
         this.position = position;
         this.blockHitLocation = blockHitLocation;
         this.closestDirection = closestDirection;
         this.state = state;
+        this.success = null;
+    }
+
+    public HitData(Vector3i position, Vector blockHitLocation, BlockFace closestDirection, WrappedBlockState state, Boolean success) {
+        this.position = position;
+        this.blockHitLocation = blockHitLocation;
+        this.closestDirection = closestDirection;
+        this.state = state;
+        this.success = success;
     }
 
     public Vector3d getRelativeBlockHitLocation() {

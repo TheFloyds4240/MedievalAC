@@ -194,7 +194,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, false);
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
-        return hitData != null;
+        return hitData != null && hitData.success;
     }
 
     private boolean isBlockTypeWhitelisted(StateType type) {

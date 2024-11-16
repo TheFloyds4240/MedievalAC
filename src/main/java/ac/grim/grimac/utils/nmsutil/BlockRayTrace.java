@@ -224,7 +224,7 @@ public class BlockRayTrace {
                     bestHitLoc = hitLoc;
                     bestFace = intercept.getSecond();
                     if (isTargetBlock && bestFace == expectedBlockFace) {
-                        return new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block);
+                        return new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, true);
                     }
                 }
             }
@@ -240,14 +240,14 @@ public class BlockRayTrace {
             //    because that is version-specific, will break if the implementation of the returned ComplexCollisionBox changes
             //    and again, lots of code complexity for little performance gain
             if (bestHitLoc != null) {
-                HitData hitData = new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block);
+                HitData hitData = new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, isTargetBlock);
                 if (!raycastContext) {
                     HitData hitData2 = BlockRayTrace.getNearestReachHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, true);
                     if (hitData2 != null) {
                         Vector startVector = new Vector(startPos[0], startPos[1], startPos[2]);
                         if (hitData2.getBlockHitLocation().subtract(startVector).lengthSquared() <
                                 hitData.getBlockHitLocation().subtract(startVector).lengthSquared()) {
-                            return new HitData(vector3i, hitData.getBlockHitLocation(), hitData2.getClosestDirection(), block);
+                            return new HitData(vector3i, hitData.getBlockHitLocation(), hitData2.getClosestDirection(), block, isTargetBlock);
                         }
                     }
                 }
@@ -314,7 +314,7 @@ public class BlockRayTrace {
             }
 
             if (bestHitLoc != null) {
-                return new HitData(vector3i, bestHitLoc, bestFace, block);
+                return new HitData(vector3i, bestHitLoc, bestFace, block, null);
             }
 
             if (sourcesHaveHitbox &&
@@ -326,7 +326,7 @@ public class BlockRayTrace {
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(knownDistance));
 
                 if (intercept.getFirst() != null) {
-                    return new HitData(vector3i, intercept.getFirst(), intercept.getSecond(), block);
+                    return new HitData(vector3i, intercept.getFirst(), intercept.getSecond(), block, null);
                 }
             }
 
