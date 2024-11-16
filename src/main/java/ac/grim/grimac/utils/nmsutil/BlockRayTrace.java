@@ -1,5 +1,6 @@
 package ac.grim.grimac.utils.nmsutil;
 
+import ac.grim.grimac.checks.impl.combat.Reach;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.HitboxData;
 import ac.grim.grimac.utils.collisions.RaycastData;
@@ -7,8 +8,10 @@ import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.NoCollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.BlockHitData;
+import ac.grim.grimac.utils.data.EntityHitData;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.data.Pair;
+import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.math.GrimMath;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -271,13 +274,59 @@ public class BlockRayTrace {
     }
 
     @Nullable
-    public static HitData getNearestHitResult(GrimPlayer player, Vector eyePos, Vector lookVec, double currentDistance, double maxDistance) {
+    public static HitData getNearestHitResult(GrimPlayer player, PacketEntity targetEntity, Vector eyePos, Vector lookVec) {
+
+        double maxAttackDistance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
+        double maxBlockDistance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE);
+
         Vector3d startingPos = new Vector3d(eyePos.getX(), eyePos.getY(), eyePos.getZ());
         Vector startingVec = new Vector(startingPos.getX(), startingPos.getY(), startingPos.getZ());
         Ray trace = new Ray(eyePos, lookVec);
-        Vector endVec = trace.getPointAtDistance(maxDistance);
+        Vector endVec = trace.getPointAtDistance(maxBlockDistance);
         Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
-        return getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, currentDistance);
+
+        // Get block hit
+        HitData blockHitData = getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, maxBlockDistance);
+        double closestDistanceSquared = blockHitData != null ? blockHitData.getBlockHitLocation().distanceSquared(startingVec) : maxAttackDistance * maxAttackDistance;
+        Vector closestHitVec = null;
+        PacketEntity closestEntity = null;
+
+        // Check entities
+        for (PacketEntity entity : player.compensatedEntities.entityMap.values()) {
+            SimpleCollisionBox box = entity.getPossibleCollisionBoxes();
+            // 1.7 and 1.8 players get a bit of extra hitbox (this is why you should use 1.8 on cross version servers)
+            // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
+            if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+                box.expand(0.1f);
+            }
+
+            if (entity.equals(targetEntity)) {
+                box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
+                // This is better than adding to the reach, as 0.03 can cause a player to miss their target
+                // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
+                //
+                // Just give the uncertainty on 1.9+ clients as we have no way of knowing whether they had 0.03 movement
+                if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
+                    box.expand(player.getMovementThreshold());
+            } else {
+                // todo, shrink by reachThreshold as well for non-target entities?
+                if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
+                    box.expand(-player.getMovementThreshold());
+            }
+
+            Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
+
+            if (intercept.getFirst() != null) {
+                double distSquared = intercept.getFirst().distanceSquared(startingVec);
+                if (distSquared < closestDistanceSquared) {
+                    closestDistanceSquared = distSquared;
+                    closestHitVec = intercept.getFirst();
+                    closestEntity = entity;
+                }
+            }
+        }
+
+        return closestEntity == null ? blockHitData : new EntityHitData(closestEntity, closestHitVec);
     }
 
     private static HitData getTraverseResult(GrimPlayer player, @Nullable StateType heldItem, Vector3d startingPos, Vector startingVec, Ray trace, Vector3d endPos, boolean sourcesHaveHitbox, boolean checkInside, double knownDistance) {
@@ -291,6 +340,7 @@ public class BlockRayTrace {
             BlockFace bestFace = null;
 
             for (SimpleCollisionBox box : boxes) {
+                box.expand(-player.getMovementThreshold());
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(knownDistance));
                 if (intercept.getFirst() == null) continue; // No intercept
 

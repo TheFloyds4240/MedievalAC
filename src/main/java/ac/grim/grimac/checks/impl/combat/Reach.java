@@ -67,9 +67,11 @@ public class Reach extends Check implements PacketCheck {
             EntityTypes.CHEST_BOAT,
             EntityTypes.SHULKER);
 
+    private static final double ENTITY_HITBOX_REACH_EPSILON = 1E-12;
+
     private boolean ignoreNonPlayerTargets;
     private boolean cancelImpossibleHits;
-    private double threshold;
+    public double reachThreshold;
     private double cancelBuffer; // For the next 4 hits after using reach, we aggressively cancel reach
 
     public Reach(GrimPlayer player) {
@@ -198,7 +200,7 @@ public class Reach extends Check implements PacketCheck {
             targetBox.expand(0.1f);
         }
 
-        targetBox.expand(threshold);
+        targetBox.expand(reachThreshold);
 
         // This is better than adding to the reach, as 0.03 can cause a player to miss their target
         // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
@@ -253,14 +255,18 @@ public class Reach extends Check implements PacketCheck {
         HitData foundHitData = null;
         // If the entity is within range of the player (we'll flag anyway if not, so no point checking blocks in this case)
         // Ignore when could be hitting through a moving shulker, piston blocks. They are just too glitchy/uncertain to check.
-        if (minDistance <= 3 && !player.compensatedWorld.isNearHardEntity(player.boundingBox.copy().expand(4))) {
-            final @Nullable Pair<Double, HitData> targetBlock = getTargetBlock(player, possibleLookDirs, from, minDistance);
-            // And if the target block is closer to the player than the entity box, they should hit the block instead
-            // So, this hit is invalid.
-            if (targetBlock != null && targetBlock.getFirst() < (minDistance * minDistance)) { // targetBlock is squared
-                minDistance = Double.MIN_VALUE;
-                foundHitData = targetBlock.getSecond();
-            }
+        if (minDistance <= distance - 3 && !player.compensatedWorld.isNearHardEntity(player.boundingBox.copy().expand(4))) {
+            final @Nullable Pair<Double, HitData> hitResult = didRayTraceHit(reachEntity, possibleLookDirs, from);
+
+            // if the hitResult is closer to the player than the target entity box, they shouldn't have hit the target entity
+            // We are checking if the diff > epsilon because the hit distance returned is slightly different due to floating point shennanigans
+            // - This filters out when the ray trace hits the target entity without having to do an expensive .equals()
+            // - You may have to adjust the epsilon if you increase the reach threshold, especially by a lot
+            // ...but there is literally no reason you would ever want to increase it, only decrease, so that doesn't matter.
+           if (hitResult != null && (minDistance * minDistance) - hitResult.getFirst() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
+               minDistance = Double.MIN_VALUE;
+               foundHitData = hitResult.getSecond();
+           }
         }
 
         // if the entity is not exempt and the entity is alive
@@ -268,9 +274,9 @@ public class Reach extends Check implements PacketCheck {
             if (minDistance == Double.MIN_VALUE && foundHitData != null) {
                 cancelBuffer = 1;
                 if (foundHitData instanceof BlockHitData) {
-                    return "Hit block block=" + ((BlockHitData) foundHitData).getState().getType().getName();
+                    return "Hit block=" + ((BlockHitData) foundHitData).getState().getType().getName();
                 } else { // entity hit data
-                    return "Hit entity entity=" + ((EntityHitData) foundHitData).getEntity().getType().getName();
+                    return "Hit entity=" + ((EntityHitData) foundHitData).getEntity().getType().getName();
                 }
             } else if (minDistance == Double.MAX_VALUE) {
                 cancelBuffer = 1;
@@ -295,42 +301,61 @@ public class Reach extends Check implements PacketCheck {
         blocksChangedThisTick.add(vector3i);
     }
 
-    // Returns a pair so we can check the block type in the flag
+    // Checks if it was possible to hit a target entity
     @Nullable
-    private Pair<Double, HitData> getTargetBlock(GrimPlayer player, List<Vector> possibleLookDirs, Vector3d from, double minDistance) {
+    private Pair<Double, HitData> didRayTraceHit(PacketEntity targetEntity, List<Vector> possibleLookDirs, Vector3d from) {
+        HitData bestHitData = null;
+        double bestDistanceSq = Double.MAX_VALUE;
+        double bestBlockingEntityDistanceSq = Double.MAX_VALUE;
+        HitData bestBlockingEntityHit = null;
+
         // Check every possible look direction and every possible eye height
         // IF *NONE* of them allow the player to hit the entity, this is an invalid hit
-        HitData bestHitData = null;
-        double min = Double.MAX_VALUE;
         for (Vector lookVec : possibleLookDirs) {
             for (double eye : player.getPossibleEyeHeights()) {
                 Vector eyes = new Vector(from.getX(), from.getY() + eye, from.getZ());
-                final double reach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
-                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, eyes, lookVec, minDistance, reach);
-                if (hitResult == null) {
-                    return null;
+                // this function is completely 0.03 aware
+                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, targetEntity, eyes, lookVec);
+
+                if (hitResult == null) continue;
+
+                double distanceSquared = eyes.distanceSquared(hitResult.getBlockHitLocation());
+
+                // Check if the hit result is the target entity
+                if (hitResult instanceof EntityHitData && ((EntityHitData) hitResult).getEntity().equals(targetEntity)) {
+                    return new Pair<>(distanceSquared, hitResult); // Legitimate hit
                 }
 
-                final double distance = eyes.distanceSquared(hitResult.getBlockHitLocation());
-                // Block changes are uncertain, can't check this tick
-                if (distance < (minDistance * minDistance)
-                        && hitResult instanceof BlockHitData
-                        && blocksChangedThisTick.contains(((BlockHitData) hitResult).getPosition())) {
-                    return null;
+                // Check for potential blocking entities
+                if (hitResult instanceof EntityHitData) {
+                    // Consider entities that are blocking the path to the target
+                    if (distanceSquared < bestBlockingEntityDistanceSq) {
+                        bestBlockingEntityDistanceSq = distanceSquared;
+                        bestBlockingEntityHit = hitResult;
+                    }
+                } else if (hitResult instanceof BlockHitData) {
+                    // Check if block is closer than any blocking entity found
+                    if (bestBlockingEntityHit == null && distanceSquared < bestDistanceSq) {
+                        bestDistanceSq = distanceSquared;
+                        bestHitData = hitResult;
+                    }
                 }
-
-                bestHitData = hitResult;
-                min = Math.min(min, distance);
             }
         }
 
-        return bestHitData == null ? null : Pair.of(min, bestHitData);
+        // Prefer returning the entity that blocks the path to the target entity
+        if (bestBlockingEntityHit != null) {
+            return new Pair<>(bestBlockingEntityDistanceSq, bestBlockingEntityHit);
+        }
+
+        // If no blocking entity, return the closest block
+        return bestHitData == null ? null : new Pair<>(bestDistanceSq, bestHitData);
     }
 
     @Override
     public void onReload(ConfigManager config) {
         this.ignoreNonPlayerTargets = config.getBooleanElse("Reach.ignore-non-player-targets", false);
         this.cancelImpossibleHits = config.getBooleanElse("Reach.block-impossible-hits", true);
-        this.threshold = config.getDoubleElse("Reach.threshold", 0.0005);
+        this.reachThreshold = config.getDoubleElse("Reach.threshold", 0.0005);
     }
 }
