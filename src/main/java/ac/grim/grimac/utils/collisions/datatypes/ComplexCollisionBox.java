@@ -61,6 +61,15 @@ public class ComplexCollisionBox implements CollisionBox {
     }
 
     @Override
+    public int downCast(SimpleCollisionBox[] list) {
+        final int size = boxes.size();
+        for (int i = 0; i < size; i++) {
+            list[i] = (SimpleCollisionBox) boxes.get(i);
+        }
+        return size;
+    }
+
+    @Override
     public boolean isNull() {
         for (CollisionBox box : boxes)
             if (!box.isNull())

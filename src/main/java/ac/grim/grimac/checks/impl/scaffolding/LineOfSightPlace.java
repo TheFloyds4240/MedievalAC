@@ -12,12 +12,17 @@ import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
+import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
+import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
+import com.viaversion.viaversion.util.Triple;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @CheckData(name = "LineOfSightPlace")
 public class LineOfSightPlace extends BlockPlaceCheck {
@@ -26,6 +31,8 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     private boolean ignorePost = false;
     private boolean useBlockWhitelist;
     private HashSet<StateType> blockWhitelist;
+
+    public final Set<Triple<Vector3i, WrappedBlockState, Byte>> blocksChangedList = ConcurrentHashMap.newKeySet();
 
     public LineOfSightPlace(GrimPlayer player) {
         super(player);
@@ -76,6 +83,15 @@ public class LineOfSightPlace extends BlockPlaceCheck {
             return !isBlockTypeWhitelisted(targetBlockStateType);
         }
         return false;
+    }
+
+    public void handleBlockChange(Vector3i vector3i, WrappedBlockState state) {
+        if (blocksChangedList.size() >= 60) return; // Don't let players freeze movement packets to grow this
+        // Only do this for nearby blocks
+        if (new Vector3d(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector3d(player.x, player.y, player.z)) > 6) return;
+        // Only do this if the state really had any world impact
+        if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
+        blocksChangedList.add(new Triple<>(vector3i, state, (byte) 2));
     }
 
     private boolean didRayTraceHit(BlockPlace place) {
@@ -149,7 +165,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
 
                     calculateDirection(eyeLookDir, lookDir[0], lookDir[1]);
 
-                    if (getTargetBlock(eyePosition, eyeLookDir, maxDistance, interactBlockVec, expectedBlockFace)) {
+                    if (didRayTraceHitTargetBlock(eyePosition, eyeLookDir, maxDistance, interactBlockVec, expectedBlockFace)) {
                         return true; // If any possible face matches the client-side placement, assume it's legitimate
                     }
                 }
@@ -169,9 +185,8 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         result[2] = xz * player.trigHandler.cos(rotX);
     }
 
-    private boolean getTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
+    private boolean didRayTraceHitTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
         HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, false);
-
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
         return hitData != null && new Vector3i(targetBlockVec[0], targetBlockVec[1], targetBlockVec[2]).equals(hitData.getPosition()) && hitData.getClosestDirection() == expectedBlockFace;

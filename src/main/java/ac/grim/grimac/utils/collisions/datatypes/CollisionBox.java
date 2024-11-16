@@ -17,6 +17,8 @@ public interface CollisionBox {
 
     void downCast(List<SimpleCollisionBox> list);
 
+    int downCast(SimpleCollisionBox[] list);
+
     boolean isNull();
 
     boolean isFullBlock();

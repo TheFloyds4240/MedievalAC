@@ -190,17 +190,20 @@ public class BlockRayTrace {
                 data = RaycastData.getBlockHitbox(player, null, player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
             }
             if (data == NoCollisionBox.INSTANCE) return null;
-            List<SimpleCollisionBox> boxes = new ArrayList<>();
-            data.downCast(boxes);
+            SimpleCollisionBox[] boxes = new SimpleCollisionBox[15]; // 15 is the highest possible number of boxes; 1.19 cauldron
+            int size = data.downCast(boxes);
 
             double bestHitResult = Double.MAX_VALUE;
             double[] bestHitLoc = null;
             BlockFace bestFace = null;
 
-            // BEWARE OF https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
-            // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
-            if (block.getType() == StateTypes.BREWING_STAND && player.getClientVersion().equals(ClientVersion.V_1_8) && Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec)) {
-                boxes.add(new SimpleCollisionBox(0, 0, 0, 1, 1, 1, true));
+            if (Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec)) {
+                // BEWARE OF https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
+                // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
+                if (block.getType() == StateTypes.BREWING_STAND && player.getClientVersion().equals(ClientVersion.V_1_8)) {
+                    size++;
+                    boxes[size] = new SimpleCollisionBox(0, 0, 0, 1, 1, 1, true);
+                }
             }
 
             double[] currentEnd = new double[]{
@@ -209,8 +212,8 @@ public class BlockRayTrace {
                     startPos[2] + lookVec[2] * currentDistance
             };
 
-            for (SimpleCollisionBox box : boxes) {
-                Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(box, startPos, currentEnd);
+            for (int i = 0; i < size; i++) {
+                Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(boxes[i], startPos, currentEnd);
                 if (intercept.getFirst() == null) continue; // No intercept or wrong blockFace
 
                 double[] hitLoc = intercept.getFirst();
