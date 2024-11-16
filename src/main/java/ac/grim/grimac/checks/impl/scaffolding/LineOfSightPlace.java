@@ -17,11 +17,9 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
-import com.viaversion.viaversion.util.Triple;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @CheckData(name = "LineOfSightPlace")
@@ -37,7 +35,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     // Since this is used per-player we can avoid calling new[] by allocating it per-player in the check
     private final SimpleCollisionBox[] collisionBoxBuffer = new SimpleCollisionBox[15];
 
-    public final Set<Triple<Vector3i, WrappedBlockState, Byte>> blocksChangedList = ConcurrentHashMap.newKeySet();
+    public final ConcurrentHashMap<Vector3i, WrappedBlockState> blocksChangedList = new ConcurrentHashMap<>();
 
     public LineOfSightPlace(GrimPlayer player) {
         super(player);
@@ -47,12 +45,16 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     public void onBlockPlace(final BlockPlace place) {
         if (checkIfShouldSkip(place)) return;
 
-        if (flagBuffer > 0 && !didRayTraceHit(place)) {
+//        if (flagBuffer > 0 && !didRayTraceHit(place)) {
+//            ignorePost = true;
+//            // If the player hit and has flagged this check recently
+//            if (flagAndAlert("pre-flying: " + player.compensatedWorld.getWrappedBlockStateAt(place.getPlacedAgainstBlockLocation()).getType()) && shouldModifyPackets() && shouldCancel()) {
+//                place.resync();  // Deny the block placement.
+//            }
+//        }
+        // Only flag (which will only happen in post) if we miss pre
+        if (didRayTraceHit(place)) {
             ignorePost = true;
-            // If the player hit and has flagged this check recently
-            if (flagAndAlert("pre-flying: " + player.compensatedWorld.getWrappedBlockStateAt(place.getPlacedAgainstBlockLocation()).getType()) && shouldModifyPackets() && shouldCancel()) {
-                place.resync();  // Deny the block placement.
-            }
         }
     }
 
@@ -71,11 +73,13 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         boolean hit = didRayTraceHit(place);
         // This can false with rapidly moving yaw in 1.8+ clients
         if (!hit) {
-            flagBuffer = 1;
+//            flagBuffer = 1;
             flagAndAlert("post-flying: " + player.compensatedWorld.getWrappedBlockStateAt(place.getPlacedAgainstBlockLocation()).getType());
-        } else {
-            flagBuffer = Math.max(0, flagBuffer - 0.1);
         }
+//        else {
+//            flagBuffer = Math.max(0, flagBuffer - 0.1);
+//        }
+        blocksChangedList.clear();
     }
 
     private boolean checkIfShouldSkip(BlockPlace place) {
@@ -93,10 +97,11 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     public void handleBlockChange(Vector3i vector3i, WrappedBlockState state) {
         if (blocksChangedList.size() >= 60) return; // Don't let players freeze movement packets to grow this
         // Only do this for nearby blocks
-        if (new Vector3d(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector3d(player.x, player.y, player.z)) > 6) return;
+        if (new Vector3d(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector3d(player.x, player.y, player.z)) > 36) return;
         // Only do this if the state really had any world impact
-        if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
-        blocksChangedList.add(new Triple<>(vector3i, state, (byte) 2));
+        // this line always just returns the current world state in compensatedWorld
+//        if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
+        blocksChangedList.put(vector3i, state);
     }
 
     private boolean didRayTraceHit(BlockPlace place) {
@@ -191,7 +196,10 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     }
 
     private boolean didRayTraceHitTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
-        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, false);
+        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, null, false);
+         if (hitData == null || !hitData.success)
+            hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec,
+                expectedBlockFace, collisionBoxBuffer, player.checkManager.getBlockPlaceCheck(LineOfSightPlace.class).blocksChangedList, false);
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
         return hitData != null && hitData.success;
