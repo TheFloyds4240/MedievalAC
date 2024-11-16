@@ -3,6 +3,7 @@ package ac.grim.grimac.events.packets;
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.checks.impl.badpackets.BadPacketsX;
 import ac.grim.grimac.checks.impl.badpackets.BadPacketsZ;
+import ac.grim.grimac.checks.impl.inventory.InventoryB;
 import ac.grim.grimac.events.packets.patch.ResyncWorldUtil;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.*;
@@ -385,6 +386,8 @@ public class CheckManagerListener extends PacketListenerAbstract {
             final Vector3i digPosition = dig.getBlockPosition();
             WrappedBlockState block = player.compensatedWorld.getWrappedBlockStateAt(digPosition);
             final StateType type = block.getType();
+
+            player.checkManager.getPacketCheck(InventoryB.class).handle(event, dig);
 
             player.checkManager.getPacketCheck(BadPacketsX.class).handle(event, dig, type);
             player.checkManager.getPacketCheck(BadPacketsZ.class).handle(event, dig);

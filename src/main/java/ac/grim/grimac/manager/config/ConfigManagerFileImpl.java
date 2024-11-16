@@ -123,6 +123,9 @@ public class ConfigManagerFileImpl implements ConfigManager, BasicReloadable {
         if (configVersion < 9) {
             newOffsetHandlingAntiKB(config, configString);
         }
+        if (configVersion < 10) {
+            addInventoryPunishments();
+        }
     }
 
     private void removeLegacyTwoPointOne(File config) throws IOException {
@@ -165,6 +168,28 @@ public class ConfigManagerFileImpl implements ConfigManager, BasicReloadable {
                             "      - \"Autoclicker\"\n" +
                             "    commands:\n" +
                             "      - \"20:40 [alert]\"\n";
+                }
+
+                Files.write(config.toPath(), configString.getBytes());
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private void addInventoryPunishments() {
+        File config = new File(GrimAPI.INSTANCE.getPlugin().getDataFolder(), "punishments.yml");
+        String configString;
+        if (config.exists()) {
+            try {
+                configString = new String(Files.readAllBytes(config.toPath()));
+
+                // If it works, it isn't stupid.  Only replace it if it exactly matches the default config.
+                String reachSection = "  Reach:";
+                String inventorySection = "  Inventory:\n    remove-violations-after: 300\n    checks:\n      - \"Inventory\"\n    commands:\n      - \"10:10 [alert]\"\n      - \"20:20 [webhook]\"\n      - \"20:20 [proxy]\"\n";
+
+                int index = configString.indexOf(reachSection);
+                if (index != -1) {
+                    configString = configString.substring(0, index) + inventorySection + configString.substring(index);
                 }
 
                 Files.write(config.toPath(), configString.getBytes());
