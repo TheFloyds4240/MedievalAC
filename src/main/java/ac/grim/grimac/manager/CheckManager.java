@@ -284,9 +284,15 @@ public class CheckManager {
     }
 
     @SuppressWarnings("unchecked")
+    public <T extends BlockPlaceCheck> T getBlockPlaceCheck(Class<T> check) {
+        return (T) blockPlaceCheck.get(check);
+    }
+
+    @SuppressWarnings("unchecked")
     public <T extends PacketCheck> T getPrePredictionCheck(Class<T> check) {
         return (T) prePredictionChecks.get(check);
     }
+
 
     private PacketEntityReplication packetEntityReplication = null;
 

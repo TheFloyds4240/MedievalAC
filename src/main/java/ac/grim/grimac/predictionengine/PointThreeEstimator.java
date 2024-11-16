@@ -155,7 +155,7 @@ public class PointThreeEstimator {
         }
 
         player.checkManager.getPacketCheck(Reach.class).handleBlockChange(new Vector3i(x, y, z), state);
-        player.checkManager.getPacketCheck(LineOfSightPlace.class).handleBlockChange(new Vector3i(x, y, z), state);
+        player.checkManager.getBlockPlaceCheck(LineOfSightPlace.class).handleBlockChange(new Vector3i(x, y, z), state);
 
 
         if (pointThreeBox.isIntersected(new SimpleCollisionBox(x, y, z))) {

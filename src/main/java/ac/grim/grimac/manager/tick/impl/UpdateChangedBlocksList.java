@@ -15,7 +15,7 @@ public class UpdateChangedBlocksList implements Tickable {
     @Override
     public void tick() {
         for (GrimPlayer player : GrimAPI.INSTANCE.getPlayerDataManager().getEntries()) {
-            Set<Triple<Vector3i, WrappedBlockState, Byte>> blocksChangedList = player.checkManager.getPacketCheck(LineOfSightPlace.class).blocksChangedList;
+            Set<Triple<Vector3i, WrappedBlockState, Byte>> blocksChangedList = player.checkManager.getBlockPlaceCheck(LineOfSightPlace.class).blocksChangedList;
 
             // Create an iterator to iterate over the set
             Iterator<Triple<Vector3i, WrappedBlockState, Byte>> iterator = blocksChangedList.iterator();

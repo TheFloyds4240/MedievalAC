@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static ac.grim.grimac.utils.nmsutil.ReachUtilsPrimitives.distanceSquared;
-
 public class BlockRayTrace {
 
     // Copied from MCP...

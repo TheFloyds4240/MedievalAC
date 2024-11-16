@@ -24,7 +24,6 @@ import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.HitData;
 import ac.grim.grimac.utils.data.Pair;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
-import ac.grim.grimac.utils.data.packetentity.PacketEntitySelf;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import ac.grim.grimac.utils.data.packetentity.dragon.PacketEntityEnderDragonPart;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
