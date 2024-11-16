@@ -16,6 +16,8 @@
 package ac.grim.grimac.utils.data;
 
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
+import ac.grim.grimac.utils.collisions.datatypes.NoCollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
@@ -82,6 +84,33 @@ public class ReachInterpolationData {
         return new SimpleCollisionBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
+    public static CollisionBox getOverlapHitbox(CollisionBox b1, CollisionBox b2) {
+        if (b1 == NoCollisionBox.INSTANCE || b2 == NoCollisionBox.INSTANCE) {
+            return NoCollisionBox.INSTANCE;
+        } else if (!(b1 instanceof SimpleCollisionBox) || !(b2 instanceof SimpleCollisionBox)) {
+            throw new IllegalArgumentException("Both b1 and b2 must be SimpleCollisionBox instances");
+        }
+
+        SimpleCollisionBox box1 = (SimpleCollisionBox) b1;
+        SimpleCollisionBox box2 = (SimpleCollisionBox) b2;
+
+        // Calculate the potential overlap along each axis
+        double overlapMinX = Math.max(box1.minX, box2.minX);
+        double overlapMaxX = Math.min(box1.maxX, box2.maxX);
+        double overlapMinY = Math.max(box1.minY, box2.minY);
+        double overlapMaxY = Math.min(box1.maxY, box2.maxY);
+        double overlapMinZ = Math.max(box1.minZ, box2.minZ);
+        double overlapMaxZ = Math.min(box1.maxZ, box2.maxZ);
+
+        // Check if there's actual overlap along each axis
+        if (overlapMinX > overlapMaxX || overlapMinY > overlapMaxY || overlapMinZ > overlapMaxZ) {
+            return null; // No overlap, return null or an appropriate "empty" box representation
+        }
+
+        // Return the overlapping hitbox
+        return new SimpleCollisionBox(overlapMinX, overlapMinY, overlapMinZ, overlapMaxX, overlapMaxY, overlapMaxZ);
+    }
+
     // To avoid huge branching when bruteforcing interpolation -
     // we combine the collision boxes for the steps.
     //
@@ -115,6 +144,43 @@ public class ReachInterpolationData {
         }
 
         return minimumInterpLocation;
+    }
+
+    public CollisionBox getOverlapLocationCombined() {
+        int interpSteps = getInterpolationSteps();
+
+        double stepMinX = (targetLocation.minX - startingLocation.minX) / (double) interpSteps;
+        double stepMaxX = (targetLocation.maxX - startingLocation.maxX) / (double) interpSteps;
+        double stepMinY = (targetLocation.minY - startingLocation.minY) / (double) interpSteps;
+        double stepMaxY = (targetLocation.maxY - startingLocation.maxY) / (double) interpSteps;
+        double stepMinZ = (targetLocation.minZ - startingLocation.minZ) / (double) interpSteps;
+        double stepMaxZ = (targetLocation.maxZ - startingLocation.maxZ) / (double) interpSteps;
+
+        CollisionBox overlapLocation = new SimpleCollisionBox(
+                startingLocation.minX + (interpolationStepsLowBound * stepMinX),
+                startingLocation.minY + (interpolationStepsLowBound * stepMinY),
+                startingLocation.minZ + (interpolationStepsLowBound * stepMinZ),
+                startingLocation.maxX + (interpolationStepsLowBound * stepMaxX),
+                startingLocation.maxY + (interpolationStepsLowBound * stepMaxY),
+                startingLocation.maxZ + (interpolationStepsLowBound * stepMaxZ));
+
+        for (int step = interpolationStepsLowBound + 1; step <= interpolationStepsHighBound; step++) {
+            overlapLocation = getOverlapHitbox(overlapLocation, new SimpleCollisionBox(
+                    startingLocation.minX + (step * stepMinX),
+                    startingLocation.minY + (step * stepMinY),
+                    startingLocation.minZ + (step * stepMinZ),
+                    startingLocation.maxX + (step * stepMaxX),
+                    startingLocation.maxY + (step * stepMaxY),
+                    startingLocation.maxZ + (step * stepMaxZ)));
+
+            if (overlapLocation == null) {
+                // No overlap found, you might want to handle this case specifically
+                // For example, return null or a default box
+                return NoCollisionBox.INSTANCE;
+            }
+        }
+
+        return overlapLocation;
     }
 
     public void updatePossibleStartingLocation(SimpleCollisionBox possibleLocationCombined) {

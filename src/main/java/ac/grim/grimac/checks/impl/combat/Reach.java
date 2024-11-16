@@ -264,6 +264,7 @@ public class Reach extends Check implements PacketCheck {
             // - You may have to adjust the epsilon if you increase the reach threshold, especially by a lot
             // ...but there is literally no reason you would ever want to increase it, only decrease, so that doesn't matter.
            if (hitResult != null && (minDistance * minDistance) - hitResult.getFirst() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
+               System.out.println("Dist Diff: " + Math.sqrt((minDistance * minDistance) - hitResult.getFirst()));
                minDistance = Double.MIN_VALUE;
                foundHitData = hitResult.getSecond();
            }

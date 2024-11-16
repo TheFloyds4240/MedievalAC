@@ -293,14 +293,12 @@ public class BlockRayTrace {
 
         // Check entities
         for (PacketEntity entity : player.compensatedEntities.entityMap.values()) {
-            SimpleCollisionBox box = entity.getPossibleCollisionBoxes();
+            SimpleCollisionBox box = null;
             // 1.7 and 1.8 players get a bit of extra hitbox (this is why you should use 1.8 on cross version servers)
             // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
-            if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
-                box.expand(0.1f);
-            }
 
             if (entity.equals(targetEntity)) {
+                box = entity.getPossibleCollisionBoxes();
                 box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
                 // This is better than adding to the reach, as 0.03 can cause a player to miss their target
                 // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
@@ -308,11 +306,27 @@ public class BlockRayTrace {
                 // Just give the uncertainty on 1.9+ clients as we have no way of knowing whether they had 0.03 movement
                 if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
                     box.expand(player.getMovementThreshold());
+                if (ReachUtils.isVecInside(box, eyePos)) {
+                    return new EntityHitData(entity, eyePos);
+                }
             } else {
+                CollisionBox b = entity.getMinimumPossibleCollisionBoxes();
+                if (b instanceof NoCollisionBox) {
+                    continue;
+                } else {
+                    box = (SimpleCollisionBox) b;
+                }
                 // todo, shrink by reachThreshold as well for non-target entities?
                 if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
                     box.expand(-player.getMovementThreshold());
+                if (ReachUtils.isVecInside(box, eyePos)) {
+                    continue;
+                }
             }
+            if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+                box.expand(0.1f);
+            }
+
 
             Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
 
