@@ -432,7 +432,18 @@ public class CompensatedEntities {
             Integer attachedEntityID = (Integer) hookWatchableObject.getValue();
             ((PacketEntityHook) entity).attached = attachedEntityID - 1; // the server adds 1 to the ID
         } else if (entity instanceof PacketEntityArmorStand) {
-            EntityData armorStandByte = WatchableIndexUtil.getIndex(watchableObjects, 15);
+            int index;
+            if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_9_4)) {
+                index = 10;
+            } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_12_2)) {
+                index = 11;
+            } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_16_5)) {
+                index = 14;
+            } else {
+                index = 15;
+            }
+
+            EntityData armorStandByte = WatchableIndexUtil.getIndex(watchableObjects, index);
             if (armorStandByte != null) {
                 byte info = (Byte) armorStandByte.getValue();
 
