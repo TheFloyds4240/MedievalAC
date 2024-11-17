@@ -436,6 +436,7 @@ public class CompensatedEntities {
             if (armorStandByte != null) {
                 byte info = (Byte) armorStandByte.getValue();
 
+                entity.isBaby = (info & 0x01) != 0; // technically this is IsSmall which is a different tag, but it has the same effect for us
                 ((PacketEntityArmorStand) entity).isMarker = (info & 0x10) != 0;
             }
         }
