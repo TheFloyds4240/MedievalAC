@@ -89,7 +89,8 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                     if (damage >= 1 || damage <= 0 && player.gamemode == GameMode.CREATIVE) {
                         return;
                     }
-                case CANCELLED_DIGGING, FINISHED_DIGGING:
+                case CANCELLED_DIGGING:
+                case FINISHED_DIGGING:
                     if (exemptPlacingWhileDigging || player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
                         return;
                     }

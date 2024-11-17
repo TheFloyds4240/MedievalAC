@@ -59,21 +59,47 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
 
         if (packetType == PacketType.Play.Client.PLAYER_DIGGING) {
             switch (new WrapperPlayClientPlayerDigging(event).getAction()) {
-                case SWAP_ITEM_WITH_OFFHAND -> swapping = true;
-                case DROP_ITEM, DROP_ITEM_STACK -> dropping = true;
-                case RELEASE_USE_ITEM -> releasing = true;
-                case FINISHED_DIGGING, CANCELLED_DIGGING, START_DIGGING -> digging = true;
+                case SWAP_ITEM_WITH_OFFHAND:
+                    swapping = true;
+                    break;
+                case DROP_ITEM:
+                case DROP_ITEM_STACK:
+                    dropping = true;
+                    break;
+                case RELEASE_USE_ITEM:
+                    releasing = true;
+                    break;
+                case FINISHED_DIGGING:
+                case CANCELLED_DIGGING:
+                case START_DIGGING:
+                    digging = true;
+                    break;
             }
         }
 
         if (packetType == PacketType.Play.Client.ENTITY_ACTION) {
             switch (new WrapperPlayClientEntityAction(event).getAction()) {
-                case START_SPRINTING, STOP_SPRINTING -> sprinting = true;
-                case STOP_SNEAKING, START_SNEAKING -> sneaking = true;
-                case LEAVE_BED -> leavingBed = true;
-                case START_FLYING_WITH_ELYTRA -> startingToGlide = true;
-                case OPEN_HORSE_INVENTORY -> openingInventory = true;
-                case START_JUMPING_WITH_HORSE, STOP_JUMPING_WITH_HORSE -> jumpingWithMount = true;
+                case START_SPRINTING:
+                case STOP_SPRINTING:
+                    sprinting = true;
+                    break;
+                case STOP_SNEAKING:
+                case START_SNEAKING:
+                    sneaking = true;
+                    break;
+                case LEAVE_BED:
+                    leavingBed = true;
+                    break;
+                case START_FLYING_WITH_ELYTRA:
+                    startingToGlide = true;
+                    break;
+                case OPEN_HORSE_INVENTORY:
+                    openingInventory = true;
+                    break;
+                case START_JUMPING_WITH_HORSE:
+                case STOP_JUMPING_WITH_HORSE:
+                    jumpingWithMount = true;
+                    break;
             }
         }
 
@@ -97,8 +123,13 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             clickingInInventory = true;
 
             switch (new WrapperPlayClientClickWindow(event).getWindowClickType()) {
-                case QUICK_MOVE -> quickMoveClicking = true;
-                case PICKUP, PICKUP_ALL -> pickUpClicking = true;
+                case QUICK_MOVE:
+                    quickMoveClicking = true;
+                    break;
+                case PICKUP:
+                case PICKUP_ALL:
+                    pickUpClicking = true;
+                    break;
             }
         }
 

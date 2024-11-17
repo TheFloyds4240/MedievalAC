@@ -1,8 +1,6 @@
 package ac.grim.grimac.checks.type;
 
-import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.player.GrimPlayer;
-import ac.grim.grimac.utils.data.VectorData;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;

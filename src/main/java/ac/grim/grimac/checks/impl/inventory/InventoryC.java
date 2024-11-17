@@ -1,15 +1,9 @@
 package ac.grim.grimac.checks.impl.inventory;
 
-import ac.grim.grimac.GrimAPI;
-import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.InventoryCheck;
-import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.BlockPlace;
-import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 
 @CheckData(name = "InventoryC", setback = 3)
 public class InventoryC extends InventoryCheck {

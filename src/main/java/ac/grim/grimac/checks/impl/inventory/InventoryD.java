@@ -1,19 +1,12 @@
 package ac.grim.grimac.checks.impl.inventory;
 
-import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.InventoryCheck;
-import ac.grim.grimac.checks.type.PostPredictionCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import ac.grim.grimac.utils.data.VectorData;
 import ac.grim.grimac.utils.data.VectorData.MoveVectorData;
 import ac.grim.grimac.utils.data.VehicleData;
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCloseWindow;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
 import java.util.StringJoiner;
 
 @CheckData(name = "InventoryD", setback = 1, decay = 0.25)

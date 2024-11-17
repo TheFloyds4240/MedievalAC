@@ -72,7 +72,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
             ignorePost = false;
             return;
         }
-
+        blocksChangedList.clear();
         // Ray trace to try and hit the target block.
         boolean hit = didRayTraceHit(place);
         // This can false with rapidly moving yaw in 1.8+ clients
@@ -83,7 +83,6 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         else {
             flagBuffer = Math.max(0, flagBuffer - 0.1);
         }
-        blocksChangedList.clear();
     }
 
     private boolean checkIfShouldSkip(BlockPlace place) {
