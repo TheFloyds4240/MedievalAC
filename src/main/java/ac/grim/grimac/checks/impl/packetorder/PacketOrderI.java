@@ -77,10 +77,6 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
                             if (flagAndAlert("release")) {
                                 setback = true;
-                                if (shouldModifyPackets()) {
-                                    event.setCancelled(true);
-                                    player.onPacketCancel();
-                                }
                             }
                         } else {
                             flags.add("release");
