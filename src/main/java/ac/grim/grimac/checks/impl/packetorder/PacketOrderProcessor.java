@@ -35,6 +35,9 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
     private boolean closingInventory;
     private boolean quickMoveClicking;
     private boolean pickUpClicking;
+    private boolean leavingBed;
+    private boolean startingToGlide;
+    private boolean jumpingWithMount;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -67,6 +70,10 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             switch (new WrapperPlayClientEntityAction(event).getAction()) {
                 case START_SPRINTING, STOP_SPRINTING -> sprinting = true;
                 case STOP_SNEAKING, START_SNEAKING -> sneaking = true;
+                case LEAVE_BED -> leavingBed = true;
+                case START_FLYING_WITH_ELYTRA -> startingToGlide = true;
+                case OPEN_HORSE_INVENTORY -> openingInventory = true;
+                case START_JUMPING_WITH_HORSE, STOP_JUMPING_WITH_HORSE -> jumpingWithMount = true;
             }
         }
 
@@ -128,6 +135,9 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
         closingInventory = false;
         quickMoveClicking = false;
         pickUpClicking = false;
+        leavingBed = false;
+        startingToGlide = false;
+        jumpingWithMount = false;
     }
 
     @Contract(pure = true)
