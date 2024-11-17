@@ -22,7 +22,18 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
-            if (sent || player.packetOrderProcessor.isAttacking() || player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isOpeningInventory() || player.packetOrderProcessor.isSwapping() || player.packetOrderProcessor.isDropping() || player.packetOrderProcessor.isReleasing()) {
+            if (player.packetOrderProcessor.isAttacking()
+                    || player.packetOrderProcessor.isRightClicking()
+                    || player.packetOrderProcessor.isOpeningInventory()
+                    || player.packetOrderProcessor.isDropping()
+                    || player.packetOrderProcessor.isSwapping()
+                    || player.packetOrderProcessor.isReleasing()
+                    || player.packetOrderProcessor.isSneaking()
+                    || player.packetOrderProcessor.isSprinting()
+                    || player.packetOrderProcessor.isLeavingBed()
+                    || player.packetOrderProcessor.isStartingToGlide()
+                    || player.packetOrderProcessor.isJumpingWithMount()
+            ) {
                 if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8) || flagAndAlert()) {
                     invalid++;
                 }
