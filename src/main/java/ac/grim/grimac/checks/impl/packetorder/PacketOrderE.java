@@ -17,24 +17,26 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     }
 
     private int invalid = 0;
-    private boolean sent = false;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
-            if (sent || player.packetOrderProcessor.isAttacking() || player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isOpeningInventory() || player.packetOrderProcessor.isSwapping() || player.packetOrderProcessor.isDropping() || player.packetOrderProcessor.isReleasing()) {
+            if (player.packetOrderProcessor.isAttacking()
+                    || player.packetOrderProcessor.isRightClicking()
+                    || player.packetOrderProcessor.isOpeningInventory()
+                    || player.packetOrderProcessor.isDropping()
+                    || player.packetOrderProcessor.isSwapping()
+                    || player.packetOrderProcessor.isReleasing()
+                    || player.packetOrderProcessor.isSneaking()
+                    || player.packetOrderProcessor.isSprinting()
+                    || player.packetOrderProcessor.isLeavingBed()
+                    || player.packetOrderProcessor.isStartingToGlide()
+                    || player.packetOrderProcessor.isJumpingWithMount()
+            ) {
                 if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8) || flagAndAlert()) {
                     invalid++;
                 }
             }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
-            sent = true;
-        }
-
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            sent = false;
         }
     }
 
@@ -58,6 +60,5 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         }
 
         invalid = 0;
-        sent = false;
     }
 }
