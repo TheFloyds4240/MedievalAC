@@ -16,7 +16,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         super(player);
     }
 
-    private int invalid = 0;
+    private int invalid;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
