@@ -24,7 +24,6 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
             if (player.packetOrderProcessor.isAttacking()
                     || player.packetOrderProcessor.isRightClicking()
                     || player.packetOrderProcessor.isOpeningInventory()
-                    || player.packetOrderProcessor.isSwapping()
                     || player.packetOrderProcessor.isReleasing()
                     || player.packetOrderProcessor.isSneaking()
                     || player.packetOrderProcessor.isSprinting()
