@@ -7,13 +7,10 @@ import java.util.UUID;
 
 public class PacketEntityArmorStand extends PacketEntity {
 
-    public static final int MARKER_FLAG = 16;
-
-    boolean isMarker;
+    public boolean isMarker = false;
 
     public PacketEntityArmorStand(GrimPlayer player, UUID uuid, EntityType type, double x, double y, double z, int extraData) {
         super(player, uuid, type, x, y, z);
-        isMarker = (extraData & MARKER_FLAG) != 0;
     }
 
     @Override

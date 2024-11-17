@@ -169,26 +169,24 @@ public class CompensatedEntities {
             packetEntity = new PacketEntityHorse(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), xRot);
         } else if (entityType == EntityTypes.SLIME || entityType == EntityTypes.MAGMA_CUBE || entityType == EntityTypes.PHANTOM) {
             packetEntity = new PacketEntitySizeable(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.PIG.equals(entityType)) {
+            packetEntity = new PacketEntityRideable(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.SHULKER.equals(entityType)) {
+            packetEntity = new PacketEntityShulker(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.STRIDER.equals(entityType)) {
+            packetEntity = new PacketEntityStrider(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.BOAT) || EntityTypes.CHICKEN.equals(entityType)) {
+            packetEntity = new PacketEntityTrackXRot(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), xRot);
+        } else if (EntityTypes.FISHING_BOBBER.equals(entityType)) {
+            packetEntity = new PacketEntityHook(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
+        } else if (EntityTypes.ENDER_DRAGON.equals(entityType)) {
+            packetEntity = new PacketEntityEnderDragon(player, uuid, entityID, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_ARROW)) {
+            packetEntity = new PacketEntityArrow(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.ARMOR_STAND.equals(entityType)) {
+            packetEntity = new PacketEntityArmorStand(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
         } else {
-            if (EntityTypes.PIG.equals(entityType)) {
-                packetEntity = new PacketEntityRideable(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
-            } else if (EntityTypes.SHULKER.equals(entityType)) {
-                packetEntity = new PacketEntityShulker(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
-            } else if (EntityTypes.STRIDER.equals(entityType)) {
-                packetEntity = new PacketEntityStrider(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
-            } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.BOAT) || EntityTypes.CHICKEN.equals(entityType)) {
-                packetEntity = new PacketEntityTrackXRot(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), xRot);
-            } else if (EntityTypes.FISHING_BOBBER.equals(entityType)) {
-                packetEntity = new PacketEntityHook(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
-            } else if (EntityTypes.ENDER_DRAGON.equals(entityType)) {
-                packetEntity = new PacketEntityEnderDragon(player, uuid, entityID, position.getX(), position.getY(), position.getZ());
-            } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_ARROW)) {
-                packetEntity = new PacketEntityArrow(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
-            } else if (EntityTypes.ARMOR_STAND.equals(entityType)) {
-                packetEntity = new PacketEntityArmorStand(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
-            } else {
-                packetEntity = new PacketEntity(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
-            }
+            packetEntity = new PacketEntity(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
         }
 
         entityMap.put(entityID, packetEntity);
@@ -433,6 +431,13 @@ public class CompensatedEntities {
 
             Integer attachedEntityID = (Integer) hookWatchableObject.getValue();
             ((PacketEntityHook) entity).attached = attachedEntityID - 1; // the server adds 1 to the ID
+        } else if (entity instanceof PacketEntityArmorStand) {
+            EntityData armorStandByte = WatchableIndexUtil.getIndex(watchableObjects, 15);
+            if (armorStandByte != null) {
+                byte info = (Byte) armorStandByte.getValue();
+
+                ((PacketEntityArmorStand) entity).isMarker = (info & 0x10) != 0;
+            }
         }
 
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9_4)) {
