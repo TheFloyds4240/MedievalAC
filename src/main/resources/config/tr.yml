@@ -182,6 +182,10 @@ TimerVehicle:
 EntityControl:
   setbackvl: 25
 
+PacketOrderI:
+  # enable if players are getting flagged for using 1.7 animations mods
+  exempt-placing-while-digging: false
+
 Reach:
   # Hitbox'ları ne kadar genişletmeliyiz? 0.0005, 3.0005+ menzili tespit etmelidir
   #

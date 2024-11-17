@@ -171,6 +171,10 @@ EntityControl:
   # Livello di violazione per il controllo entità
   setbackvl: 25
 
+PacketOrderI:
+  # enable if players are getting flagged for using 1.7 animations mods
+  exempt-placing-while-digging: false
+
 Reach:
   # Limite per rilevare un attacco oltre la distanza massima
   threshold: 0.0005
