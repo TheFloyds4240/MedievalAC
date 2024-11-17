@@ -17,7 +17,6 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     }
 
     private int invalid = 0;
-    private boolean sent = false;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -38,14 +37,6 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
                     invalid++;
                 }
             }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
-            sent = true;
-        }
-
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
-            sent = false;
         }
     }
 
@@ -69,6 +60,5 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         }
 
         invalid = 0;
-        sent = false;
     }
 }
