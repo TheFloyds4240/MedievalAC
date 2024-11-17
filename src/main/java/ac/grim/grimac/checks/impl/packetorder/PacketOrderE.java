@@ -8,7 +8,6 @@ import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderE", experimental = true)
 public class PacketOrderE extends Check implements PostPredictionCheck {
@@ -17,6 +16,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     }
 
     private int invalid;
+    private boolean setback;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -35,6 +35,10 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
             ) {
                 if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8) || flagAndAlert()) {
                     invalid++;
+
+                    if (player.packetOrderProcessor.isUsing()) {
+                        setback = true;
+                    }
                 }
             }
         }
@@ -43,17 +47,17 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
-            if (invalid > 0) {
+            if (setback) {
+                setback = false;
                 setbackIfAboveSetbackVL();
             }
-
-            invalid = 0;
             return;
         }
 
         if (!player.skippedTickInActualMovement && predictionComplete.isChecked()) {
             for (; invalid >= 1; invalid--) {
-                if (flagAndAlert()) {
+                if (flagAndAlert() && setback) {
+                    setback = false;
                     setbackIfAboveSetbackVL();
                 }
             }
