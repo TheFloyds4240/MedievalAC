@@ -189,7 +189,6 @@ public class BlockRayTrace {
             if (blockOverrides != null) {
                 WrappedBlockState blockState = blockOverrides.get(vector3i);
                 if (blockState != null) {
-                        System.out.println("Old: " + blockState + "New: " + block);
                         block = blockState;
                 }
             }
