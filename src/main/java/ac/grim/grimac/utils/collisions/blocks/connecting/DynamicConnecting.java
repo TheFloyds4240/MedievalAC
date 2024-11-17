@@ -32,11 +32,18 @@ public class DynamicConnecting {
         ComplexCollisionBox voxelshape5 = new ComplexCollisionBox(voxelshape1, voxelshape4);
         ComplexCollisionBox voxelshape6 = new ComplexCollisionBox(voxelshape2, voxelshape3);
 
-        CollisionBox[] avoxelshape = new CollisionBox[]{NoCollisionBox.INSTANCE, voxelshape2, voxelshape3, voxelshape6, voxelshape1, new ComplexCollisionBox(voxelshape2, voxelshape1), new ComplexCollisionBox(voxelshape3, voxelshape1), new ComplexCollisionBox(voxelshape6, voxelshape1), voxelshape4, new ComplexCollisionBox(voxelshape2, voxelshape4), new ComplexCollisionBox(voxelshape3, voxelshape4), new ComplexCollisionBox(voxelshape6, voxelshape4), voxelshape5, new ComplexCollisionBox(voxelshape2, voxelshape5), new ComplexCollisionBox(voxelshape3, voxelshape5), new ComplexCollisionBox(voxelshape6, voxelshape5)};
+        CollisionBox[] avoxelshape = new CollisionBox[]{
+                NoCollisionBox.INSTANCE, voxelshape2, voxelshape3, voxelshape6, voxelshape1,
+                new ComplexCollisionBox(voxelshape2, voxelshape1), new ComplexCollisionBox(voxelshape3, voxelshape1),
+                new ComplexCollisionBox(voxelshape2, voxelshape3, voxelshape1), voxelshape4,
+                new ComplexCollisionBox(voxelshape2, voxelshape4), new ComplexCollisionBox(voxelshape3, voxelshape4),
+                new ComplexCollisionBox(voxelshape2, voxelshape3, voxelshape4), voxelshape5,
+                new ComplexCollisionBox(voxelshape2, voxelshape1, voxelshape4), new ComplexCollisionBox(voxelshape3, voxelshape1, voxelshape4),
+                new ComplexCollisionBox(voxelshape1, voxelshape2, voxelshape3, voxelshape4)};
 
         if (includeCenter) {
             for (int i = 0; i < 16; ++i) {
-                avoxelshape[i] = new ComplexCollisionBox(up, avoxelshape[i]);
+                avoxelshape[i] = avoxelshape[i].union(up);
             }
         }
 

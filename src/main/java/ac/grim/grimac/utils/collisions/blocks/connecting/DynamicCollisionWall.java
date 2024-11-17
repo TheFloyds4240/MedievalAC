@@ -143,9 +143,7 @@ public class DynamicCollisionWall extends DynamicConnecting implements Collision
         if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13)) {
             // Proper and faster way would be to compute all this beforehand
             if (up) {
-                ComplexCollisionBox box = new ComplexCollisionBox(COLLISION_BOXES[getAABBIndex(north, east, south, west)].copy());
-                box.add(new HexCollisionBox(4, 0, 4, 12, 24, 12));
-                return box;
+                return COLLISION_BOXES[getAABBIndex(north, east, south, west)].copy().union(new HexCollisionBox(4, 0, 4, 12, 24, 12));
             }
 
             return COLLISION_BOXES[getAABBIndex(north, east, south, west)].copy();

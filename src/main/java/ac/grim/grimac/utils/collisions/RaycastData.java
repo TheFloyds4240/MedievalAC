@@ -18,7 +18,7 @@ import java.util.*;
 public enum RaycastData {
 
     HOPPER((player, item, version, data, x, y, z) -> {
-        CollisionBox insideShape = new HexCollisionBox(2.0, 11.0, 2.0, 14.0, 16.0, 14.0);
+        HexCollisionBox insideShape = new HexCollisionBox(2.0, 11.0, 2.0, 14.0, 16.0, 14.0);
         switch (data.getFacing()) {
             case NORTH:
                 new ComplexCollisionBox(insideShape, new HexCollisionBox(6.0, 8.0, 0.0, 10.0, 10.0, 4.0));

@@ -6,13 +6,13 @@ import java.util.List;
 
 public class ComplexCollisionBox implements CollisionBox {
 
-    private final List<CollisionBox> boxes = new ArrayList<>();
+    private final List<SimpleCollisionBox> boxes = new ArrayList<>();
 
-    public ComplexCollisionBox(CollisionBox... boxes) {
+    public ComplexCollisionBox(SimpleCollisionBox... boxes) {
         Collections.addAll(this.boxes, boxes);
     }
 
-    public boolean add(CollisionBox collisionBox) {
+    public boolean add(SimpleCollisionBox collisionBox) {
         return boxes.add(collisionBox);
     }
 
@@ -42,7 +42,7 @@ public class ComplexCollisionBox implements CollisionBox {
     @Override
     public CollisionBox copy() {
         ComplexCollisionBox cc = new ComplexCollisionBox();
-        for (CollisionBox b : boxes)
+        for (SimpleCollisionBox b : boxes)
             cc.boxes.add(b.copy());
         return cc;
     }
@@ -64,7 +64,7 @@ public class ComplexCollisionBox implements CollisionBox {
     public int downCast(SimpleCollisionBox[] list) {
         final int size = boxes.size();
         for (int i = 0; i < size; i++) {
-            list[i] = (SimpleCollisionBox) boxes.get(i);
+            list[i] = boxes.get(i);
         }
         return size;
     }
