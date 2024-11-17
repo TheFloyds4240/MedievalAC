@@ -31,7 +31,7 @@ public class DynamicChorusPlant implements CollisionFactory {
         float f = 0.5F - (float) 0.3125;
         float f1 = 0.5F + (float) 0.3125;
         SimpleCollisionBox baseShape = new SimpleCollisionBox(f, f, f, f1, f1, f1, false);
-        CollisionBox[] avoxelshape = new CollisionBox[directions.length];
+        SimpleCollisionBox[] avoxelshape = new SimpleCollisionBox[directions.length];
 
         for (int i = 0; i < directions.length; ++i) {
             BlockFace direction = directions[i];
