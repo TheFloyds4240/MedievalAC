@@ -12,21 +12,29 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+import java.util.ArrayDeque;
+
 @CheckData(name = "PacketOrderL", experimental = true)
 public class PacketOrderL extends Check implements PostPredictionCheck {
     public PacketOrderL(final GrimPlayer player) {
         super(player);
     }
 
-    private int invalid;
+    private final ArrayDeque<String> flags = new ArrayDeque<>();
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
             if (new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT) {
-                if (player.packetOrderProcessor.isDropping() && flagAndAlert("inventory") && shouldModifyPackets()) {
-                    event.setCancelled(true);
-                    player.onPacketCancel();
+                if (player.packetOrderProcessor.isDropping()) {
+                    if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                        if (flagAndAlert("inventory") && shouldModifyPackets()) {
+                            event.setCancelled(true);
+                            player.onPacketCancel();
+                        }
+                    } else {
+                        flags.add("inventory");
+                    }
                 }
             }
         }
@@ -34,7 +42,7 @@ public class PacketOrderL extends Check implements PostPredictionCheck {
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             if (new WrapperPlayClientPlayerDigging(event).getAction() == DiggingAction.SWAP_ITEM_WITH_OFFHAND) {
                 if (player.packetOrderProcessor.isDropping()) {
-                    invalid++;
+                    flags.add("swap");
                 }
             }
         }
@@ -46,11 +54,11 @@ public class PacketOrderL extends Check implements PostPredictionCheck {
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) return;
 
         if (!player.skippedTickInActualMovement && predictionComplete.isChecked()) {
-            for (; invalid >= 1; invalid--) {
-                flagAndAlert("swap");
+            for (String verbose : flags) {
+                flagAndAlert(verbose);
             }
         }
 
-        invalid = 0;
+        flags.clear();
     }
 }
