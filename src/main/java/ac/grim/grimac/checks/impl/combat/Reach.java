@@ -39,16 +39,16 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 // You may not copy the check unless you are licensed under GPL
@@ -56,7 +56,7 @@ import java.util.Set;
 public class Reach extends Check implements PacketCheck {
     // Only one flag per reach attack, per entity, per tick.
     // We store position because lastX isn't reliable on teleports.
-    private final Map<Integer, Vector3d> playerAttackQueue = new HashMap<>();
+    private final Int2ObjectMap<Vector3d> playerAttackQueue = new Int2ObjectOpenHashMap<>();
     // Used to prevent falses in the wall hit check
     private final Set<Vector3i> blocksChangedThisTick = new HashSet<>();
 
@@ -164,8 +164,8 @@ public class Reach extends Check implements PacketCheck {
     }
 
     private void tickBetterReachCheckWithAngle(boolean isFlying) {
-        for (Map.Entry<Integer, Vector3d> attack : playerAttackQueue.entrySet()) {
-            PacketEntity reachEntity = player.compensatedEntities.entityMap.get(attack.getKey().intValue());
+        for (Int2ObjectMap.Entry<Vector3d> attack : playerAttackQueue.int2ObjectEntrySet()) {
+            PacketEntity reachEntity = player.compensatedEntities.entityMap.get(attack.getIntKey());
             if (reachEntity != null) {
                 String result = checkReach(reachEntity, attack.getValue(), false);
                 if (result != null) {
