@@ -48,8 +48,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class CheckManager {
     private static boolean inited;
+    private static final AtomicBoolean initedAtomic = new AtomicBoolean(false);
 
     ClassToInstanceMap<PacketCheck> packetChecks;
     ClassToInstanceMap<PositionCheck> positionCheck;
@@ -364,7 +367,12 @@ public class CheckManager {
     }
 
     private void init() {
+        // Fast non-thread safe check
         if (inited) return;
+        // Slow thread safe check
+        if (!initedAtomic.compareAndSet(false, true)) return;
+        inited = true;
+
         for (AbstractCheck check : allChecks.values()) {
             if (check.getCheckName() != null) {
                 String permissionName = "grim.exempt." + check.getCheckName().toLowerCase();
@@ -377,7 +385,5 @@ public class CheckManager {
                 }
             }
         }
-
-        inited = true;
     }
 }
