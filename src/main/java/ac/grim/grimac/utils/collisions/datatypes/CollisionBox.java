@@ -15,8 +15,6 @@ public interface CollisionBox {
 
     CollisionBox offset(double x, double y, double z);
 
-    void downCast(List<SimpleCollisionBox> list);
-
     int downCast(SimpleCollisionBox[] list);
 
     boolean isNull();

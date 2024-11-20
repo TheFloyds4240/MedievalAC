@@ -264,11 +264,6 @@ public class SimpleCollisionBox implements CollisionBox {
     }
 
     @Override
-    public void downCast(List<SimpleCollisionBox> list) {
-        list.add(this);
-    }
-
-    @Override
     public int downCast(SimpleCollisionBox[] list) {
         list[0] = this;
         return 1;

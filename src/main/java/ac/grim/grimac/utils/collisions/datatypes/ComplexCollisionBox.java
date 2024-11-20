@@ -66,11 +66,6 @@ public class ComplexCollisionBox implements CollisionBox {
     }
 
     @Override
-    public void downCast(List<SimpleCollisionBox> list) {
-        list.addAll(Arrays.asList(boxes).subList(0, maxLength));
-    }
-
-    @Override
     public int downCast(SimpleCollisionBox[] list) {
         System.arraycopy(boxes, 0, list, 0, maxLength);
         return maxLength;
