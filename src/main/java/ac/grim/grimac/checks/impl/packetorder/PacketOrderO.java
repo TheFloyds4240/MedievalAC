@@ -12,9 +12,9 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity.InteractAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
-@CheckData(name = "PacketOrderP", experimental = true)
-public class PacketOrderP extends Check implements PacketCheck {
-    public PacketOrderP(final GrimPlayer player) {
+@CheckData(name = "PacketOrderO", experimental = true)
+public class PacketOrderO extends Check implements PacketCheck {
+    public PacketOrderO(final GrimPlayer player) {
         super(player);
     }
 
