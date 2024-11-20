@@ -15,6 +15,8 @@ public interface CollisionBox {
 
     CollisionBox offset(double x, double y, double z);
 
+    void downCast(List<SimpleCollisionBox> list);
+
     /**
      * @param list - A list that will contain all of the SimpleCollisionBoxes representing the CollisionBox.
      * @return - int representing the size of elements in the array that belong to this downcast.
