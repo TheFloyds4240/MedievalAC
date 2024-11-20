@@ -73,11 +73,17 @@ public enum CollisionData {
 
     BREWING_STAND((player, version, block, x, y, z) -> {
         int base = 0;
+        int maxIndex = 3;
 
-        if (version.isNewerThanOrEquals(ClientVersion.V_1_13))
+        if (version.isNewerThanOrEquals(ClientVersion.V_1_13)) {
+            maxIndex = 2;
             base = 1;
+        }
 
-        return new ComplexCollisionBox(
+        // maxIndex is 3 instead of 2 for legacy clients because for 1.8 players there is a very rare bug
+        // That we handle later in the code requiring us to add a box https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
+        // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
+        return new ComplexCollisionBox(maxIndex,
                 new HexCollisionBox(base, 0, base, 16 - base, 2, 16 - base),
                 new SimpleCollisionBox(0.4375, 0.0, 0.4375, 0.5625, 0.875, 0.5625, false));
 
