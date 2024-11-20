@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleCollisionBox implements CollisionBox {
@@ -267,6 +266,12 @@ public class SimpleCollisionBox implements CollisionBox {
     @Override
     public void downCast(List<SimpleCollisionBox> list) {
         list.add(this);
+    }
+
+    @Override
+    public int downCast(SimpleCollisionBox[] list) {
+        list[0] = this;
+        return 0;
     }
 
     @Override
