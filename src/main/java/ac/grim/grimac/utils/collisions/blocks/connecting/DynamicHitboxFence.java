@@ -27,16 +27,16 @@ public class DynamicHitboxFence extends DynamicConnecting implements HitBoxFacto
     static {
         for (int i = 0; i < MODERN_HITBOXES.length; i++) {
             CollisionBox collisionBox = MODERN_HITBOXES[i];
-            List<SimpleCollisionBox> boxes = new ArrayList<>();
-            collisionBox.downCast(boxes);
+            SimpleCollisionBox[] boxes = new SimpleCollisionBox[ComplexCollisionBox.DEFAULT_MAX_COLLISION_BOX_SIZE];
+            int size = collisionBox.downCast(boxes);
 
-            for (SimpleCollisionBox box : boxes) {
-                if (box.maxY > 1) {
-                    box.maxY = 1;
+            for (int j = 0; j < size; j++) {
+                if (boxes[j].maxY > 1) {
+                    boxes[j].maxY = 1;
                 }
             }
 
-            MODERN_HITBOXES[i] = new ComplexCollisionBox(boxes.toArray(new SimpleCollisionBox[0]));
+            MODERN_HITBOXES[i] = new ComplexCollisionBox(boxes);
         }
     }
 

@@ -5,6 +5,7 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.HitboxData;
 import ac.grim.grimac.utils.collisions.RaycastData;
 import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
+import ac.grim.grimac.utils.collisions.datatypes.ComplexCollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.NoCollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.HitData;
@@ -297,21 +298,21 @@ public class BlockRayTrace {
     private static HitData getTraverseResult(GrimPlayer player, @Nullable StateType heldItem, Vector3d startingPos, Vector startingVec, Ray trace, Vector3d endPos, boolean sourcesHaveHitbox, boolean checkInside, double knownDistance) {
         return traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
             CollisionBox data = HitboxData.getBlockHitbox(player, heldItem, player.getClientVersion(), block, vector3i.getX(), vector3i.getY(), vector3i.getZ());
-            List<SimpleCollisionBox> boxes = new ArrayList<>();
-            data.downCast(boxes);
+            SimpleCollisionBox[] boxes = new SimpleCollisionBox[ComplexCollisionBox.DEFAULT_MAX_COLLISION_BOX_SIZE];
+            int size = data.downCast(boxes);
 
             double bestHitResult = Double.MAX_VALUE;
             Vector bestHitLoc = null;
             BlockFace bestFace = null;
 
-            for (SimpleCollisionBox box : boxes) {
-                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(knownDistance));
+            for (int i = 0; i < size; i++) {
+                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(boxes[i], trace.getOrigin(), trace.getPointAtDistance(knownDistance));
                 if (intercept.getFirst() == null) continue; // No intercept
 
                 Vector hitLoc = intercept.getFirst();
 
                 // If inside a block, return empty result for reach check (don't bother checking this?)
-                if (checkInside && ReachUtils.isVecInside(box, trace.getOrigin())) {
+                if (checkInside && ReachUtils.isVecInside(boxes[i], trace.getOrigin())) {
                     return null;
                 }
 
