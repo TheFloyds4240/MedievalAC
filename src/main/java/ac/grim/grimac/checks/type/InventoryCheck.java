@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCloseWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 public class InventoryCheck extends BlockPlaceCheck implements PacketCheck {
     // Impossible transaction ID
@@ -18,8 +19,8 @@ public class InventoryCheck extends BlockPlaceCheck implements PacketCheck {
         super(player);
     }
 
-    // IMPORTANT: When doing checks remember to call super.onPacketReceive(event)
     @Override
+    @MustBeInvokedByOverriders
     public void onPacketReceive(final PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             // Disallow any clicks if inventory is closing

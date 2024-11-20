@@ -3,6 +3,7 @@ package ac.grim.grimac.events.packets;
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.data.packetentity.PacketEntitySelf;
+import ac.grim.grimac.utils.inventory.InventoryDesyncStatus;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
@@ -28,8 +29,8 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player == null) return;
 
-            if (player.hasInventoryOpen && isDesynced(player)) {
-                player.hasInventoryOpen = false;
+            if (player.hasInventoryOpen && isNearNetherPortal(player)) {
+                handleInventoryClose(player, InventoryDesyncStatus.NETHER_PORTAL);
             }
         }
 
@@ -41,7 +42,7 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
                 GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
                 if (player == null) return;
 
-                player.hasInventoryOpen = true;
+                handleInventoryOpen(player);
             }
         }
 
@@ -56,11 +57,11 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             // This is a workaround to atleast make our inventory checks work "decently" in 1.8 clients for 1.9+ servers
             if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9)
                     && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
-                player.hasInventoryOpen = true;
+                handleInventoryOpen(player);
             }
 
             if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8)) {
-                player.hasInventoryOpen = true;
+                handleInventoryOpen(player);
             }
         }
 
@@ -68,7 +69,7 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player == null) return;
 
-            player.hasInventoryOpen = false;
+            handleInventoryClose(player, InventoryDesyncStatus.NOT_DESYNCED);
         }
     }
 
@@ -81,7 +82,7 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             player.sendTransaction();
 
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(),
-                                                () -> player.hasInventoryOpen = false);
+                    () -> handleInventoryClose(player, InventoryDesyncStatus.NOT_DESYNCED));
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow wrapper = new WrapperPlayServerOpenWindow(event);
 
@@ -92,9 +93,16 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
 
             String legacyType = wrapper.getLegacyType();
             int modernType = wrapper.getType();
+            InventoryDesyncStatus inventoryDesyncStatus = getContainerDesyncStatus(player, legacyType, modernType);
 
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(),
-                                                () -> player.hasInventoryOpen = !isAlwaysDesynced(player, legacyType, modernType));
+                    () -> {
+                        if (inventoryDesyncStatus == InventoryDesyncStatus.NOT_DESYNCED) {
+                            handleInventoryOpen(player);
+                        } else {
+                            handleInventoryClose(player, inventoryDesyncStatus);
+                        }
+                    });
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_HORSE_WINDOW) {
             GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player == null) return;
@@ -102,7 +110,7 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             player.sendTransaction();
 
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(),
-                                                () -> player.hasInventoryOpen = true);
+                    () -> handleInventoryOpen(player));
         } else if (event.getPacketType() == PacketType.Play.Server.CLOSE_WINDOW) {
             GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player == null) return;
@@ -110,21 +118,38 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
             player.sendTransaction();
 
             player.latencyUtils.addRealTimeTask(player.lastTransactionSent.get(),
-                                                () -> player.hasInventoryOpen = false);
+                    () -> handleInventoryClose(player, InventoryDesyncStatus.NOT_DESYNCED));
         }
     }
 
-    private boolean isAlwaysDesynced(GrimPlayer player, String legacyType, int modernType) {
-        // Closing beacon with the cross button cause desync in 1.8
-        if (player.getClientVersion() == ClientVersion.V_1_8 &&
+    private void handleInventoryOpen(GrimPlayer player) {
+        if (!player.hasInventoryOpen) {
+            player.lastInventoryOpen = System.currentTimeMillis();
+        }
+
+        player.hasInventoryOpen = true;
+    }
+
+    private void handleInventoryClose(GrimPlayer player, InventoryDesyncStatus desyncStatus) {
+        player.hasInventoryOpen = false;
+        player.inventoryDesyncStatus = desyncStatus;
+    }
+
+    public InventoryDesyncStatus getContainerDesyncStatus(GrimPlayer player, String legacyType, int modernType) {
+        // Closing beacon with the cross button cause desync in 1.7-1.8
+        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) &&
                 ("minecraft:beacon".equals(legacyType) || modernType == 8)) {
-            return true;
+            return player.inventoryDesyncStatus = InventoryDesyncStatus.BEACON;
         }
 
-        return isDesynced(player);
+        if (isNearNetherPortal(player)) {
+            return player.inventoryDesyncStatus = InventoryDesyncStatus.NETHER_PORTAL;
+        }
+
+        return player.inventoryDesyncStatus = InventoryDesyncStatus.NOT_DESYNCED;
     }
 
-    private boolean isDesynced(GrimPlayer player) {
+    public boolean isNearNetherPortal(GrimPlayer player) {
         // Going inside nether portal with opened inventory cause desync, fixed in 1.12.2
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_12_1) &&
                 player.pointThreeEstimator.isNearNetherPortal) {

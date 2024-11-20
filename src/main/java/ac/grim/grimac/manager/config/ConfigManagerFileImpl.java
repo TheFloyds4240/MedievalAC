@@ -32,6 +32,7 @@ public class ConfigManagerFileImpl implements ConfigManager, BasicReloadable {
         GrimAPI.INSTANCE.getPlugin().getDataFolder().mkdirs();
         if (!initialized) {
             initialized = true;
+            upgrade();
             config.addSource(GrimAC.class, "config", getConfigFile("config.yml"));
             config.addSource(GrimAC.class, "messages", getConfigFile("messages.yml"));
             config.addSource(GrimAC.class, "discord", getConfigFile("discord.yml"));
@@ -81,7 +82,7 @@ public class ConfigManagerFileImpl implements ConfigManager, BasicReloadable {
 
                     configVersion = Integer.parseInt(configStringVersion);
                     // TODO: Do we have to hardcode this?
-                    configString = configString.replaceAll("config-version: " + configStringVersion, "config-version: 9");
+                    configString = configString.replaceAll("config-version: " + configStringVersion, "config-version: 10");
                     Files.write(config.toPath(), configString.getBytes());
 
                     upgradeModernConfig(config, configString, configVersion);

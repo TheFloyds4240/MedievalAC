@@ -7,6 +7,7 @@ import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import ac.grim.grimac.utils.data.VectorData;
 import ac.grim.grimac.utils.data.VectorData.MoveVectorData;
 import ac.grim.grimac.utils.data.VehicleData;
+
 import java.util.StringJoiner;
 
 @CheckData(name = "InventoryD", setback = 1, decay = 0.25)
