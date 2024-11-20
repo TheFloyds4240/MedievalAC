@@ -110,7 +110,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                 setbackIfAboveSetbackVL();
                 setback = false;
             }
-        } else if (!player.skippedTickInActualMovement && predictionComplete.isChecked()) {
+        } else if (player.isTickingReliablyFor(3)) {
             for (String verbose : flags) {
                 if (flagAndAlert(verbose) && setback) {
                     setbackIfAboveSetbackVL();
