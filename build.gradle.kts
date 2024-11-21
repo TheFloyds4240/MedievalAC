@@ -33,7 +33,10 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 
 // Set to false for debug builds
 // You cannot live reload classes if the jar relocates dependencies
-var relocate = true;
+// Checks Project properties -> environment variable -> defaults true
+val relocate: Boolean = project.findProperty("relocate")?.toString()?.toBoolean()
+    ?: System.getenv("RELOCATE_JAR")?.toBoolean()
+    ?: true
 
 repositories {
     mavenLocal()
