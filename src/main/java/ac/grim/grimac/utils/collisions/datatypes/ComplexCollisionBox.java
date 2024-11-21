@@ -8,7 +8,7 @@ public class ComplexCollisionBox implements CollisionBox {
     // Most complex shape is the Modern MC Cauldron which is made up of 15 boxes
     public static int DEFAULT_MAX_COLLISION_BOX_SIZE = 15; // increase if we somehow have a shape made of more than 15 parts.
     private final SimpleCollisionBox[] boxes;
-    int currentLength = 0;
+    private int currentLength;
 
     public ComplexCollisionBox(SimpleCollisionBox... boxes) {
         this(DEFAULT_MAX_COLLISION_BOX_SIZE, boxes);
