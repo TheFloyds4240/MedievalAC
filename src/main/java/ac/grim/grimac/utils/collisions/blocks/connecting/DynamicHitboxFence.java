@@ -22,11 +22,17 @@ public class DynamicHitboxFence extends DynamicConnecting implements HitBoxFacto
 
     public static SimpleCollisionBox[] LEGACY_HITBOXES = new SimpleCollisionBox[] {new SimpleCollisionBox(0.375D, 0.0D, 0.375D, 0.625D, 1.0D, 0.625D), new SimpleCollisionBox(0.375D, 0.0D, 0.375D, 0.625D, 1.0D, 1.0D), new SimpleCollisionBox(0.0D, 0.0D, 0.375D, 0.625D, 1.0D, 0.625D), new SimpleCollisionBox(0.0D, 0.0D, 0.375D, 0.625D, 1.0D, 1.0D), new SimpleCollisionBox(0.375D, 0.0D, 0.0D, 0.625D, 1.0D, 0.625D), new SimpleCollisionBox(0.375D, 0.0D, 0.0D, 0.625D, 1.0D, 1.0D), new SimpleCollisionBox(0.0D, 0.0D, 0.0D, 0.625D, 1.0D, 0.625D), new SimpleCollisionBox(0.0D, 0.0D, 0.0D, 0.625D, 1.0D, 1.0D), new SimpleCollisionBox(0.375D, 0.0D, 0.375D, 1.0D, 1.0D, 0.625D), new SimpleCollisionBox(0.375D, 0.0D, 0.375D, 1.0D, 1.0D, 1.0D), new SimpleCollisionBox(0.0D, 0.0D, 0.375D, 1.0D, 1.0D, 0.625D), new SimpleCollisionBox(0.0D, 0.0D, 0.375D, 1.0D, 1.0D, 1.0D), new SimpleCollisionBox(0.375D, 0.0D, 0.0D, 1.0D, 1.0D, 0.625D), new SimpleCollisionBox(0.375D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D), new SimpleCollisionBox(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.625D), new SimpleCollisionBox(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D)};
 
+    // no ComplexCollisionBox produced by makeShapes is every larger than 5 SimpleCollisionBoxes
+    private static final int MAX_MODERN_HITBOX_COMPLEX_COLLISION_BOX_SIZE = 5;
+
     static {
-        for (int i = 0; i < MODERN_HITBOXES.length; i++) {
+        SimpleCollisionBox[] boxes = new SimpleCollisionBox[MAX_MODERN_HITBOX_COMPLEX_COLLISION_BOX_SIZE];
+
+        // we start from one because MODERN_HITBOXES[0] is a NoCollisionBox
+        for (int i = 1; i < MODERN_HITBOXES.length; i++) {
             CollisionBox collisionBox = MODERN_HITBOXES[i];
-            SimpleCollisionBox[] boxes = new SimpleCollisionBox[ComplexCollisionBox.DEFAULT_MAX_COLLISION_BOX_SIZE];
             int size = collisionBox.downCast(boxes);
+            System.out.println(size);
 
             for (int j = 0; j < size; j++) {
                 if (boxes[j].maxY > 1) {
@@ -34,7 +40,7 @@ public class DynamicHitboxFence extends DynamicConnecting implements HitBoxFacto
                 }
             }
 
-            MODERN_HITBOXES[i] = new ComplexCollisionBox(boxes);
+            MODERN_HITBOXES[i] = size == 1 ? boxes[0] : new ComplexCollisionBox(size, boxes);
         }
     }
 
