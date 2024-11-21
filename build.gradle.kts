@@ -31,7 +31,10 @@ description = "Libre simulation anticheat designed for 1.21 with 1.8-1.21 suppor
 
 // Set to false for debug builds
 // You cannot live reload classes if the jar relocates dependencies
-var relocate = true;
+// Checks Project properties -> environment variable -> defaults true
+val relocate: Boolean = project.findProperty("relocate")?.toString()?.toBoolean()
+    ?: System.getenv("RELOCATE_JAR")?.toBoolean()
+    ?: true
 
 repositories {
     mavenLocal()
