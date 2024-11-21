@@ -22,9 +22,7 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 

@@ -92,7 +92,7 @@ public class DynamicStair implements CollisionFactory {
     }
 
     private static CollisionBox makeStairShape(int p_199781_0_, SimpleCollisionBox p_199781_1_, SimpleCollisionBox p_199781_2_, SimpleCollisionBox p_199781_3_, SimpleCollisionBox p_199781_4_, SimpleCollisionBox p_199781_5_) {
-        ComplexCollisionBox voxelshape = new ComplexCollisionBox(p_199781_1_);
+        ComplexCollisionBox voxelshape = new ComplexCollisionBox(5, p_199781_1_); // can we do better than 5?
         if ((p_199781_0_ & 1) != 0) {
             voxelshape.add(p_199781_2_);
         }

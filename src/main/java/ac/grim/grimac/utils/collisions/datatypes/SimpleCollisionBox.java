@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleCollisionBox implements CollisionBox {

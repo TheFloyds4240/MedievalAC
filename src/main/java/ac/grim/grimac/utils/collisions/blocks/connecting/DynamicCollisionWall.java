@@ -53,12 +53,11 @@ public class DynamicCollisionWall extends DynamicConnecting implements Collision
 
         // On 1.13+ clients the bounding box is much more complicated
         if (version.isNewerThanOrEquals(ClientVersion.V_1_13)) {
-            ComplexCollisionBox box = new ComplexCollisionBox();
+            ComplexCollisionBox box = new ComplexCollisionBox(5);
 
             // Proper and faster way would be to compute all this beforehand
             if (up == 1) {
                 box.add(new HexCollisionBox(4, 0, 4, 12, 16, 12));
-                return box;
             }
 
             if (north == 1) {
@@ -81,6 +80,7 @@ public class DynamicCollisionWall extends DynamicConnecting implements Collision
             } else if (east == 2) {
                 box.add(new HexCollisionBox(5, 0, 5, 16, 16, 11));
             }
+            return box;
         }
 
         // Magic 1.8 code for walls that I copied over, 1.12 below uses this mess

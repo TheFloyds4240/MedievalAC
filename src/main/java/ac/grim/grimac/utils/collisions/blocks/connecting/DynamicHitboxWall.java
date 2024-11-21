@@ -60,7 +60,7 @@ public class DynamicHitboxWall extends DynamicConnecting implements HitBoxFactor
     }
 
     private CollisionBox getModernHitBox(int north, int south, int west, int east, int up) {
-        ComplexCollisionBox box = new ComplexCollisionBox();
+        ComplexCollisionBox box = new ComplexCollisionBox(5);
         if (up == 1) {
             box.add(new HexCollisionBox(4, 0, 4, 12, 16, 12));
         }
