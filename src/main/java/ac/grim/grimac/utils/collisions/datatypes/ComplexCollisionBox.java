@@ -20,7 +20,7 @@ public class ComplexCollisionBox implements CollisionBox {
 
     public ComplexCollisionBox(int maxIndex, SimpleCollisionBox... boxes) {
         this.boxes = new SimpleCollisionBox[maxIndex];
-        System.arraycopy(boxes, 0, this.boxes, 0, boxes.length);
+        System.arraycopy(boxes, 0, this.boxes, 0, maxIndex);
         maxLength = boxes.length;
     }
 
