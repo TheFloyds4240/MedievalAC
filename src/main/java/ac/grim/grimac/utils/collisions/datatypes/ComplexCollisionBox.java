@@ -54,7 +54,12 @@ public class ComplexCollisionBox implements CollisionBox {
 
     @Override
     public CollisionBox copy() {
-        return new ComplexCollisionBox(boxes.length, boxes);
+        ComplexCollisionBox copy = new ComplexCollisionBox(boxes.length);
+        for (int i = 0; i < maxLength; i++) {
+            copy.boxes[i] = boxes[i].copy();
+        }
+        copy.maxLength = this.maxLength;
+        return copy;
     }
 
     @Override
