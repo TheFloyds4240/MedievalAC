@@ -41,7 +41,7 @@ public class DynamicChorusPlant implements CollisionFactory {
         CollisionBox[] avoxelshape1 = new CollisionBox[64];
 
         for (int k = 0; k < 64; ++k) {
-            ComplexCollisionBox directionalShape = new ComplexCollisionBox(baseShape); // how big is this one??
+            ComplexCollisionBox directionalShape = new ComplexCollisionBox(7, baseShape); // how big is this one??
 
             for (int j = 0; j < directions.length; ++j) {
                 if ((k & 1 << j) != 0) {
