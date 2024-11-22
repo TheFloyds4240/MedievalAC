@@ -21,7 +21,7 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 
 public class DynamicCollisionPane extends DynamicConnecting implements CollisionFactory {
 
-    private static final CollisionBox[] COLLISION_BOXES = makeShapes(1.0F, 1.0F, 16.0F, 0.0F, 16.0F, true);
+    private static final CollisionBox[] COLLISION_BOXES = makeShapes(1.0F, 1.0F, 16.0F, 0.0F, 16.0F, true, 1);
 
     @Override
     public CollisionBox fetch(GrimPlayer player, ClientVersion version, WrappedBlockState block, int x, int y, int z) {
