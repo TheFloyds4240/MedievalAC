@@ -16,10 +16,9 @@ import com.github.retrooper.packetevents.protocol.world.states.enums.West;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 
 public class DynamicCollisionWall extends DynamicConnecting implements CollisionFactory {
-    public static final CollisionBox[] BOXES = makeShapes(4.0F, 3.0F, 16.0F, 0.0F, 16.0F, false);
     // https://bugs.mojang.com/browse/MC-9565
     // https://bugs.mojang.com/browse/MC-94016
-    private static final CollisionBox[] COLLISION_BOXES = makeShapes(4.0F, 3.0F, 24.0F, 0.0F, 24.0F, false);
+    private static final CollisionBox[] COLLISION_BOXES = makeShapes(4.0F, 3.0F, 24.0F, 0.0F, 24.0F, false, 1);
 
     /**
      * @deprecated use DynamicHitboxWall
