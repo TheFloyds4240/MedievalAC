@@ -28,8 +28,6 @@ spotless {
 group = "ac.grim.grimac"
 version = "2.3.69"
 description = "Libre simulation anticheat designed for 1.21 with 1.8-1.21 support, powered by PacketEvents 2.0."
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
 
 // Set to false for debug builds
 // You cannot live reload classes if the jar relocates dependencies
@@ -154,6 +152,40 @@ publishing.publications.create<MavenPublication>("maven") {
     artifact(tasks["shadowJar"])
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    // Define a new source set for Java 18
+    sourceSets {
+        create("java18") {
+            java.srcDir("src/main/java18")
+        }
+    }
+}
+
+tasks.withType<JavaCompile> {
+    if (name == "compileJava18Java") {
+        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
+        sourceCompatibility = JavaVersion.VERSION_18.toString()
+        targetCompatibility = JavaVersion.VERSION_18.toString()
+        classpath += sourceSets.main.get().output
+    }
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes(
+            "Multi-Release" to "true"
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets.main.get().output)
+    from(sourceSets.getByName("java18").output) {
+        into("META-INF/versions/18")
+    }
+}
+
 tasks.shadowJar {
     minimize()
     archiveFileName.set("${project.name}-${project.version}.jar")
@@ -175,5 +207,13 @@ tasks.shadowJar {
         relocate("org.json", "ac.grim.grimac.shaded.json")
         relocate("org.intellij", "ac.grim.grimac.shaded.intellij")
         relocate("org.jetbrains", "ac.grim.grimac.shaded.jetbrains")
+    }
+
+    // Add the Java 18 classes to the correct location in the shadowed JAR
+    from(sourceSets.getByName("java18").output) {
+        into("META-INF/versions/18")
+    }
+    manifest {
+        attributes("Multi-Release" to "true")
     }
 }
