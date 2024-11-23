@@ -1,6 +1,5 @@
 package ac.grim.grimac.utils.nmsutil;
 
-import ac.grim.grimac.checks.impl.scaffolding.LineOfSightPlace;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.HitboxData;
 import ac.grim.grimac.utils.collisions.RaycastData;
@@ -23,7 +22,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.function.BiFunction;
 
 public class BlockRayTrace {
@@ -176,8 +174,7 @@ public class BlockRayTrace {
     }
 
     @Nullable
-    public static HitData getNearestReachHitResult(GrimPlayer player, double[] startPos, double[] lookVec, double currentDistance, double maxDistance, int[] targetBlockVec,
-                                                   BlockFace expectedBlockFace, SimpleCollisionBox[] boxes, Map<Vector3i, WrappedBlockState> blockOverrides, boolean raycastContext) {
+    public static HitData getNearestReachHitResult(GrimPlayer player, double[] startPos, double[] lookVec, double currentDistance, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace, SimpleCollisionBox[] boxes, boolean raycastContext) {
         double[] endPos = new double[]{
                 startPos[0] + lookVec[0] * maxDistance,
                 startPos[1] + lookVec[1] * maxDistance,
@@ -185,12 +182,6 @@ public class BlockRayTrace {
         };
 
         return traverseBlocks(player, startPos, endPos, (block, vector3i) -> {
-            if (blockOverrides != null) {
-                WrappedBlockState blockState = blockOverrides.get(vector3i);
-                if (blockState != null) {
-                        block = blockState;
-                }
-            }
             CollisionBox data;
             if (!raycastContext) {
                 data = HitboxData.getBlockHitbox(player, player.getInventory().getHeldItem().getType().getPlacedType(), player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
@@ -231,8 +222,8 @@ public class BlockRayTrace {
                     bestHitResult = distSq;
                     bestHitLoc = hitLoc;
                     bestFace = intercept.getSecond();
-                    if (isTargetBlock && (bestFace == expectedBlockFace || player.checkManager.getBlockPlaceCheck(LineOfSightPlace.class).blocksChangedList.get(vector3i) != null)) {
-                        return new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), expectedBlockFace, block, true);
+                    if (isTargetBlock && bestFace == expectedBlockFace) {
+                        return new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, true);
                     }
                 }
             }
@@ -250,7 +241,7 @@ public class BlockRayTrace {
             if (bestHitLoc != null) {
                 HitData hitData = new HitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, isTargetBlock);
                 if (!raycastContext) {
-                    HitData hitData2 = BlockRayTrace.getNearestReachHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, blockOverrides, true);
+                    HitData hitData2 = BlockRayTrace.getNearestReachHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, true);
                     if (hitData2 != null) {
                         Vector startVector = new Vector(startPos[0], startPos[1], startPos[2]);
                         if (hitData2.getBlockHitLocation().subtract(startVector).lengthSquared() <
