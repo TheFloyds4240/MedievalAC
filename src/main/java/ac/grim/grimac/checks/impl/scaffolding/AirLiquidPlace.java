@@ -57,7 +57,6 @@ public class AirLiquidPlace extends BlockPlaceCheck {
         if (iterator.hasNext()) {
             StateType stateType = iterator.next().getOldBlockContents().getType();
             if (!(stateType.isAir() || Materials.isNoPlaceLiquid(stateType))) {
-                player.blockHistory.cleanup(currentTick - 2);
                 return;
             }
         }
@@ -67,7 +66,6 @@ public class AirLiquidPlace extends BlockPlaceCheck {
                 place.resync();
             }
         }
-        player.blockHistory.cleanup(currentTick - 2);
     }
 
     @Override
