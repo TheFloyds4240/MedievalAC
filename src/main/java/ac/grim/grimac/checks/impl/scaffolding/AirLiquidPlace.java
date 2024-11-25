@@ -13,6 +13,8 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.util.Vector3i;
 
+import java.util.Iterator;
+
 
 @CheckData(name = "AirLiquidPlace")
 public class AirLiquidPlace extends BlockPlaceCheck {
@@ -64,14 +66,15 @@ public class AirLiquidPlace extends BlockPlaceCheck {
         LogUtil.info(logMessage);
         // end debug
 
-        int its = 0;
-        for (BlockModification blockModification : blockModifications) {
-            StateType stateType = blockModification.getOldBlockContents().getType();
+        // Check if old block from instant breaking in same tick as the current placement was valid
+        // There should only be one block here for legit clients
+        Iterator<BlockModification> iterator =  blockModifications.iterator();
+        if (iterator.hasNext()) {
+            StateType stateType = iterator.next().getOldBlockContents().getType();
             if (!(stateType.isAir() || Materials.isNoPlaceLiquid(stateType))) {
                 player.blockHistory.cleanup(currentTick - 2);
                 return;
             }
-            its++;
         }
 
         if (placeAgainst.isAir() || Materials.isNoPlaceLiquid(placeAgainst)) { // fail
