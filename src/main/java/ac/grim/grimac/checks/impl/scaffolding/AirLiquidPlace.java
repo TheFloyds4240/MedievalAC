@@ -53,7 +53,7 @@ public class AirLiquidPlace extends BlockPlaceCheck {
     So that's it right? It's unfalsable?
         Very close but not quite. Vanilla's client game desyncs, especially on a laggy connection where a player is breaking and placing grass 20 cps/sec in the same tick
         it is possible for short grass to be interacted with even if server-side the block is air much later, and it won't be accounted for because the modification isn't recent.
-        This is incredibly rare, unreliable and is only triggerable if you intentionally want to false the check. Enough so that I consider a violation lvl of 2-3 to be perfect.
+        This is incredibly rare, unreliable and is only triggerable if you intentionally want to false the check. Enough so that I consider a violation lvl of 2-3 to be reliable and 5-6 to be autobannable
     */
 
     @Override
@@ -80,7 +80,7 @@ public class AirLiquidPlace extends BlockPlaceCheck {
         }
 
         if (placeAgainst.isAir() || Materials.isNoPlaceLiquid(placeAgainst)) { // fail
-            if (flagAndAlert("tick: " + GrimAPI.INSTANCE.getTickManager().currentTick) && shouldModifyPackets() && shouldCancel()) {
+            if (flagAndAlert() && shouldModifyPackets() && shouldCancel()) {
                 place.resync();
             }
         }
