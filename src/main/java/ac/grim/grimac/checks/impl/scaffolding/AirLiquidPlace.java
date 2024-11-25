@@ -46,6 +46,8 @@ public class AirLiquidPlace extends BlockPlaceCheck {
         StateType placeAgainst = player.compensatedWorld.getStateTypeAt(blockPos.getX(), blockPos.getY(), blockPos.getZ());
 
         int currentTick = GrimAPI.INSTANCE.getTickManager().currentTick;
+
+
         Iterable<BlockModification> blockModifications = player.blockHistory.getRecentModifications((blockModification) -> currentTick - blockModification.getTick() == 0
                 && blockPos.equals(blockModification.getLocation())
                 && blockModification.getCause() == BlockModification.Cause.START_DIGGING);
