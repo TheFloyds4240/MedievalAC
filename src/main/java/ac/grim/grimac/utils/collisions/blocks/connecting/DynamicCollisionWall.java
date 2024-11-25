@@ -117,6 +117,11 @@ public class DynamicCollisionWall extends DynamicConnecting implements Collision
         return new SimpleCollisionBox(f, 0.0F, f2, f1, 1, f3);
     }
 
+    /*
+        This implementation together with the simulation engine ave some limitations.
+        Running into/being knocked into corner walls on a legacy server on a modern client and vice versa
+        Lead to simulation falses. Fixing this rare edge case requires lots more effort than worth and is low priority
+     */
     @Override
     public CollisionBox fetch(GrimPlayer player, ClientVersion version, WrappedBlockState block, int x, int y, int z) {
         boolean isNewClient = version.isNewerThan(ClientVersion.V_1_12_2);
