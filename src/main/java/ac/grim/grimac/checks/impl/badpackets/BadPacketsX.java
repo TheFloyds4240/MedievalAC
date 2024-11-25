@@ -12,11 +12,10 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
-import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckData(name = "BadPacketsX", experimental = false)
+@CheckData(name = "BadPacketsX")
 public class BadPacketsX extends Check implements PacketCheck {
     public BadPacketsX(GrimPlayer player) {
         super(player);

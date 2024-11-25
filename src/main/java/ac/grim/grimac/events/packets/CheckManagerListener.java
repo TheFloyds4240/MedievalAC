@@ -407,6 +407,15 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 //Instant breaking, no damage means it is unbreakable by creative players (with swords)
                 if (damage >= 1) {
                     player.compensatedWorld.startPredicting();
+                    player.blockHistory.add(
+                            new BlockModification(
+                                    player.compensatedWorld.getWrappedBlockStateAt(digPosition),
+                                    WrappedBlockState.getByGlobalId(0),
+                                    dig.getBlockPosition(),
+                                    GrimAPI.INSTANCE.getTickManager().currentTick,
+                                    BlockModification.Cause.START_DIGGING
+                            )
+                    );
                     if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), block)) {
                         // Vanilla uses a method to grab water flowing, but as you can't break flowing water
                         // We can simply treat all waterlogged blocks or source blocks as source blocks
