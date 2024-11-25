@@ -2,6 +2,7 @@ package ac.grim.grimac.utils.latency;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.utils.anticheat.LogUtil;
 import ac.grim.grimac.utils.chunks.Column;
 import ac.grim.grimac.utils.collisions.CollisionData;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
@@ -285,6 +286,57 @@ public class CompensatedWorld {
 
             // The method also gets called for the previous state before replacement
             player.pointThreeEstimator.handleChangeBlock(x, y, z, chunk.get(blockVersion, x & 0xF, offsetY & 0xF, z & 0xF));
+
+
+            // Debugging information
+            WrappedBlockState oldState = chunk.get(blockVersion, x & 0xF, offsetY & 0xF, z & 0xF);
+            String oldStateString = (oldState != null) ? oldState.toString() : "null";
+
+            WrappedBlockState newState = WrappedBlockState.getByGlobalId(combinedID);
+            String newStateString = newState.toString();
+
+            Vector3i blockPos = new Vector3i(x, y, z);
+
+            int currentTick = GrimAPI.INSTANCE.getTickManager() != null
+                    ? GrimAPI.INSTANCE.getTickManager().currentTick
+                    : -1; // Fallback tick value
+
+            String sourceString;
+
+            // Get the entire stack trace
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+            if (stackTrace[3].toString().contains("handleNettySyncTransaction(LatencyUtils.java:56")) {
+                sourceString = "cause: handleNettySyncTransaction(LatencyUtils.java:56) source: PacketType.Play.Client.PONG";
+            } else if (stackTrace[2].toString().contains("CheckManagerListener.java:486")) {
+                sourceString = "cause/source: DiggingAction.START_DIGGING";
+            } else if (stackTrace[2].toString().contains("CheckManagerListener.java:470")) {
+                sourceString = "cause/source: DiggingAction.FINISHED_DIGGING";
+            } else if (stackTrace[8].toString().contains("handleQueuedPlaces(CheckManagerListener.java:201")) {
+                sourceString = "cause: handleQueuedPlaces(): source: handleQueuedPlaces(CheckManagerListener.java:201) source: PacketType.Play.Client.PONG";
+            } else if (stackTrace[6].toString().contains("LatencyUtils.handleNettySyncTransaction(LatencyUtils.java:56")) {
+                sourceString = "cause: realtime task in applyBlockChanges(List<Vector3i> toApplyBlocks) source: PacketType.Play.Client.PONG"; // handle realtime task in applyBlockChanges(List<Vector3i> toApplyBlocks)
+            } else {
+                // Build a string for the stack trace
+                StringBuilder stackTraceBuilder = new StringBuilder("cause/source: stack trace:\n");
+                for (StackTraceElement element : stackTrace) {
+                    stackTraceBuilder.append("\tat ").append(element.toString()).append("\n");
+                }
+                sourceString = stackTraceBuilder.toString();
+            }
+
+        // Format the main log message
+            String logMessage = String.format(
+                    "Async world updated: %s -> %s at %s, tick %d, %s",
+                    oldStateString,
+                    newStateString,
+                    blockPos,
+                    currentTick,
+                    sourceString
+            );
+
+// Log everything
+            LogUtil.info(logMessage);
 
             chunk.set(null, x & 0xF, offsetY & 0xF, z & 0xF, combinedID);
 
