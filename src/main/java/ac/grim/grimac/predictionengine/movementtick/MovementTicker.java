@@ -46,7 +46,7 @@ public class MovementTicker {
         if (!player.compensatedEntities.getSelf().inVehicle()) {
             // Calculate the offset of the player to colliding other stuff
             SimpleCollisionBox playerBox = GetBoundingBox.getBoundingBoxFromPosAndSize(player, player.lastX, player.lastY, player.lastZ, 0.6f, 1.8f);
-            playerBox.union(GetBoundingBox.getBoundingBoxFromPosAndSize(player, player.x, player.y, player.z, 0.6f, 1.8f).expand(player.getMovementThreshold()));
+            playerBox.encompass(GetBoundingBox.getBoundingBoxFromPosAndSize(player, player.x, player.y, player.z, 0.6f, 1.8f).expand(player.getMovementThreshold()));
             playerBox.expand(0.2);
 
             final TeamHandler teamHandler = player.checkManager.getPacketCheck(TeamHandler.class);

@@ -164,8 +164,7 @@ public class SimpleCollisionBox implements CollisionBox {
         return vectors;
     }
 
-    @Override
-    public CollisionBox union(SimpleCollisionBox other) {
+    public CollisionBox encompass(SimpleCollisionBox other) {
         this.minX = Math.min(this.minX, other.minX);
         this.minY = Math.min(this.minY, other.minY);
         this.minZ = Math.min(this.minZ, other.minZ);
@@ -212,6 +211,11 @@ public class SimpleCollisionBox implements CollisionBox {
         maxZ = Math.max(maxZ, z);
 
         return this;
+    }
+
+    @Override
+    public CollisionBox union(SimpleCollisionBox other) {
+        return new ComplexCollisionBox(2, this, other);
     }
 
     @Override
