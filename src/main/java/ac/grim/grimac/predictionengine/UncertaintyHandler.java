@@ -64,8 +64,10 @@ public class UncertaintyHandler {
     public boolean lastMovementWasUnknown003VectorReset = false;
     // Handles 0.03 vertical false where actual velocity is greater than predicted because of previous lenience
     public boolean wasZeroPointThreeVertically = false;
-    // How many entities are within 0.5 blocks of the player's bounding box?
+    // How many entities are within 0.5 blocks of the player's bounding box that are pushable?
     public EvictingQueue<Integer> collidingEntities = new EvictingQueue<>(3);
+    // How many entities are within 0.5 blocks of the player's bounding box? Should only exclude entities in spectator
+    public EvictingQueue<Integer> riptideEntities = new EvictingQueue<>(3);
     // Fishing rod pulling is another method of adding to a player's velocity
     public List<Integer> fishingRodPulls = new ArrayList<>();
     public SimpleCollisionBox fireworksBox = null;
