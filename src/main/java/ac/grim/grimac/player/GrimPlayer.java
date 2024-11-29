@@ -250,6 +250,7 @@ public class GrimPlayer implements GrimUser {
 
         packetStateData = new PacketStateData();
 
+        uncertaintyHandler.riptideEntities.add(0);
         uncertaintyHandler.collidingEntities.add(0);
 
         if (getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_14)) {
