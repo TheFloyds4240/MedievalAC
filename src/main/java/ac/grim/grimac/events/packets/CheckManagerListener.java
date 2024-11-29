@@ -192,7 +192,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
             // The offhand is unable to interact with blocks like this... try to stop some desync points before they happen
             if ((!player.isSneaking || onlyAir) && place.getHand() == InteractionHand.MAIN_HAND) {
                 Vector3i blockPosition = place.getBlockPosition();
-                // TODO potential future issue and optimization oppurtunity
+                // TODO potential future issue and optimization opportunity
                 // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
                 // Should we raytrace ignoring entities?
                 HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);

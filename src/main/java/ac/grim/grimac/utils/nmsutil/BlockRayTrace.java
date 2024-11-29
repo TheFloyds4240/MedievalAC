@@ -277,7 +277,7 @@ public class BlockRayTrace {
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
         Vector endVec = trace.getPointAtDistance(distance);
         Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
-        return getTraverseResult(player, heldItem, startingPos, startingVec, trace, endPos, sourcesHaveHitbox, false, distance + 3);
+        return getTraverseResult(player, heldItem, startingPos, startingVec, trace, endPos, sourcesHaveHitbox, false, distance + 3, false);
     }
 
     @Nullable
@@ -298,7 +298,7 @@ public class BlockRayTrace {
         PacketEntity closestEntity = null;
         double closestDistanceSquared = Double.MAX_VALUE;
         if (!skipBlockCheck) {
-            blockHitData = getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, maxBlockDistance);
+            blockHitData = getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, maxBlockDistance, true);
             closestDistanceSquared = blockHitData != null ? blockHitData.getBlockHitLocation().distanceSquared(startingVec) : maxAttackDistance * maxAttackDistance;
         }
 
@@ -356,7 +356,11 @@ public class BlockRayTrace {
         return closestEntity == null ? blockHitData : new EntityHitData(closestEntity, closestHitVec);
     }
 
-    private static HitData getTraverseResult(GrimPlayer player, @Nullable StateType heldItem, Vector3d startingPos, Vector startingVec, Ray trace, Vector3d endPos, boolean sourcesHaveHitbox, boolean checkInside, double knownDistance) {
+    // TODO replace shrinkBlocks boolean with a data structure/better way to represent
+    // 1. We have a target block. Shrink everything by movementThreshold except expand target block (we are checking to see if it matches the target block)
+    // 2. We do not have a target block. Shrink everything by movementThreshold()
+    // 3. Do not expand or shrink everything, we do not expect 0.03/0.002 or we legacy example where we want to keep old behaviour
+    private static HitData getTraverseResult(GrimPlayer player, @Nullable StateType heldItem, Vector3d startingPos, Vector startingVec, Ray trace, Vector3d endPos, boolean sourcesHaveHitbox, boolean checkInside, double knownDistance, boolean shrinkBlocks) {
         return traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
             CollisionBox data = HitboxData.getBlockHitbox(player, heldItem, player.getClientVersion(), block, vector3i.getX(), vector3i.getY(), vector3i.getZ());
             SimpleCollisionBox[] boxes = new SimpleCollisionBox[ComplexCollisionBox.DEFAULT_MAX_COLLISION_BOX_SIZE];
@@ -367,6 +371,7 @@ public class BlockRayTrace {
             BlockFace bestFace = null;
 
             for (int i = 0; i < size; i++) {
+                if (shrinkBlocks) boxes[i].expand(-player.getMovementThreshold());
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(boxes[i], trace.getOrigin(), trace.getPointAtDistance(knownDistance));
                 if (intercept.getFirst() == null) continue; // No intercept
 
