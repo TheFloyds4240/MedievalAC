@@ -185,6 +185,7 @@ public class CompensatedInventory extends Check implements PacketCheck {
     }
 
 
+    // Do we still need to fallback on bukkit inventories?
     public boolean hasItemType(ItemType type) {
         if (isPacketInventoryActive || player.bukkitPlayer == null) return inventory.hasItemType(type);
 
@@ -192,6 +193,20 @@ public class CompensatedInventory extends Check implements PacketCheck {
         for (org.bukkit.inventory.ItemStack item : player.bukkitPlayer.getInventory().getContents()) {
             ItemStack itemStack = SpigotConversionUtil.fromBukkitItemStack(item);
             if (itemStack != null && itemStack.getType() == type) return true;
+        }
+        return false;
+    }
+
+    public boolean hasAnyOfItemType(ItemType... items) {
+        if (isPacketInventoryActive || player.bukkitPlayer == null) return inventory.hasAnyOfItemType(items);
+
+        // Fall back to bukkit inventories
+        for (org.bukkit.inventory.ItemStack item : player.bukkitPlayer.getInventory().getContents()) {
+            ItemStack itemStack = SpigotConversionUtil.fromBukkitItemStack(item);
+            if (itemStack != null) {
+                for (ItemType itemType : items)
+                    if (itemStack.getType() == itemType) return true;
+            }
         }
         return false;
     }
