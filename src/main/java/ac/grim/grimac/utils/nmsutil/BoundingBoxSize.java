@@ -119,6 +119,8 @@ public final class BoundingBoxSize {
             return 1.7f;
         } else if (EntityTypes.WIND_CHARGE.equals(type)) {
             return 0.3125F;
+        } else if (EntityTypes.ARMOR_STAND.equals(type)) {
+            return 0.5F;
         }
         return 0.6f;
     }
@@ -385,6 +387,8 @@ public final class BoundingBoxSize {
             return 1.99F;
         } else if (EntityTypes.WIND_CHARGE.equals(type)) {
             return 0.3125F;
+        } else if (EntityTypes.ARMOR_STAND.equals(type)) {
+            return 1.975F;
         }
         return 1.95f;
     }

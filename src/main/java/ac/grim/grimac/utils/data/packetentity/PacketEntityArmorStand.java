@@ -5,17 +5,16 @@ import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 
 import java.util.UUID;
 
-public class PacketEntityHook extends PacketEntity{
-    public int owner;
-    public int attached = -1;
+public class PacketEntityArmorStand extends PacketEntity {
 
-    public PacketEntityHook(GrimPlayer player, UUID uuid, EntityType type, double x, double y, double z, int owner) {
+    public boolean isMarker = false;
+
+    public PacketEntityArmorStand(GrimPlayer player, UUID uuid, EntityType type, double x, double y, double z, int extraData) {
         super(player, uuid, type, x, y, z);
-        this.owner = owner;
     }
 
     @Override
     public boolean canHit() {
-        return false;
+        return !isMarker;
     }
 }

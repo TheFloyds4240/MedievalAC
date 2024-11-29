@@ -6,7 +6,7 @@ import ac.grim.grimac.checks.type.BlockPlaceCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.BlockPlace;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
-import ac.grim.grimac.utils.data.HitData;
+import ac.grim.grimac.utils.data.BlockHitData;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -15,7 +15,6 @@ import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
-import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.viaversion.viaversion.util.Triple;
 
@@ -88,15 +87,6 @@ public class LineOfSightPlace extends BlockPlaceCheck {
             return !isBlockTypeWhitelisted(targetBlockStateType);
         }
         return false;
-    }
-
-    public void handleBlockChange(Vector3i vector3i, WrappedBlockState state) {
-        if (blocksChangedList.size() >= 60) return; // Don't let players freeze movement packets to grow this
-        // Only do this for nearby blocks
-        if (new Vector3d(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector3d(player.x, player.y, player.z)) > 6) return;
-        // Only do this if the state really had any world impact
-        if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
-        blocksChangedList.add(new Triple<>(vector3i, state, (byte) 2));
     }
 
     private boolean didRayTraceHit(BlockPlace place) {
@@ -191,7 +181,7 @@ public class LineOfSightPlace extends BlockPlaceCheck {
     }
 
     private boolean didRayTraceHitTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
-        HitData hitData = BlockRayTrace.getNearestReachHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, false);
+        BlockHitData hitData = BlockRayTrace.getNearestHitResult(player, eyePos, eyeDir, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, collisionBoxBuffer, false);
 
         // we check for hitdata != null because of being in expanded hitbox, or there was no result, do we still need this?
         return hitData != null && hitData.success;

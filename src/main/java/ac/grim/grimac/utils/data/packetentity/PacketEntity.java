@@ -16,6 +16,7 @@
 package ac.grim.grimac.utils.data.packetentity;
 
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.ReachInterpolationData;
 import ac.grim.grimac.utils.data.TrackedPosition;
@@ -188,6 +189,14 @@ public class PacketEntity extends TypedPacketEntity {
         this.trackedServerPosition.setPos(new Vector3d((box.maxX - box.minX) / 2 + box.minX, box.minY, (box.maxZ - box.minZ) / 2 + box.minZ));
         // This disables interpolation
         this.newPacketLocation = new ReachInterpolationData(box);
+    }
+
+    public CollisionBox getMinimumPossibleCollisionBoxes() {
+        if (oldPacketLocation == null) {
+            return newPacketLocation.getOverlapLocationCombined();
+        }
+
+        return ReachInterpolationData.getOverlapHitbox(oldPacketLocation.getOverlapLocationCombined(), newPacketLocation.getOverlapLocationCombined());
     }
 
     public SimpleCollisionBox getPossibleCollisionBoxes() {

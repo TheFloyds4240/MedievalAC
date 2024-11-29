@@ -183,6 +183,10 @@ public class CompensatedEntities {
             packetEntity = new PacketEntityHook(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
         } else if (EntityTypes.ENDER_DRAGON.equals(entityType)) {
             packetEntity = new PacketEntityEnderDragon(player, uuid, entityID, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_ARROW)) {
+            packetEntity = new PacketEntityArrow(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.ARMOR_STAND.equals(entityType)) {
+            packetEntity = new PacketEntityArmorStand(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
         } else if (entityType == EntityTypes.PAINTING) {
             packetEntity = new PacketEntityPainting(player, uuid, position.x, position.y, position.z, data == -1 ? null : PaintingType.getById(data), Direction.getByHorizontalIndex((int) xRot));
         } else {
@@ -304,9 +308,7 @@ public class CompensatedEntities {
                     player.compensatedWorld.openShulkerBoxes.add(data);
                 }
             }
-        }
-
-        if (entity instanceof PacketEntityRideable) {
+        } else if (entity instanceof PacketEntityRideable) {
             int offset = 0;
             if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_8_8)) {
                 if (entity.getType() == EntityTypes.PIG) {
@@ -348,9 +350,7 @@ public class CompensatedEntities {
                     ((PacketEntityRideable) entity).hasSaddle = (boolean) striderSaddle.getValue();
                 }
             }
-        }
-
-        if (entity instanceof PacketEntityHorse) {
+        } else if (entity instanceof PacketEntityHorse) {
             if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9_4)) {
                 int offset = 0;
 
@@ -395,23 +395,7 @@ public class CompensatedEntities {
                     ((PacketEntityHorse) entity).isRearing = (info & 0x40) != 0;
                 }
             }
-        }
-
-        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9_4)) {
-            EntityData gravity = WatchableIndexUtil.getIndex(watchableObjects, 5);
-
-            if (gravity != null) {
-                Object gravityObject = gravity.getValue();
-
-                if (gravityObject instanceof Boolean) {
-                    // Vanilla uses hasNoGravity, which is a bad name IMO
-                    // hasGravity > hasNoGravity
-                    entity.hasGravity = !((Boolean) gravityObject);
-                }
-            }
-        }
-
-        if (entity.getType() == EntityTypes.FIREWORK_ROCKET) {
+        } else if (entity.getType() == EntityTypes.FIREWORK_ROCKET) {
             int offset = 0;
             if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_12_2)) {
                 offset = 2;
@@ -434,9 +418,7 @@ public class CompensatedEntities {
                     player.compensatedFireworks.addNewFirework(entityID);
                 }
             }
-        }
-
-        if (entity instanceof PacketEntityHook) {
+        } else if (entity instanceof PacketEntityHook) {
             int index;
             if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_9_4)) {
                 index = 5;
@@ -453,6 +435,41 @@ public class CompensatedEntities {
 
             Integer attachedEntityID = (Integer) hookWatchableObject.getValue();
             ((PacketEntityHook) entity).attached = attachedEntityID - 1; // the server adds 1 to the ID
+        } else if (entity instanceof PacketEntityArmorStand) {
+            int index;
+            if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_9_4)) {
+                index = 10;
+            } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_13_2)) {
+                index = 11;
+            } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_14_4)) {
+                index = 13;
+            } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_16_5)) {
+                index = 14;
+            } else {
+                index = 15;
+            }
+
+            EntityData armorStandByte = WatchableIndexUtil.getIndex(watchableObjects, index);
+            if (armorStandByte != null) {
+                byte info = (Byte) armorStandByte.getValue();
+
+                entity.isBaby = (info & 0x01) != 0; // technically this is IsSmall which is a different tag, but it has the same effect for us
+                ((PacketEntityArmorStand) entity).isMarker = (info & 0x10) != 0;
+            }
+        }
+
+        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9_4)) {
+            EntityData gravity = WatchableIndexUtil.getIndex(watchableObjects, 5);
+
+            if (gravity != null) {
+                Object gravityObject = gravity.getValue();
+
+                if (gravityObject instanceof Boolean) {
+                    // Vanilla uses hasNoGravity, which is a bad name IMO
+                    // hasGravity > hasNoGravity
+                    entity.hasGravity = !((Boolean) gravityObject);
+                }
+            }
         }
     }
 }
