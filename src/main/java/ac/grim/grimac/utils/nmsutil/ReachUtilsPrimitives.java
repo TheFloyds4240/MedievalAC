@@ -149,12 +149,20 @@ public class ReachUtilsPrimitives {
     // The following methods remain unchanged but are included for completeness
 
     public static double[] getLook(GrimPlayer player, float yaw, float pitch) {
+        double[] result = new double[3];
+        getLook(player, yaw, pitch, result);
+        return result;
+    }
+
+    public static void getLook(GrimPlayer player, float yaw, float pitch, double[] result) {
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_12_2)) {
             float f = player.trigHandler.cos(-yaw * 0.017453292F - (float)Math.PI);
             float f1 = player.trigHandler.sin(-yaw * 0.017453292F - (float)Math.PI);
             float f2 = -player.trigHandler.cos(-pitch * 0.017453292F);
             float f3 = player.trigHandler.sin(-pitch * 0.017453292F);
-            return new double[]{f1 * f2, f3, f * f2};
+            result[0] = f1 * f2;
+            result[1] = f3;
+            result[2] = f * f2;
         } else {
             float f = pitch * ((float) Math.PI / 180F);
             float f1 = -yaw * ((float) Math.PI / 180F);
@@ -162,7 +170,9 @@ public class ReachUtilsPrimitives {
             float f3 = player.trigHandler.sin(f1);
             float f4 = player.trigHandler.cos(f);
             float f5 = player.trigHandler.sin(f);
-            return new double[]{f3 * f4, -f5, f2 * f4};
+            result[0] = f3 * f4;
+            result[1] = -f5;
+            result[2] = f2 * f4;
         }
     }
 

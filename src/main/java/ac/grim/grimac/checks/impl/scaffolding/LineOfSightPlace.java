@@ -8,6 +8,7 @@ import ac.grim.grimac.utils.anticheat.update.BlockPlace;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.BlockHitData;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
+import ac.grim.grimac.utils.nmsutil.ReachUtilsPrimitives;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
@@ -114,19 +115,19 @@ public class LineOfSightPlace extends BlockPlaceCheck {
             return true;
         }
         // End checking if the player is in the block
-        double[][] possibleLookDirs;
+        float[][] possibleLookDirs;
         // 1.9+ players could be a tick behind because we don't get skipped ticks
         if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9)) {
-            possibleLookDirs = new double[][]{
+            possibleLookDirs = new float[][]{
                     {player.xRot, player.yRot},
                     {player.lastXRot, player.lastYRot},
                     {player.lastXRot, player.yRot}
             };
         } else if (player.getClientVersion().isOlderThan(ClientVersion.V_1_8)) {
             // 1.7 players do not have any of these issues! They are always on the latest look vector
-            possibleLookDirs = new double[][]{{player.xRot, player.yRot}};
+            possibleLookDirs = new float[][]{{player.xRot, player.yRot}};
         } else {
-            possibleLookDirs = new double[][]{
+            possibleLookDirs = new float[][]{
                     {player.xRot, player.yRot},
                     {player.lastXRot, player.yRot}
             };
@@ -152,13 +153,13 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         double[] eyeLookDir = new double[3];
 
         for (double eyeHeight : possibleEyeHeights) {
-            for (double[] lookDir : possibleLookDirs) {
+            for (float[] lookDir : possibleLookDirs) {
                 for (double[] offset : offsets) {
                     eyePosition[0] = player.x + offset[0];
                     eyePosition[1] = player.y + eyeHeight + offset[1];
                     eyePosition[2] = player.z + offset[2];
 
-                    calculateDirection(eyeLookDir, lookDir[0], lookDir[1]);
+                    ReachUtilsPrimitives.getLook(player, lookDir[0], lookDir[1], eyeLookDir);
 
                     if (didRayTraceHitTargetBlock(eyePosition, eyeLookDir, maxDistance, interactBlockVec, expectedBlockFace)) {
                         return true; // If any possible face matches the client-side placement, assume it's legitimate
@@ -168,16 +169,6 @@ public class LineOfSightPlace extends BlockPlaceCheck {
         }
 
         return false; // No matching face found
-    }
-
-    // Helper method to calculate direction (replace the Ray class method)
-    private void calculateDirection(double[] result, double xRot, double yRot) {
-        float rotX = (float) Math.toRadians(xRot);
-        float rotY = (float) Math.toRadians(yRot);
-        result[1] = -player.trigHandler.sin(rotY);
-        double xz = player.trigHandler.cos(rotY);
-        result[0] = -xz * player.trigHandler.sin(rotX);
-        result[2] = xz * player.trigHandler.cos(rotX);
     }
 
     private boolean didRayTraceHitTargetBlock(double[] eyePos, double[] eyeDir, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace) {
