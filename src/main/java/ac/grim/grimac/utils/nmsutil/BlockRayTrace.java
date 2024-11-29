@@ -281,7 +281,7 @@ public class BlockRayTrace {
     }
 
     @Nullable
-    public static HitData getNearestHitResult(GrimPlayer player, PacketEntity targetEntity, Vector eyePos, Vector lookVec) {
+    public static HitData getNearestHitResult(GrimPlayer player, PacketEntity targetEntity, Vector eyePos, Vector lookVec, boolean skipBlockCheck, boolean skipReachCheck) {
 
         double maxAttackDistance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
         double maxBlockDistance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE);
@@ -293,56 +293,62 @@ public class BlockRayTrace {
         Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
 
         // Get block hit
-        HitData blockHitData = getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, maxBlockDistance);
-        double closestDistanceSquared = blockHitData != null ? blockHitData.getBlockHitLocation().distanceSquared(startingVec) : maxAttackDistance * maxAttackDistance;
+        HitData blockHitData = null;
         Vector closestHitVec = null;
         PacketEntity closestEntity = null;
+        double closestDistanceSquared = Double.MAX_VALUE;
+        if (!skipBlockCheck) {
+            blockHitData = getTraverseResult(player, null, startingPos, startingVec, trace, endPos, false, true, maxBlockDistance);
+            closestDistanceSquared = blockHitData != null ? blockHitData.getBlockHitLocation().distanceSquared(startingVec) : maxAttackDistance * maxAttackDistance;
+        }
 
         // Check entities
-        for (PacketEntity entity : player.compensatedEntities.entityMap.values().stream().filter(TypedPacketEntity::canHit).collect(Collectors.toList())) {
-            SimpleCollisionBox box = null;
-            // 1.7 and 1.8 players get a bit of extra hitbox (this is why you should use 1.8 on cross version servers)
-            // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
+        if (!skipReachCheck) {
+            for (PacketEntity entity : player.compensatedEntities.entityMap.values().stream().filter(TypedPacketEntity::canHit).collect(Collectors.toList())) {
+                SimpleCollisionBox box = null;
+                // 1.7 and 1.8 players get a bit of extra hitbox (this is why you should use 1.8 on cross version servers)
+                // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
 
-            if (entity.equals(targetEntity)) {
-                box = entity.getPossibleCollisionBoxes();
-                box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
-                // This is better than adding to the reach, as 0.03 can cause a player to miss their target
-                // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
-                //
-                // Just give the uncertainty on 1.9+ clients as we have no way of knowing whether they had 0.03 movement
-                if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
-                    box.expand(player.getMovementThreshold());
-                if (ReachUtils.isVecInside(box, eyePos)) {
-                    return new EntityHitData(entity, eyePos);
-                }
-            } else {
-                CollisionBox b = entity.getMinimumPossibleCollisionBoxes();
-                if (b instanceof NoCollisionBox) {
-                    continue;
+                if (entity.equals(targetEntity)) {
+                    box = entity.getPossibleCollisionBoxes();
+                    box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
+                    // This is better than adding to the reach, as 0.03 can cause a player to miss their target
+                    // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
+                    //
+                    // Just give the uncertainty on 1.9+ clients as we have no way of knowing whether they had 0.03 movement
+                    if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
+                        box.expand(player.getMovementThreshold());
+                    if (ReachUtils.isVecInside(box, eyePos)) {
+                        return new EntityHitData(entity, eyePos);
+                    }
                 } else {
-                    box = (SimpleCollisionBox) b;
+                    CollisionBox b = entity.getMinimumPossibleCollisionBoxes();
+                    if (b instanceof NoCollisionBox) {
+                        continue;
+                    } else {
+                        box = (SimpleCollisionBox) b;
+                    }
+                    // todo, shrink by reachThreshold as well for non-target entities?
+                    if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
+                        box.expand(-player.getMovementThreshold());
+                    if (ReachUtils.isVecInside(box, eyePos)) {
+                        continue;
+                    }
                 }
-                // todo, shrink by reachThreshold as well for non-target entities?
-                if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
-                    box.expand(-player.getMovementThreshold());
-                if (ReachUtils.isVecInside(box, eyePos)) {
-                    continue;
+                if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+                    box.expand(0.1f);
                 }
-            }
-            if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
-                box.expand(0.1f);
-            }
 
 
-            Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
+                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
 
-            if (intercept.getFirst() != null) {
-                double distSquared = intercept.getFirst().distanceSquared(startingVec);
-                if (distSquared < closestDistanceSquared) {
-                    closestDistanceSquared = distSquared;
-                    closestHitVec = intercept.getFirst();
-                    closestEntity = entity;
+                if (intercept.getFirst() != null) {
+                    double distSquared = intercept.getFirst().distanceSquared(startingVec);
+                    if (distSquared < closestDistanceSquared) {
+                        closestDistanceSquared = distSquared;
+                        closestHitVec = intercept.getFirst();
+                        closestEntity = entity;
+                    }
                 }
             }
         }

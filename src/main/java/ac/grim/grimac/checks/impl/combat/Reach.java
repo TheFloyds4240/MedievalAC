@@ -70,6 +70,8 @@ public class Reach extends Check implements PacketCheck {
     private static final double ENTITY_HITBOX_REACH_EPSILON = 1E-12;
 
     private boolean ignoreNonPlayerTargets;
+    private boolean skipBlockCheck;
+    private boolean skipEntityCheck;
     private boolean cancelImpossibleHits;
     public double reachThreshold;
     private double cancelBuffer; // For the next 4 hits after using reach, we aggressively cancel reach
@@ -255,19 +257,20 @@ public class Reach extends Check implements PacketCheck {
         HitData foundHitData = null;
         // If the entity is within range of the player (we'll flag anyway if not, so no point checking blocks in this case)
         // Ignore when could be hitting through a moving shulker, piston blocks. They are just too glitchy/uncertain to check.
-        if (minDistance <= distance - 3 && !player.compensatedWorld.isNearHardEntity(player.boundingBox.copy().expand(4))) {
-            final @Nullable Pair<Double, HitData> hitResult = didRayTraceHit(reachEntity, possibleLookDirs, from);
+        if (!skipEntityCheck || !skipBlockCheck) {
+            if (minDistance <= distance - 3 && !player.compensatedWorld.isNearHardEntity(player.boundingBox.copy().expand(4))) {
+                final @Nullable Pair<Double, HitData> hitResult = didRayTraceHit(reachEntity, possibleLookDirs, from);
 
-            // if the hitResult is closer to the player than the target entity box, they shouldn't have hit the target entity
-            // We are checking if the diff > epsilon because the hit distance returned is slightly different due to floating point shennanigans
-            // - This filters out when the ray trace hits the target entity without having to do an expensive .equals()
-            // - You may have to adjust the epsilon if you increase the reach threshold, especially by a lot
-            // ...but there is literally no reason you would ever want to increase it, only decrease, so that doesn't matter.
-           if (hitResult != null && (minDistance * minDistance) - hitResult.getFirst() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
-               System.out.println("Dist Diff: " + Math.sqrt((minDistance * minDistance) - hitResult.getFirst()));
-               minDistance = Double.MIN_VALUE;
-               foundHitData = hitResult.getSecond();
-           }
+                // if the hitResult is closer to the player than the target entity box, they shouldn't have hit the target entity
+                // We are checking if the diff > epsilon because the hit distance returned is slightly different due to floating point shennanigans
+                // - This filters out when the ray trace hits the target entity without having to do an expensive .equals()
+                // - You may have to adjust the epsilon if you increase the reach threshold, especially by a lot
+                // ...but there is literally no reason you would ever want to increase it, only decrease, so that doesn't matter.
+                if (hitResult != null && (minDistance * minDistance) - hitResult.getFirst() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
+                    minDistance = Double.MIN_VALUE;
+                    foundHitData = hitResult.getSecond();
+                }
+            }
         }
 
         // if the entity is not exempt and the entity is alive
@@ -316,7 +319,7 @@ public class Reach extends Check implements PacketCheck {
             for (double eye : player.getPossibleEyeHeights()) {
                 Vector eyes = new Vector(from.getX(), from.getY() + eye, from.getZ());
                 // this function is completely 0.03 aware
-                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, targetEntity, eyes, lookVec);
+                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, targetEntity, eyes, lookVec, skipBlockCheck, skipEntityCheck);
 
                 if (hitResult == null) continue;
 
@@ -356,6 +359,8 @@ public class Reach extends Check implements PacketCheck {
     @Override
     public void onReload(ConfigManager config) {
         this.ignoreNonPlayerTargets = config.getBooleanElse("Reach.ignore-non-player-targets", false);
+        this.skipBlockCheck = config.getBooleanElse("Reach.skip-block-check", false);
+        this.skipEntityCheck = config.getBooleanElse("Reach.skip-entity-check", true);
         this.cancelImpossibleHits = config.getBooleanElse("Reach.block-impossible-hits", true);
         this.reachThreshold = config.getDoubleElse("Reach.threshold", 0.0005);
     }
