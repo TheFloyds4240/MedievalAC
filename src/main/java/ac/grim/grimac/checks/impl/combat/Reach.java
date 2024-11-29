@@ -259,7 +259,7 @@ public class Reach extends Check implements PacketCheck {
         // Ignore when could be hitting through a moving shulker, piston blocks. They are just too glitchy/uncertain to check.
         if (!skipEntityCheck || !skipBlockCheck) {
             if (minDistance <= distance - 3 && !player.compensatedWorld.isNearHardEntity(player.boundingBox.copy().expand(4))) {
-                final @Nullable Pair<Double, HitData> hitResult = didRayTraceHit(reachEntity, possibleLookDirs, from);
+                final @Nullable Pair<Double, HitData> hitResult = didRayTraceHit(reachEntity, possibleLookDirs, from, minDistance);
 
                 // if the hitResult is closer to the player than the target entity box, they shouldn't have hit the target entity
                 // We are checking if the diff > epsilon because the hit distance returned is slightly different due to floating point shennanigans
@@ -307,7 +307,7 @@ public class Reach extends Check implements PacketCheck {
 
     // Checks if it was possible to hit a target entity
     @Nullable
-    private Pair<Double, HitData> didRayTraceHit(PacketEntity targetEntity, List<Vector> possibleLookDirs, Vector3d from) {
+    private Pair<Double, HitData> didRayTraceHit(PacketEntity targetEntity, List<Vector> possibleLookDirs, Vector3d from, double minDistance) {
         HitData bestHitData = null;
         double bestDistanceSq = Double.MAX_VALUE;
         double bestBlockingEntityDistanceSq = Double.MAX_VALUE;
@@ -319,9 +319,13 @@ public class Reach extends Check implements PacketCheck {
             for (double eye : player.getPossibleEyeHeights()) {
                 Vector eyes = new Vector(from.getX(), from.getY() + eye, from.getZ());
                 // this function is completely 0.03 aware
-                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, targetEntity, eyes, lookVec, skipBlockCheck, skipEntityCheck);
+                final HitData hitResult = BlockRayTrace.getNearestHitResult(player, targetEntity, eyes, lookVec, minDistance, skipBlockCheck, skipEntityCheck);
 
-                if (hitResult == null) continue;
+                if (hitResult == null)
+                    if (skipEntityCheck)
+                        return null;
+                    else
+                        continue;
 
                 double distanceSquared = eyes.distanceSquared(hitResult.getBlockHitLocation());
 
