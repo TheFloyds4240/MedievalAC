@@ -20,6 +20,7 @@ import ac.grim.grimac.checks.impl.misc.GhostBlockMitigation;
 import ac.grim.grimac.checks.impl.movement.*;
 import ac.grim.grimac.checks.impl.packetorder.*;
 import ac.grim.grimac.checks.impl.post.Post;
+import ac.grim.grimac.checks.impl.multiactions.*;
 import ac.grim.grimac.checks.impl.prediction.DebugHandler;
 import ac.grim.grimac.checks.impl.prediction.NoFallB;
 import ac.grim.grimac.checks.impl.prediction.OffsetHandler;
@@ -99,7 +100,6 @@ public class CheckManager {
                 .put(BadPacketsS.class, new BadPacketsS(player))
                 .put(BadPacketsT.class, new BadPacketsT(player))
                 .put(BadPacketsU.class, new BadPacketsU(player))
-                .put(BadPacketsV.class, new BadPacketsV(player))
                 .put(BadPacketsW.class, new BadPacketsW(player))
                 .put(BadPacketsX.class, new BadPacketsX(player))
                 .put(BadPacketsY.class, new BadPacketsY(player))
@@ -109,6 +109,11 @@ public class CheckManager {
                 .put(InventoryE.class, new InventoryE(player))
                 .put(InventoryF.class, new InventoryF(player))
                 .put(InventoryG.class, new InventoryG(player))
+                .put(MultiActionsA.class, new MultiActionsA(player))
+                .put(MultiActionsB.class, new MultiActionsB(player))
+                .put(MultiActionsC.class, new MultiActionsC(player))
+                .put(MultiActionsD.class, new MultiActionsD(player))
+                .put(MultiActionsE.class, new MultiActionsE(player))
                 .put(FastBreak.class, new FastBreak(player))
                 .put(PacketOrderB.class, new PacketOrderB(player))
                 .put(PacketOrderC.class, new PacketOrderC(player))
@@ -173,6 +178,7 @@ public class CheckManager {
                 .put(InvalidPlaceB.class, new InvalidPlaceB(player))
                 .put(AirLiquidPlace.class, new AirLiquidPlace(player))
                 .put(MultiPlace.class, new MultiPlace(player))
+                .put(MultiActionsF.class, new MultiActionsF(player))
                 .put(FarPlace.class, new FarPlace(player))
                 .put(FabricatedPlace.class, new FabricatedPlace(player))
                 .put(PositionPlace.class, new PositionPlace(player))
