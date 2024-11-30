@@ -87,6 +87,8 @@ public class PlayerBaseTick {
 
         if (player.compensatedEntities.getSelf().inVehicle()) player.isSlowMovement = false;
 
+        if (wasSlowMovement != player.isSlowMovement) player.checkManager.getPostPredictionCheck(NoSlowC.class).startedSprintingBeforeSlowMovement = player.isSlowMovement && player.isSprinting;
+
         // Players in boats don't care about being in blocks
         if (!player.compensatedEntities.getSelf().inVehicle()) {
             this.moveTowardsClosestSpace(player.lastX - (player.boundingBox.maxX - player.boundingBox.minX) * 0.35, player.lastZ + (player.boundingBox.maxZ - player.boundingBox.minZ) * 0.35);
