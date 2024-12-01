@@ -275,28 +275,36 @@ public class CompensatedEntities {
         }
 
         if (entity instanceof PacketEntityShulker) {
-            int id;
+            int facingID;
+            int shieldHeightID;
 
             if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_9_4)) {
-                id = 11;
+                facingID = 11;
+                shieldHeightID = facingID+1;
             } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_13_2)) {
-                id = 12;
+                facingID = 12;
+                shieldHeightID = facingID+1;
             } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_14_4)) {
-                id = 14;
+                facingID = 14;
+                shieldHeightID = facingID+1;
             } else if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_16_5)) {
-                id = 15;
+                facingID = 15;
+                shieldHeightID = facingID+1;
             } else {
-                id = 16;
+                facingID = 16;
+                shieldHeightID = 17;
             }
 
-            EntityData shulkerAttached = WatchableIndexUtil.getIndex(watchableObjects, id);
+            EntityData shulkerAttached = WatchableIndexUtil.getIndex(watchableObjects, facingID);
+            EntityData shieldHeight = WatchableIndexUtil.getIndex(watchableObjects, facingID);
 
             if (shulkerAttached != null) {
                 // This NMS -> Bukkit conversion is great and works in all 11 versions.
                 ((PacketEntityShulker) entity).facing = BlockFace.valueOf(shulkerAttached.getValue().toString().toUpperCase());
+                ((PacketEntityShulker) entity).shieldHeight = ((Byte) shieldHeight.getValue()).intValue();
             }
 
-            EntityData height = WatchableIndexUtil.getIndex(watchableObjects, id + 2);
+            EntityData height = WatchableIndexUtil.getIndex(watchableObjects, facingID + 2);
             if (height != null) {
                 if ((byte) height.getValue() == 0) {
                     ShulkerData data = new ShulkerData(entity, player.lastTransactionSent.get(), true);

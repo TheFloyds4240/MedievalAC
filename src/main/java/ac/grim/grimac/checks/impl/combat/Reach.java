@@ -64,8 +64,8 @@ public class Reach extends Check implements PacketCheck {
 
     private static final List<EntityType> blacklisted = Arrays.asList(
             EntityTypes.BOAT,
-            EntityTypes.CHEST_BOAT,
-            EntityTypes.SHULKER);
+            EntityTypes.CHEST_BOAT
+    );
 
     private static final double ENTITY_HITBOX_REACH_EPSILON = 1E-12;
 
@@ -298,8 +298,12 @@ public class Reach extends Check implements PacketCheck {
 
     public void handleBlockChange(Vector3i vector3i, WrappedBlockState state) {
         if (blocksChangedThisTick.size() >= 40) return; // Don't let players freeze movement packets to grow this
-        // Only do this for nearby blocks
-        if (new Vector(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector(player.x, player.y, player.z)) > 6) return;
+
+        // since we're checking reach distance, we only care about blocks closer than the players max reach distance
+        double maxReach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE);
+        if ((vector3i.x * vector3i.x + vector3i.y * vector3i.y + vector3i.z * vector3i.z)
+            - (player.x * player.x + player.y * player.y + player.z * player.z)
+                > maxReach * maxReach) return;
         // Only do this if the state really had any world impact
         if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
         blocksChangedThisTick.add(vector3i);
@@ -342,6 +346,11 @@ public class Reach extends Check implements PacketCheck {
                         bestBlockingEntityHit = hitResult;
                     }
                 } else if (hitResult instanceof BlockHitData) {
+                    // bad hack for fixing false with super rapidly changing blocks
+                    if (distanceSquared < (minDistance * minDistance) && blocksChangedThisTick.contains(((BlockHitData) hitResult).getPosition())) {
+                        return null;
+                    }
+
                     // Check if block is closer than any blocking entity found
                     if (bestBlockingEntityHit == null && distanceSquared < bestDistanceSq) {
                         bestDistanceSq = distanceSquared;

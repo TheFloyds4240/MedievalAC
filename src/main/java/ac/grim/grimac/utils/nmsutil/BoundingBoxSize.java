@@ -2,10 +2,7 @@ package ac.grim.grimac.utils.nmsutil;
 
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
-import ac.grim.grimac.utils.data.packetentity.PacketEntity;
-import ac.grim.grimac.utils.data.packetentity.PacketEntityHorse;
-import ac.grim.grimac.utils.data.packetentity.PacketEntitySizeable;
-import ac.grim.grimac.utils.data.packetentity.PacketEntityTrackXRot;
+import ac.grim.grimac.utils.data.packetentity.*;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -325,7 +322,6 @@ public final class BoundingBoxSize {
             if (packetEntity instanceof PacketEntitySizeable) {
                 return 0.5f + ((PacketEntitySizeable) packetEntity).size * 0.1f;
             }
-
             return 1.8f;
         } else if (EntityTypes.PLAYER.equals(type)) {
             return 1.8f;
@@ -341,8 +337,8 @@ public final class BoundingBoxSize {
             return 0.4f;
         } else if (EntityTypes.SHEEP.equals(type) || EntityTypes.GOAT.equals(type)) {
             return 1.3f;
-        } else if (EntityTypes.SHULKER.equals(type)) { // Could maybe guess peek size, although seems useless
-            return 2.0f;
+        } else if (EntityTypes.SHULKER.equals(type)) {
+            return 1.0f + (float) ((PacketEntityShulker) packetEntity).shieldHeight / 100;
         } else if (EntityTypes.SILVERFISH.equals(type)) {
             return 0.3f;
         } else if (EntityTypes.SKELETON.equals(type)) {
@@ -357,7 +353,6 @@ public final class BoundingBoxSize {
                         ? 2.04f * (0.255f * size)
                         : 0.51000005f * size;
             }
-
             return 0.3125f;
         } else if (EntityTypes.SMALL_FIREBALL.equals(type)) {
             return 0.3125f;
