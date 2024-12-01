@@ -151,7 +151,7 @@ public class Reach extends Check implements PacketCheck {
     // Meaning that the other check should be the only one that flags.
     private boolean isKnownInvalid(PacketEntity reachEntity) {
         // If the entity doesn't exist, or if it is exempt, or if it is dead
-        if ((blacklisted.contains(reachEntity.getType()) || !reachEntity.isLivingEntity()) && reachEntity.getType() != EntityTypes.END_CRYSTAL)
+        if ((blacklisted.contains(reachEntity.getType()) || !reachEntity.canHit()) && reachEntity.getType() != EntityTypes.END_CRYSTAL)
             return false; // exempt
 
         if (player.gamemode == GameMode.CREATIVE || player.gamemode == GameMode.SPECTATOR) return false;
@@ -162,6 +162,9 @@ public class Reach extends Check implements PacketCheck {
             return checkReach(reachEntity, new Vector3d(player.x, player.y, player.z), true) != null; // If they flagged
         } else {
             SimpleCollisionBox targetBox = reachEntity.getPossibleCollisionBoxes();
+            //  TODO Are you sure we're supposed to expand the area/inteporlated box by 0.03 and not expand by 0.03/0.002 and then do interpolation?
+            targetBox.expand(reachEntity.getTargetingMargin());
+
             if (reachEntity.getType() == EntityTypes.END_CRYSTAL) {
                 targetBox = new SimpleCollisionBox(reachEntity.trackedServerPosition.getPos().subtract(1, 0, 1), reachEntity.trackedServerPosition.getPos().add(1, 2, 1));
             }
@@ -202,7 +205,7 @@ public class Reach extends Check implements PacketCheck {
             targetBox.expand(0.1f);
         }
 
-        targetBox.expand(reachThreshold);
+        targetBox.expand(reachThreshold + reachEntity.getTargetingMargin());
 
         // This is better than adding to the reach, as 0.03 can cause a player to miss their target
         // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
@@ -274,7 +277,7 @@ public class Reach extends Check implements PacketCheck {
         }
 
         // if the entity is not exempt and the entity is alive
-        if ((!blacklisted.contains(reachEntity.getType()) && reachEntity.isLivingEntity()) || reachEntity.getType() == EntityTypes.END_CRYSTAL) {
+        if ((!blacklisted.contains(reachEntity.getType()) && reachEntity.canHit()) || reachEntity.getType() == EntityTypes.END_CRYSTAL) {
             if (minDistance == Double.MIN_VALUE && foundHitData != null) {
                 cancelBuffer = 1;
                 if (foundHitData instanceof BlockHitData) {

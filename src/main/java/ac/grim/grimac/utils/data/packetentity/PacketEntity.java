@@ -232,4 +232,8 @@ public class PacketEntity extends TypedPacketEntity {
         if (potionsMap == null) return;
         potionsMap.removeInt(effect);
     }
+
+    public float getTargetingMargin() {
+        return 0.0F;
+    }
 }

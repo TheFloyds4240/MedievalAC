@@ -183,8 +183,12 @@ public class CompensatedEntities {
             packetEntity = new PacketEntityHook(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
         } else if (EntityTypes.ENDER_DRAGON.equals(entityType)) {
             packetEntity = new PacketEntityEnderDragon(player, uuid, entityID, position.getX(), position.getY(), position.getZ());
-        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_ARROW)) {
-            packetEntity = new PacketEntityArrow(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.SHULKER_BULLET.equals(entityType)) {
+            packetEntity = new PacketEntityShulkerBullet(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_ARROW) || EntityTypes.TRIDENT.equals(entityType)) {
+            packetEntity = new PacketEntityPersistentProjectile(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
+        } else if (EntityTypes.isTypeInstanceOf(entityType, EntityTypes.PROJECTILE_ABSTRACT) || EntityTypes.isTypeInstanceOf(entityType, EntityTypes.ABSTRACT_FIREBALL)) {
+            packetEntity = new PacketEntityProjectile(player, uuid, entityType, position.getX(), position.getY(), position.getZ());
         } else if (EntityTypes.ARMOR_STAND.equals(entityType)) {
             packetEntity = new PacketEntityArmorStand(player, uuid, entityType, position.getX(), position.getY(), position.getZ(), data);
         } else if (entityType == EntityTypes.PAINTING) {

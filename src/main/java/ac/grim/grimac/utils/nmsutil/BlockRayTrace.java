@@ -311,7 +311,10 @@ public class BlockRayTrace {
 
                 if (entity.equals(targetEntity)) {
                     box = entity.getPossibleCollisionBoxes();
-                    box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
+                    box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold + entity.getTargetingMargin());
+                    if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+                        box.expand(0.1f);
+                    }
                     // This is better than adding to the reach, as 0.03 can cause a player to miss their target
                     // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity
                     //
@@ -328,6 +331,10 @@ public class BlockRayTrace {
                     } else {
                         box = (SimpleCollisionBox) b;
                     }
+                    box.expand(entity.getTargetingMargin() - player.checkManager.getPacketCheck(Reach.class).reachThreshold);
+                    if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+                        box.expand(0.1f);
+                    }
                     // todo, shrink by reachThreshold as well for non-target entities?
                     if (!player.packetStateData.didLastLastMovementIncludePosition || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9))
                         box.expand(-player.getMovementThreshold());
@@ -335,10 +342,6 @@ public class BlockRayTrace {
                         continue;
                     }
                 }
-                if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
-                    box.expand(0.1f);
-                }
-
 
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
 
