@@ -310,8 +310,8 @@ public class BlockRayTrace {
                 // Yes, this is vanilla and not uncertainty.  All reach checks have this or they are wrong.
 
                 if (entity.equals(targetEntity)) {
-                    box = entity.getPossibleCollisionBoxes();
-                    box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold + entity.getTargetingMargin());
+                    box = entity.getPossibleAttackBoxes();
+                    box.expand(player.checkManager.getPacketCheck(Reach.class).reachThreshold);
                     if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
                         box.expand(0.1f);
                     }
@@ -325,13 +325,13 @@ public class BlockRayTrace {
                         return new EntityHitData(entity, eyePos);
                     }
                 } else {
-                    CollisionBox b = entity.getMinimumPossibleCollisionBoxes();
+                    CollisionBox b = entity.getMinimumPossibleAttackBoxes();
                     if (b instanceof NoCollisionBox) {
                         continue;
                     } else {
                         box = (SimpleCollisionBox) b;
                     }
-                    box.expand(entity.getTargetingMargin() - player.checkManager.getPacketCheck(Reach.class).reachThreshold);
+                    box.expand(-player.checkManager.getPacketCheck(Reach.class).reachThreshold);
                     if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
                         box.expand(0.1f);
                     }

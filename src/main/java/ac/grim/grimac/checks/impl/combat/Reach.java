@@ -161,13 +161,11 @@ public class Reach extends Check implements PacketCheck {
         if (cancelBuffer != 0) {
             return checkReach(reachEntity, new Vector3d(player.x, player.y, player.z), true) != null; // If they flagged
         } else {
-            SimpleCollisionBox targetBox = reachEntity.getPossibleCollisionBoxes();
-            //  TODO Are you sure we're supposed to expand the area/inteporlated box by 0.03 and not expand by 0.03/0.002 and then do interpolation?
-            targetBox.expand(reachEntity.getTargetingMargin());
-
+            SimpleCollisionBox targetBox = reachEntity.getPossibleAttackBoxes();
             if (reachEntity.getType() == EntityTypes.END_CRYSTAL) {
                 targetBox = new SimpleCollisionBox(reachEntity.trackedServerPosition.getPos().subtract(1, 0, 1), reachEntity.trackedServerPosition.getPos().add(1, 2, 1));
             }
+            //  TODO Are you sure we're supposed to expand the area/inteporlated box by 0.03 and not expand by 0.03/0.002 and then do interpolation?
             return ReachUtils.getMinReachToBox(player, targetBox) > player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE);
         }
     }
@@ -193,7 +191,7 @@ public class Reach extends Check implements PacketCheck {
     }
 
     private String checkReach(PacketEntity reachEntity, Vector3d from, boolean isPrediction) {
-        SimpleCollisionBox targetBox = reachEntity.getPossibleCollisionBoxes();
+        SimpleCollisionBox targetBox = reachEntity.getPossibleAttackBoxes();
 
         if (reachEntity.getType() == EntityTypes.END_CRYSTAL) { // Hardcode end crystal box
             targetBox = new SimpleCollisionBox(reachEntity.trackedServerPosition.getPos().subtract(1, 0, 1), reachEntity.trackedServerPosition.getPos().add(1, 2, 1));
@@ -205,7 +203,7 @@ public class Reach extends Check implements PacketCheck {
             targetBox.expand(0.1f);
         }
 
-        targetBox.expand(reachThreshold + reachEntity.getTargetingMargin());
+        targetBox.expand(reachThreshold);
 
         // This is better than adding to the reach, as 0.03 can cause a player to miss their target
         // Adds some more than 0.03 uncertainty in some cases, but a good trade off for simplicity

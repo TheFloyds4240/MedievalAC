@@ -207,6 +207,28 @@ public class PacketEntity extends TypedPacketEntity {
         return ReachInterpolationData.combineCollisionBox(oldPacketLocation.getPossibleLocationCombined(), newPacketLocation.getPossibleLocationCombined());
     }
 
+    public SimpleCollisionBox getPossibleAttackBoxes() {
+        if (oldPacketLocation == null) {
+            return newPacketLocation.getPossibleAttackLocationCombined(getTargetingMargin());
+        }
+
+        return ReachInterpolationData.combineCollisionBox(
+                oldPacketLocation.getPossibleAttackLocationCombined(getTargetingMargin()),
+                newPacketLocation.getPossibleAttackLocationCombined(getTargetingMargin())
+        );
+    }
+
+    public CollisionBox getMinimumPossibleAttackBoxes() {
+        if (oldPacketLocation == null) {
+            return newPacketLocation.getOverlapAttackLocationCombined(getTargetingMargin());
+        }
+
+        return ReachInterpolationData.getOverlapHitbox(
+                oldPacketLocation.getOverlapAttackLocationCombined(getTargetingMargin()),
+                newPacketLocation.getOverlapAttackLocationCombined(getTargetingMargin())
+        );
+    }
+
     public PacketEntity getRiding() {
         return riding;
     }

@@ -54,8 +54,6 @@ public class ReachInterpolationData {
             interpolationSteps = 5;
         } else if (entity.getType() == EntityTypes.SHULKER) {
             interpolationSteps = 1;
-        } else if (entity.isLivingEntity()) {
-            interpolationSteps = 3;
         } else {
             interpolationSteps = 1;
         }
@@ -176,6 +174,80 @@ public class ReachInterpolationData {
             if (overlapLocation == null) {
                 // No overlap found, you might want to handle this case specifically
                 // For example, return null or a default box
+                return NoCollisionBox.INSTANCE;
+            }
+        }
+
+        return overlapLocation;
+    }
+
+    public SimpleCollisionBox getPossibleAttackLocationCombined(float targetMargin) {
+        int interpSteps = getInterpolationSteps();
+
+        // Create expanded boxes
+        SimpleCollisionBox expandedStart = startingLocation.copy().expand(targetMargin);
+        SimpleCollisionBox expandedTarget = targetLocation.copy().expand(targetMargin);
+
+        double stepMinX = (expandedTarget.minX - expandedStart.minX) / (double) interpSteps;
+        double stepMaxX = (expandedTarget.maxX - expandedStart.maxX) / (double) interpSteps;
+        double stepMinY = (expandedTarget.minY - expandedStart.minY) / (double) interpSteps;
+        double stepMaxY = (expandedTarget.maxY - expandedStart.maxY) / (double) interpSteps;
+        double stepMinZ = (expandedTarget.minZ - expandedStart.minZ) / (double) interpSteps;
+        double stepMaxZ = (expandedTarget.maxZ - expandedStart.maxZ) / (double) interpSteps;
+
+        SimpleCollisionBox minimumInterpLocation = new SimpleCollisionBox(
+                expandedStart.minX + (interpolationStepsLowBound * stepMinX),
+                expandedStart.minY + (interpolationStepsLowBound * stepMinY),
+                expandedStart.minZ + (interpolationStepsLowBound * stepMinZ),
+                expandedStart.maxX + (interpolationStepsLowBound * stepMaxX),
+                expandedStart.maxY + (interpolationStepsLowBound * stepMaxY),
+                expandedStart.maxZ + (interpolationStepsLowBound * stepMaxZ));
+
+        for (int step = interpolationStepsLowBound + 1; step <= interpolationStepsHighBound; step++) {
+            minimumInterpLocation = combineCollisionBox(minimumInterpLocation, new SimpleCollisionBox(
+                    expandedStart.minX + (step * stepMinX),
+                    expandedStart.minY + (step * stepMinY),
+                    expandedStart.minZ + (step * stepMinZ),
+                    expandedStart.maxX + (step * stepMaxX),
+                    expandedStart.maxY + (step * stepMaxY),
+                    expandedStart.maxZ + (step * stepMaxZ)));
+        }
+
+        return minimumInterpLocation;
+    }
+
+    public CollisionBox getOverlapAttackLocationCombined(float targetMargin) {
+        int interpSteps = getInterpolationSteps();
+
+        // Create expanded boxes
+        SimpleCollisionBox expandedStart = startingLocation.copy().expand(targetMargin);
+        SimpleCollisionBox expandedTarget = targetLocation.copy().expand(targetMargin);
+
+        double stepMinX = (expandedTarget.minX - expandedStart.minX) / (double) interpSteps;
+        double stepMaxX = (expandedTarget.maxX - expandedStart.maxX) / (double) interpSteps;
+        double stepMinY = (expandedTarget.minY - expandedStart.minY) / (double) interpSteps;
+        double stepMaxY = (expandedTarget.maxY - expandedStart.maxY) / (double) interpSteps;
+        double stepMinZ = (expandedTarget.minZ - expandedStart.minZ) / (double) interpSteps;
+        double stepMaxZ = (expandedTarget.maxZ - expandedStart.maxZ) / (double) interpSteps;
+
+        CollisionBox overlapLocation = new SimpleCollisionBox(
+                expandedStart.minX + (interpolationStepsLowBound * stepMinX),
+                expandedStart.minY + (interpolationStepsLowBound * stepMinY),
+                expandedStart.minZ + (interpolationStepsLowBound * stepMinZ),
+                expandedStart.maxX + (interpolationStepsLowBound * stepMaxX),
+                expandedStart.maxY + (interpolationStepsLowBound * stepMaxY),
+                expandedStart.maxZ + (interpolationStepsLowBound * stepMaxZ));
+
+        for (int step = interpolationStepsLowBound + 1; step <= interpolationStepsHighBound; step++) {
+            overlapLocation = getOverlapHitbox(overlapLocation, new SimpleCollisionBox(
+                    expandedStart.minX + (step * stepMinX),
+                    expandedStart.minY + (step * stepMinY),
+                    expandedStart.minZ + (step * stepMinZ),
+                    expandedStart.maxX + (step * stepMaxX),
+                    expandedStart.maxY + (step * stepMaxY),
+                    expandedStart.maxZ + (step * stepMaxZ)));
+
+            if (overlapLocation == null) {
                 return NoCollisionBox.INSTANCE;
             }
         }
