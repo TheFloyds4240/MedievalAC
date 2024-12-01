@@ -338,7 +338,9 @@ public final class BoundingBoxSize {
         } else if (EntityTypes.SHEEP.equals(type) || EntityTypes.GOAT.equals(type)) {
             return 1.3f;
         } else if (EntityTypes.SHULKER.equals(type)) {
-            return 1.0f + (float) ((PacketEntityShulker) packetEntity).shieldHeight / 100;
+            float baseHeight = 1.0F;
+            float extraLength = 0.5F - player.trigHandler.sin((0.5F + ((PacketEntityShulker) packetEntity).shieldHeight * 0.01F) * (float) Math.PI) * 0.5F;
+            return baseHeight + extraLength;
         } else if (EntityTypes.SILVERFISH.equals(type)) {
             return 0.3f;
         } else if (EntityTypes.SKELETON.equals(type)) {

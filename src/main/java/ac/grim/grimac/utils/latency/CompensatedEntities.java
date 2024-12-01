@@ -300,13 +300,17 @@ public class CompensatedEntities {
             }
 
             EntityData shulkerAttached = WatchableIndexUtil.getIndex(watchableObjects, facingID);
-            EntityData shieldHeight = WatchableIndexUtil.getIndex(watchableObjects, facingID);
+            EntityData shieldHeight = WatchableIndexUtil.getIndex(watchableObjects, shieldHeightID);
 
             if (shulkerAttached != null) {
                 // This NMS -> Bukkit conversion is great and works in all 11 versions.
                 ((PacketEntityShulker) entity).facing = BlockFace.valueOf(shulkerAttached.getValue().toString().toUpperCase());
+            }
+            // shieldHeight should never be null?
+            if (shieldHeight != null) {
                 ((PacketEntityShulker) entity).shieldHeight = ((Byte) shieldHeight.getValue()).intValue();
             }
+
 
             EntityData height = WatchableIndexUtil.getIndex(watchableObjects, facingID + 2);
             if (height != null) {
