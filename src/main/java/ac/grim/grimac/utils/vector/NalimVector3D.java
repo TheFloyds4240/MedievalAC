@@ -4,6 +4,11 @@ import one.nalim.Library;
 import one.nalim.Link;
 import one.nalim.Linker;
 import org.jetbrains.annotations.NotNull;
+import jdk.internal.vm.annotation.ForceInline;
+import jdk.internal.vm.annotation.IntrinsicCandidate;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 @Library("vector_ops")
 public class NalimVector3D implements Vector3D {
@@ -12,12 +17,14 @@ public class NalimVector3D implements Vector3D {
         Linker.linkClass(NalimVector3D.class);
     }
 
-    double[] loc = new double[3];
+    private static final double[] loc = new double[]{0, 7, 10};
+
+    public final long nativePtr;  // Holds pointer to SimdVector
+    @Link(name = "create_vector")
+    private static native long create_vector(double x, double y, double z);
 
     public NalimVector3D(double x, double y, double z) {
-        loc[0] = x;
-        loc[1] = y;
-        loc[2] = z;
+        nativePtr = create_vector(0, 0, 0);
     }
 
     @Override
@@ -80,12 +87,19 @@ public class NalimVector3D implements Vector3D {
         return this;
     }
 
-    @Link(name = "cross_product")
+//    @Link(name = "delete_vector2")
+//    private static native void delete_vector(long[] x);
+
+    @IntrinsicCandidate @ForceInline @Link(name = "cross_product2")
     private static native void crossProduct(double[] a, double[] b);
+
+    @IntrinsicCandidate @ForceInline @Link(name = "cross_product")
+    private static native void cross_product(long a, long b);
 
     @Override
     public @NotNull Vector3D crossProduct(@NotNull Vector3D o) {
-        crossProduct(this.loc, ((NalimVector3D) o).loc);
+        cross_product(nativePtr, ((NalimVector3D) o).nativePtr);
+//        crossProduct(this.loc, ((NalimVector3D) o).loc);
         return this;
     }
 

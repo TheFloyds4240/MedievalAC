@@ -215,6 +215,10 @@ java {
 }
 
 tasks.withType<JavaCompile> {
+    if (name == "compileJava") {
+        options.compilerArgs.addAll(listOf("--add-exports","java.base/jdk.internal=ALL-UNNAMED",
+            "--add-exports", "java.base/jdk.internal.vm.annotation=ALL-UNNAMED"))
+    }
     if (name == "compileJava18Java") {
         options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
         sourceCompatibility = "18"
