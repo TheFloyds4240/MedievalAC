@@ -124,7 +124,6 @@ public class ScalarVector3D implements Vector3D {
         return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
     }
 
-
     @NotNull
     public Vector3D clone() {
         try {

@@ -72,8 +72,7 @@ public final class SIMDVector3D implements Vector3D {
 //        double length = Math.sqrt(sum);
 //        this.vector = this.vector.div(length);
 //        return this;
-        double length = length();
-        this.vector = this.vector.div(length).blend(FOURTH_COMPONENT_ZERO, LENGTH_3_ARRAY_MASK.not());
+        this.vector = this.vector.div(length());
         return this;
     }
 

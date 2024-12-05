@@ -301,10 +301,20 @@ tasks.register<JavaCompile>("compileGeneratedJmh") {
 tasks.register("jmh") {
     dependsOn("jmhJar")
     doLast {
+        val includes = System.getProperty("includes", "")
+
         javaexec {
             classpath = files(tasks.named("jmhJar").get().outputs.files)
             mainClass.set("org.openjdk.jmh.Main")
             jvmArgs = listOf("--add-modules", "jdk.incubator.vector")
+
+            // Initialize the args list with default settings
+            args = mutableListOf<String>().apply {
+                // Add any default arguments here if needed
+                if (includes.isNotEmpty()) {
+                    addAll(listOf(includes))
+                }
+            }
         }
     }
 }
