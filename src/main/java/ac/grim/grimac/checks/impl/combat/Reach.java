@@ -27,6 +27,7 @@ import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.nmsutil.BlockRayTrace;
 import ac.grim.grimac.utils.data.packetentity.dragon.PacketEntityEnderDragonPart;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
@@ -41,7 +42,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -50,6 +51,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 // You may not copy the check unless you are licensed under GPL
 @CheckData(name = "Reach", configName = "Reach", setback = 10)
@@ -208,7 +211,7 @@ public class Reach extends Check implements PacketCheck {
         double minDistance = Double.MAX_VALUE;
 
         // https://bugs.mojang.com/browse/MC-67665
-        List<Vector> possibleLookDirs = new ArrayList<>(Collections.singletonList(ReachUtils.getLook(player, player.xRot, player.yRot)));
+        List<Vector3D> possibleLookDirs = new ArrayList<>(Collections.singletonList(ReachUtils.getLook(player, player.xRot, player.yRot)));
 
         // If we are a tick behind, we don't know their next look so don't bother doing this
         if (!isPrediction) {
@@ -228,12 +231,12 @@ public class Reach extends Check implements PacketCheck {
         // +3 would be 3 + 3 = 6, which is the pre-1.20.5 behaviour, preventing "Missed Hitbox"
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_ENTITY_INTERACTION_RANGE) + 3;
         final double[] possibleEyeHeights = player.getPossibleEyeHeights();
-        for (Vector lookVec : possibleLookDirs) {
+        for (Vector3D lookVec : possibleLookDirs) {
             for (double eye : possibleEyeHeights) {
-                Vector eyePos = new Vector(from.getX(), from.getY() + eye, from.getZ());
-                Vector endReachPos = eyePos.clone().add(new Vector(lookVec.getX() * distance, lookVec.getY() * distance, lookVec.getZ() * distance));
+                ac.grim.grimac.utils.vector.Vector3D eyePos = newVector3D(from.getX(), from.getY() + eye, from.getZ());
+                ac.grim.grimac.utils.vector.Vector3D endReachPos = eyePos.clone().add(newVector3D(lookVec.getX() * distance, lookVec.getY() * distance, lookVec.getZ() * distance));
 
-                Vector intercept = ReachUtils.calculateIntercept(targetBox, eyePos, endReachPos).getFirst();
+                Vector3D intercept = ReachUtils.calculateIntercept(targetBox, eyePos, endReachPos).getFirst();
 
                 if (ReachUtils.isVecInside(targetBox, eyePos)) {
                     minDistance = 0;
@@ -281,7 +284,7 @@ public class Reach extends Check implements PacketCheck {
     public void handleBlockChange(Vector3i vector3i, WrappedBlockState state) {
         if (blocksChangedThisTick.size() >= 40) return; // Don't let players freeze movement packets to grow this
         // Only do this for nearby blocks
-        if (new Vector(vector3i.x, vector3i.y, vector3i.z).distanceSquared(new Vector(player.x, player.y, player.z)) > 6) return;
+        if (newVector3D(vector3i.x, vector3i.y, vector3i.z).distanceSquared(newVector3D(player.x, player.y, player.z)) > 6) return;
         // Only do this if the state really had any world impact
         if (state.equals(player.compensatedWorld.getWrappedBlockStateAt(vector3i))) return;
         blocksChangedThisTick.add(vector3i);
@@ -289,14 +292,14 @@ public class Reach extends Check implements PacketCheck {
 
     // Returns a pair so we can check the block type in the flag
     @Nullable
-    private Pair<Double, HitData> getTargetBlock(GrimPlayer player, List<Vector> possibleLookDirs, Vector3d from, double minDistance) {
+    private Pair<Double, HitData> getTargetBlock(GrimPlayer player, List<Vector3D> possibleLookDirs, Vector3d from, double minDistance) {
         // Check every possible look direction and every possible eye height
         // IF *NONE* of them allow the player to hit the entity, this is an invalid hit
         HitData bestHitData = null;
         double min = Double.MAX_VALUE;
-        for (Vector lookVec : possibleLookDirs) {
+        for (Vector3D lookVec : possibleLookDirs) {
             for (double eye : player.getPossibleEyeHeights()) {
-                Vector eyes = new Vector(from.getX(), from.getY() + eye, from.getZ());
+                Vector3D eyes = newVector3D(from.getX(), from.getY() + eye, from.getZ());
                 final double reach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
                 final HitData hitResult = BlockRayTrace.getNearestReachHitResult(player, eyes, lookVec, minDistance, reach);
                 if (hitResult == null) {

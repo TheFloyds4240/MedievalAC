@@ -1,7 +1,7 @@
 package ac.grim.grimac.utils.data;
 
 import lombok.Getter;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.Objects;
 
@@ -10,7 +10,7 @@ public class VectorData {
         public int x;
         public int z;
 
-        public MoveVectorData(Vector vector, VectorData lastVector, VectorType vectorType, int x, int z) {
+        public MoveVectorData(Vector3D vector, VectorData lastVector, VectorType vectorType, int x, int z) {
             super(vector, lastVector, vectorType);
             this.x = x;
             this.z = z;
@@ -20,7 +20,7 @@ public class VectorData {
             }
         }
 
-        public MoveVectorData(Vector vector, VectorType vectorType, int x, int z) {
+        public MoveVectorData(Vector3D vector, VectorType vectorType, int x, int z) {
             super(vector, vectorType);
             this.x = x;
             this.z = z;
@@ -34,13 +34,13 @@ public class VectorData {
     public VectorType vectorType;
     public VectorData lastVector;
     public VectorData preUncertainty;
-    public Vector vector;
+    public Vector3D vector;
 
     @Getter
     private boolean isKnockback, firstBreadKb, isExplosion, firstBreadExplosion, isTrident, isZeroPointZeroThree, isSwimHop, isFlipSneaking, isFlipItem, isJump, isAttackSlow, isWithInput;
 
     // For handling replacing the type of vector it is while keeping data
-    public VectorData(Vector vector, VectorData lastVector, VectorType vectorType) {
+    public VectorData(Vector3D vector, VectorData lastVector, VectorType vectorType) {
         this.vector = vector;
         this.lastVector = lastVector;
         this.vectorType = vectorType;
@@ -64,7 +64,7 @@ public class VectorData {
         addVectorType(vectorType);
     }
 
-    public VectorData(Vector vector, VectorType vectorType) {
+    public VectorData(Vector3D vector, VectorType vectorType) {
         this.vector = vector;
         this.vectorType = vectorType;
         addVectorType(vectorType);
@@ -74,7 +74,7 @@ public class VectorData {
         return new VectorData(vector, this, type);
     }
 
-    public VectorData returnNewModified(Vector newVec, VectorType type) {
+    public VectorData returnNewModified(Vector3D newVec, VectorType type) {
         return new VectorData(newVec, this, type);
     }
 

@@ -19,6 +19,7 @@ import ac.grim.grimac.utils.math.VectorUtils;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
@@ -31,12 +32,14 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
     // Sync to netty
@@ -65,7 +68,7 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
     @Override
     public void onPredictionComplete(final PredictionComplete predictionComplete) {
         // Grab friction now when we know player on ground and other variables
-        Vector afterTickFriction = player.clientVelocity.clone();
+        Vector3D afterTickFriction = player.clientVelocity.clone();
 
         // We must first check if the player has accepted their setback
         // If the setback isn't complete, then this position is illegitimate
@@ -115,7 +118,7 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
         return false;
     }
 
-    private void simulateFriction(Vector vector) {
+    private void simulateFriction(Vector3D vector) {
         // We must always do this before simulating positions, as this is the last actual (safe) movement
         // We must not do this for knockback or explosions, as they are at the start of the tick
         if (player.wasTouchingWater) {
@@ -123,9 +126,9 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
         } else if (player.wasTouchingLava) {
             vector.multiply(0.5D);
             if (player.hasGravity)
-                vector.add(new Vector(0.0D, -player.gravity / 4.0D, 0.0D));
+                vector.add(newVector3D(0.0D, -player.gravity / 4.0D, 0.0D));
         } else if (player.isGliding) {
-            PredictionEngineElytra.getElytraMovement(player, vector, ReachUtils.getLook(player, player.xRot, player.yRot)).multiply(player.stuckSpeedMultiplier).multiply(new Vector(0.99F, 0.98F, 0.99F));
+            PredictionEngineElytra.getElytraMovement(player, vector, ReachUtils.getLook(player, player.xRot, player.yRot)).multiply(player.stuckSpeedMultiplier).multiply(newVector3D(0.99F, 0.98F, 0.99F));
             vector.setY(vector.getY() - 0.05); // Make the player fall a bit
         } else { // Gliding doesn't have friction, we handle it differently
             PredictionEngineNormal.staticVectorEndOfTick(player, vector); // Lava and normal movement
@@ -147,9 +150,9 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
             lastWorldResync = System.currentTimeMillis();
         }
 
-        Vector clientVel = lastKnownGoodPosition.vector.clone();
+        Vector3D clientVel = lastKnownGoodPosition.vector.clone();
 
-        Pair<VelocityData, Vector> futureKb = player.checkManager.getKnockbackHandler().getFutureKnockback();
+        Pair<VelocityData, Vector3D> futureKb = player.checkManager.getKnockbackHandler().getFutureKnockback();
         VelocityData futureExplosion = player.checkManager.getExplosionHandler().getFutureExplosion();
 
         // Velocity sets
@@ -169,7 +172,7 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
 
         // Mini prediction engine - simulate collisions
         if (simulateNextTickPosition) {
-            Vector collide = Collisions.collide(player, clientVel.getX(), clientVel.getY(), clientVel.getZ());
+            Vector3D collide = Collisions.collide(player, clientVel.getX(), clientVel.getY(), clientVel.getZ());
 
             position = position.withX(position.getX() + collide.getX());
             // 1.8 players need the collision epsilon to not phase into blocks when being setback
@@ -412,7 +415,7 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
         data = new TeleportData(safePosition, flags, transaction, teleportId);
         requiredSetBack = new SetBackData(data, player.xRot, player.yRot, null, false, plugin);
 
-        this.lastKnownGoodPosition = new SetbackPosWithVector(safePosition, new Vector());
+        this.lastKnownGoodPosition = new SetbackPosWithVector(safePosition, newVector3D());
     }
 
     @AllArgsConstructor
@@ -420,6 +423,6 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
     @Setter
     public static class SetbackPosWithVector {
         private Vector3d pos;
-        private Vector vector;
+        private Vector3D vector;
     }
 }

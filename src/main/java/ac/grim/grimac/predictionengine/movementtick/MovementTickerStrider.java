@@ -11,15 +11,17 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.ArrayList;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class MovementTickerStrider extends MovementTickerRideable {
 
     public MovementTickerStrider(GrimPlayer player) {
         super(player);
-        movementInput = new Vector(0, 0, 1);
+        movementInput = newVector3D(0, 0, 1);
     }
 
     public static void floatStrider(GrimPlayer player) {
@@ -27,7 +29,7 @@ public class MovementTickerStrider extends MovementTickerRideable {
             if (isAbove(player) && player.compensatedWorld.getLavaFluidLevelAt((int) Math.floor(player.x), (int) Math.floor(player.y + 1), (int) Math.floor(player.z)) == 0) {
                 player.onGround = true;
             } else {
-                player.clientVelocity.multiply(0.5).add(new Vector(0, 0.05, 0));
+                player.clientVelocity.multiply(0.5).add(newVector3D(0, 0.05, 0));
             }
         }
     }

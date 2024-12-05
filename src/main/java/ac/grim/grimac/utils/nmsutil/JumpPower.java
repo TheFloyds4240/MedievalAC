@@ -5,12 +5,14 @@ import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.potion.PotionTypes;
 import com.github.retrooper.packetevents.util.Vector3d;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.OptionalInt;
 
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
+
 public class JumpPower {
-    public static void jumpFromGround(GrimPlayer player, Vector vector) {
+    public static void jumpFromGround(GrimPlayer player, Vector3D vector) {
         float jumpPower = getJumpPower(player);
 
         final OptionalInt jumpBoost = player.compensatedEntities.getPotionLevelForPlayer(PotionTypes.JUMP_BOOST);
@@ -24,7 +26,7 @@ public class JumpPower {
 
         if (player.isSprinting) {
             float radRotation = player.xRot * ((float) Math.PI / 180F);
-            vector.add(new Vector(-player.trigHandler.sin(radRotation) * 0.2f, 0.0, player.trigHandler.cos(radRotation) * 0.2f));
+            vector.add(newVector3D(-player.trigHandler.sin(radRotation) * 0.2f, 0.0, player.trigHandler.cos(radRotation) * 0.2f));
         }
     }
 

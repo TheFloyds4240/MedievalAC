@@ -6,18 +6,18 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import lombok.Getter;
 import lombok.ToString;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 @Getter
 @ToString
 public class HitData {
     Vector3i position;
-    Vector blockHitLocation;
+    Vector3D blockHitLocation;
     WrappedBlockState state;
     BlockFace closestDirection;
     public Boolean success;
 
-    public HitData(Vector3i position, Vector blockHitLocation, BlockFace closestDirection, WrappedBlockState state) {
+    public HitData(Vector3i position, Vector3D blockHitLocation, BlockFace closestDirection, WrappedBlockState state) {
         this.position = position;
         this.blockHitLocation = blockHitLocation;
         this.closestDirection = closestDirection;
@@ -25,7 +25,7 @@ public class HitData {
         this.success = null;
     }
 
-    public HitData(Vector3i position, Vector blockHitLocation, BlockFace closestDirection, WrappedBlockState state, Boolean success) {
+    public HitData(Vector3i position, Vector3D blockHitLocation, BlockFace closestDirection, WrappedBlockState state, Boolean success) {
         this.position = position;
         this.blockHitLocation = blockHitLocation;
         this.closestDirection = closestDirection;

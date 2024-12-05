@@ -21,10 +21,12 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateValue;
 import com.github.retrooper.packetevents.util.Vector3i;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public enum BlockPlaceResult {
 
@@ -80,7 +82,7 @@ public enum BlockPlaceResult {
     }, ItemTypes.SNOW),
 
     SLAB((player, place) -> {
-        Vector clickedPos = place.getClickedLocation();
+        Vector3D clickedPos = place.getClickedLocation();
         WrappedBlockState slabData = place.getMaterial().createBlockState(CompensatedWorld.blockVersion);
         WrappedBlockState existing = place.getExistingBlockData();
 
@@ -909,7 +911,7 @@ public enum BlockPlaceResult {
             WrappedBlockState ccwState = place.getDirectionalState(ccw);
             CollisionBox ccwBox = CollisionData.getData(ccwState.getType()).getMovementCollisionBox(player, player.getClientVersion(), ccwState);
 
-            Vector aboveCCWPos = place.getClickedLocation().add(new Vector(ccw.getModX(), ccw.getModY(), ccw.getModZ())).add(new Vector(0, 1, 0));
+            Vector3D aboveCCWPos = place.getClickedLocation().add(newVector3D(ccw.getModX(), ccw.getModY(), ccw.getModZ())).add(newVector3D(0, 1, 0));
             WrappedBlockState aboveCCWState = player.compensatedWorld.getWrappedBlockStateAt(aboveCCWPos);
             CollisionBox aboveCCWBox = CollisionData.getData(aboveCCWState.getType()).getMovementCollisionBox(player, player.getClientVersion(), aboveCCWState);
 
@@ -917,7 +919,7 @@ public enum BlockPlaceResult {
             WrappedBlockState cwState = place.getDirectionalState(cw);
             CollisionBox cwBox = CollisionData.getData(cwState.getType()).getMovementCollisionBox(player, player.getClientVersion(), cwState);
 
-            Vector aboveCWPos = place.getClickedLocation().add(new Vector(cw.getModX(), cw.getModY(), cw.getModZ())).add(new Vector(0, 1, 0));
+            Vector3D aboveCWPos = place.getClickedLocation().add(newVector3D(cw.getModX(), cw.getModY(), cw.getModZ())).add(newVector3D(0, 1, 0));
             WrappedBlockState aboveCWState = player.compensatedWorld.getWrappedBlockStateAt(aboveCWPos);
             CollisionBox aboveCWBox = CollisionData.getData(aboveCWState.getType()).getMovementCollisionBox(player, player.getClientVersion(), aboveCWState);
 
@@ -934,7 +936,7 @@ public enum BlockPlaceResult {
                 if ((!isCWLower || isCCWLower) && i >= 0) {
                     int j = playerFacing.getModX();
                     int k = playerFacing.getModZ();
-                    Vector vec3 = place.getClickedLocation();
+                    Vector3D vec3 = place.getClickedLocation();
                     double d0 = vec3.getX();
                     double d1 = vec3.getY();
                     hinge = (j >= 0 || d1 >= 0.5D) && (j <= 0 || d1 <= 0.5D) && (k >= 0 || d0 <= 0.5D) && (k <= 0 || d0 >= 0.5D) ? Hinge.LEFT : Hinge.RIGHT;

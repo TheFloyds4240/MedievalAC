@@ -6,20 +6,26 @@ import ac.grim.grimac.utils.data.VectorData;
 import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import ac.grim.grimac.utils.nmsutil.JumpPower;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.potion.PotionTypes;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.Set;
 
+import static ac.grim.grimac.utils.math.GrimMath.clamp;
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
+import static com.github.retrooper.packetevents.protocol.world.states.type.StateTypes.SCAFFOLDING;
+import static java.lang.Math.max;
+
 public class PredictionEngineNormal extends PredictionEngine {
 
-    public static void staticVectorEndOfTick(GrimPlayer player, Vector vector) {
+    public static void staticVectorEndOfTick(GrimPlayer player, Vector3D vector) {
         double adjustedY = vector.getY();
         final OptionalInt levitation = player.compensatedEntities.getPotionLevelForPlayer(PotionTypes.LEVITATION);
         if (levitation.isPresent()) {
@@ -38,7 +44,7 @@ public class PredictionEngineNormal extends PredictionEngine {
     @Override
     public void addJumpsToPossibilities(GrimPlayer player, Set<VectorData> existingVelocities) {
         for (VectorData vector : new HashSet<>(existingVelocities)) {
-            Vector jump = vector.vector.clone();
+            Vector3D jump = vector.vector.clone();
 
             if (!player.isFlying) {
                 // Negative jump boost does not allow the player to leave the ground
@@ -52,9 +58,9 @@ public class PredictionEngineNormal extends PredictionEngine {
 
                 JumpPower.jumpFromGround(player, jump);
             } else {
-                jump.add(new Vector(0, player.flySpeed * 3, 0));
+                jump.add(newVector3D(0, player.flySpeed * 3, 0));
                 if (!player.wasFlying) {
-                    Vector edgeCaseJump = jump.clone();
+                    Vector3D edgeCaseJump = jump.clone();
                     JumpPower.jumpFromGround(player, edgeCaseJump);
                     existingVelocities.add(vector.returnNewModified(edgeCaseJump, VectorData.VectorType.Jump));
                 }
@@ -82,7 +88,7 @@ public class PredictionEngineNormal extends PredictionEngine {
         if (player.lastWasClimbing == 0 && (player.pointThreeEstimator.isNearClimbable() || player.isClimbing) && (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_14)
                 || !Collisions.isEmpty(player, player.boundingBox.copy().expand(
                 player.clientVelocity.getX(), 0, player.clientVelocity.getZ()).expand(0.5, -SimpleCollisionBox.COLLISION_EPSILON, 0.5))) || walkingOnPowderSnow) {
-            Vector ladderVelocity = player.clientVelocity.clone().setY(0.2);
+            Vector3D ladderVelocity = player.clientVelocity.clone().setY(0.2);
             staticVectorEndOfTick(player, ladderVelocity);
             player.lastWasClimbing = ladderVelocity.getY();
         }
@@ -93,17 +99,17 @@ public class PredictionEngineNormal extends PredictionEngine {
     }
 
     @Override
-    public Vector handleOnClimbable(Vector vector, GrimPlayer player) {
+    public Vector3D handleOnClimbable(Vector3D vector, GrimPlayer player) {
         if (player.isClimbing) {
             // Reset fall distance when climbing
             player.fallDistance = 0;
 
-            vector.setX(GrimMath.clamp(vector.getX(), -0.15F, 0.15F));
-            vector.setZ(GrimMath.clamp(vector.getZ(), -0.15F, 0.15F));
-            vector.setY(Math.max(vector.getY(), -0.15F));
+            vector.setX(clamp(vector.getX(), -0.15F, 0.15F));
+            vector.setZ(clamp(vector.getZ(), -0.15F, 0.15F));
+            vector.setY(max(vector.getY(), -0.15F));
 
             // Yes, this uses shifting not crouching
-            if (vector.getY() < 0.0 && !(player.compensatedWorld.getStateTypeAt(player.lastX, player.lastY, player.lastZ) == StateTypes.SCAFFOLDING) && player.isSneaking && !player.isFlying) {
+            if (vector.getY() < 0.0 && !(player.compensatedWorld.getStateTypeAt(player.lastX, player.lastY, player.lastZ) == SCAFFOLDING) && player.isSneaking && !player.isFlying) {
                 vector.setY(0.0);
             }
         }

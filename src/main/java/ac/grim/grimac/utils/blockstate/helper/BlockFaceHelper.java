@@ -1,7 +1,8 @@
 package ac.grim.grimac.utils.blockstate.helper;
 
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 public class BlockFaceHelper {
     public static boolean isFaceVertical(BlockFace face) {
@@ -78,7 +79,7 @@ public class BlockFaceHelper {
         }
     }
 
-    public Vector offset(Vector toOffset, BlockFace face) {
+    public Vector3D offset(Vector3D toOffset, BlockFace face) {
         toOffset.setX(toOffset.getX() + face.getModX());
         toOffset.setY(toOffset.getY() + face.getModY());
         toOffset.setZ(toOffset.getZ() + face.getModZ());

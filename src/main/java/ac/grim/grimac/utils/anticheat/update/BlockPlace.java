@@ -17,6 +17,7 @@ import ac.grim.grimac.utils.nmsutil.BoundingBoxSize;
 import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
 import ac.grim.grimac.utils.nmsutil.Materials;
 import ac.grim.grimac.utils.nmsutil.ReachUtils;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
@@ -35,11 +36,16 @@ import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static ac.grim.grimac.utils.nmsutil.ReachUtils.calculateIntercept;
+import static ac.grim.grimac.utils.nmsutil.ReachUtils.getLook;
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
+import static com.github.retrooper.packetevents.protocol.attribute.Attributes.PLAYER_BLOCK_INTERACTION_RANGE;
 
 public class BlockPlace {
     protected static final BlockFace[] UPDATE_SHAPE_ORDER = new BlockFace[]{BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.DOWN, BlockFace.UP};
@@ -668,18 +674,18 @@ public class BlockPlace {
     // You also have the desync caused by eye height as apparently tracking the player's ticks wasn't important to you
     // No mojang, you really do need to track client ticks to get their accurate eye height.
     // another damn desync added... maybe next decade it will get fixed and double the amount of issues.
-    public Vector getClickedLocation() {
+    public Vector3D getClickedLocation() {
         SimpleCollisionBox box = new SimpleCollisionBox(getPlacedAgainstBlockLocation());
-        Vector look = ReachUtils.getLook(player, player.xRot, player.yRot);
+        Vector3D look = getLook(player, player.xRot, player.yRot);
 
-        final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE) + 3;
-        Vector eyePos = new Vector(player.x, player.y + player.getEyeHeight(), player.z);
-        Vector endReachPos = eyePos.clone().add(new Vector(look.getX() * distance, look.getY() * distance, look.getZ() * distance));
-        Vector intercept = ReachUtils.calculateIntercept(box, eyePos, endReachPos).getFirst();
+        final double distance = player.compensatedEntities.getSelf().getAttributeValue(PLAYER_BLOCK_INTERACTION_RANGE) + 3;
+        Vector3D eyePos = newVector3D(player.x, player.y + player.getEyeHeight(), player.z);
+        Vector3D endReachPos = eyePos.clone().add(newVector3D(look.getX() * distance, look.getY() * distance, look.getZ() * distance));
+        Vector3D intercept = calculateIntercept(box, eyePos, endReachPos).getFirst();
 
         // Bring this back to relative to the block
         // The player didn't even click the block... (we should force resync BEFORE we get here!)
-        if (intercept == null) return new Vector();
+        if (intercept == null) return newVector3D();
 
         intercept.setX(intercept.getX() - box.minX);
         intercept.setY(intercept.getY() - box.minY);
