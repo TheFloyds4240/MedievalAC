@@ -19,13 +19,13 @@ public class NalimVector3D implements Vector3D {
 
     double[] loc;
 
-    public final long nativePtr;  // Holds pointer to SimdVector
-    @Link(name = "create_vector")
-    private static native long create_vector(double x, double y, double z);
+//    public final long nativePtr;  // Holds pointer to SimdVector
+//    @Link(name = "create_vector")
+//    private static native long create_vector(double x, double y, double z);
 
     public NalimVector3D(double x, double y, double z) {
         loc = new double[]{x, y, z};
-        nativePtr = create_vector(0, 0, 0);
+//        nativePtr = create_vector(0, 0, 0);
     }
 
     @Override
