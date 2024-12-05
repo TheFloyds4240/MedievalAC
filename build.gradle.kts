@@ -7,6 +7,7 @@ plugins {
     id("io.freefair.lombok") version "8.6"
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("com.diffplug.spotless") version "6.25.0"
+    id("me.champeau.jmh") version "0.7.2"
 }
 
 spotless {
@@ -76,6 +77,9 @@ dependencies {
     compileOnly("com.viaversion:viaversion-api:5.0.4-SNAPSHOT")
     //
     compileOnly("io.netty:netty-all:4.1.85.Final")
+
+    jmh("org.openjdk.jmh:jmh-core:1.37")
+    jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 }
 
 bukkit {
@@ -178,6 +182,15 @@ java {
             compileClasspath += main.get().output
             runtimeClasspath += main.get().output
         }
+//        create("jmh") {
+//            java.srcDir("src/jmh/java")
+//            compileClasspath += sourceSets.main.get().output +
+//                    sourceSets.getByName("java18").output +
+//                    configurations.jmh.get()
+//            runtimeClasspath += sourceSets.main.get().output +
+//                    sourceSets.getByName("java18").output +
+//                    configurations.jmh.get()
+//        }
     }
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -190,6 +203,11 @@ java {
 tasks.withType<JavaCompile> {
     if (name == "compileJava18Java") {
         options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
+        sourceCompatibility = "18"
+        targetCompatibility = "18"
+    }
+    if (name == "compileJmhJava") {
+        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
         sourceCompatibility = "18"
         targetCompatibility = "18"
     }
@@ -228,4 +246,25 @@ tasks.shadowJar {
         relocate("org.intellij", "ac.grim.grimac.shaded.intellij")
         relocate("org.jetbrains", "ac.grim.grimac.shaded.jetbrains")
     }
+}
+
+jmh {
+//    warmupIterations.set(2)
+//    iterations.set(5)
+//    fork.set(2)
+    jvmArgs.add("-Xms2G")
+    jvmArgs.add("-Xmx2G")
+    jvmArgs.add("--add-modules")
+    jvmArgs.add("jdk.incubator.vector")
+
+    // Ensure `java18` output is included
+    sourceSets {
+        getByName("jmh").compileClasspath += sourceSets.getByName("java18").output
+        getByName("jmh").runtimeClasspath += sourceSets.getByName("java18").output
+    }
+}
+
+
+tasks.jmhJar {
+    dependsOn(tasks.jmhClasses) // Ensure the classes are compiled
 }
