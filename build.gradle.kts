@@ -279,7 +279,6 @@ tasks.register<Jar>("jmhJar") {
 }
 
 
-
 tasks.register<JavaCompile>("compileGeneratedJmh") {
     dependsOn("compileJmhJava")
 
@@ -297,14 +296,6 @@ tasks.register<JavaCompile>("compileGeneratedJmh") {
     sourceCompatibility = "18"
     targetCompatibility = "18"
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
-
-    doFirst {
-        println("Executing compileGeneratedJmh task")
-        println("Source files:")
-        source.forEach { println(it) }
-        println("Classpath:")
-        classpath.forEach { println(it) }
-    }
 }
 
 tasks.register("jmh") {
@@ -327,14 +318,6 @@ tasks.named<JavaCompile>("compileJmhJava") {
     sourceCompatibility = "18"
     targetCompatibility = "18"
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
-
-    doFirst {
-        println("Compiling JMH sources")
-        println("Source files:")
-        source.forEach { println(it) }
-        println("Classpath:")
-        classpath.forEach { println(it) }
-    }
 }
 
 tasks.named("jmhJar") {
