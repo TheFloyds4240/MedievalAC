@@ -3,29 +3,37 @@ package ac.grim.grimac.utils.nmsutil;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.CollisionData;
 import ac.grim.grimac.utils.collisions.blocks.DoorHandler;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.defaulttags.BlockTags;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
+
+import static ac.grim.grimac.utils.nmsutil.Materials.isSolidBlockingBlacklist;
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
+import static com.github.retrooper.packetevents.protocol.world.BlockFace.*;
+import static com.github.retrooper.packetevents.protocol.world.states.type.StateTypes.LAVA;
+import static com.github.retrooper.packetevents.protocol.world.states.type.StateTypes.WATER;
+import static java.lang.Math.min;
 
 public class FluidTypeFlowing {
-    public static Vector getFlow(GrimPlayer player, int originalX, int originalY, int originalZ) {
-        float fluidLevel = (float) Math.min(player.compensatedWorld.getFluidLevelAt(originalX, originalY, originalZ), 8 / 9D);
+    public static Vector3D getFlow(GrimPlayer player, int originalX, int originalY, int originalZ) {
+        float fluidLevel = (float) min(player.compensatedWorld.getFluidLevelAt(originalX, originalY, originalZ), 8 / 9D);
         ClientVersion version = player.getClientVersion();
 
-        if (fluidLevel == 0) return new Vector();
+        if (fluidLevel == 0) return newVector3D();
 
         double d0 = 0.0D;
         double d1 = 0.0D;
-        for (BlockFace enumdirection : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+        for (BlockFace enumdirection : new BlockFace[]{NORTH, EAST, SOUTH, WEST}) {
             int modifiedX = originalX + enumdirection.getModX();
             int modifiedZ = originalZ + enumdirection.getModZ();
 
             if (affectsFlow(player, originalX, originalY, originalZ, modifiedX, originalY, modifiedZ)) {
-                float f = (float) Math.min(player.compensatedWorld.getFluidLevelAt(modifiedX, originalY, modifiedZ), 8 / 9D);
+                float f = (float) min(player.compensatedWorld.getFluidLevelAt(modifiedX, originalY, modifiedZ), 8 / 9D);
                 float f1 = 0.0F;
                 if (f == 0.0F) {
                     StateType mat = player.compensatedWorld.getStateTypeAt(modifiedX, originalY, modifiedZ);
@@ -33,9 +41,9 @@ public class FluidTypeFlowing {
                     // Grim's definition of solid is whether the block has a hitbox
                     // Minecraft is... it's whatever Mojang was feeling like, but it's very consistent
                     // Use method call to support 1.13-1.15 clients and banner oddity
-                    if (Materials.isSolidBlockingBlacklist(mat, version)) {
+                    if (isSolidBlockingBlacklist(mat, version)) {
                         if (affectsFlow(player, originalX, originalY, originalZ, modifiedX, originalY - 1, modifiedZ)) {
-                            f = (float) Math.min(player.compensatedWorld.getFluidLevelAt(modifiedX, originalY - 1, modifiedZ), 8 / 9D);
+                            f = (float) min(player.compensatedWorld.getFluidLevelAt(modifiedX, originalY - 1, modifiedZ), 8 / 9D);
                             if (f > 0.0F) {
                                 f1 = fluidLevel - (f - 0.8888889F);
                             }
@@ -53,15 +61,15 @@ public class FluidTypeFlowing {
             }
         }
 
-        Vector vec3d = new Vector(d0, 0.0D, d1);
+        Vector3D vec3d = newVector3D(d0, 0.0D, d1);
 
         // Fluid level 1-7 is for regular fluid heights
         // Fluid level 8-15 is for falling fluids
         WrappedBlockState state = player.compensatedWorld.getWrappedBlockStateAt(originalX, originalY, originalZ);
-        if ((state.getType() == StateTypes.WATER || state.getType() == StateTypes.LAVA) && state.getLevel() >= 8) {
-            for (BlockFace enumdirection : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+        if ((state.getType() == WATER || state.getType() == LAVA) && state.getLevel() >= 8) {
+            for (BlockFace enumdirection : new BlockFace[]{NORTH, EAST, SOUTH, WEST}) {
                 if (isSolidFace(player, originalX, originalY, originalZ, enumdirection) || isSolidFace(player, originalX, originalY + 1, originalZ, enumdirection)) {
-                    vec3d = normalizeVectorWithoutNaN(vec3d).add(new Vector(0.0D, -6.0D, 0.0D));
+                    vec3d = normalizeVectorWithoutNaN(vec3d).add(newVector3D(0.0D, -6.0D, 0.0D));
                     break;
                 }
             }
@@ -150,9 +158,9 @@ public class FluidTypeFlowing {
         }
     }
 
-    private static Vector normalizeVectorWithoutNaN(Vector vector) {
+    private static Vector3D normalizeVectorWithoutNaN(Vector3D vector) {
         double var0 = vector.length();
-        return var0 < 1.0E-4 ? new Vector() : vector.multiply(1 / var0);
+        return var0 < 1.0E-4 ? newVector3D() : vector.multiply(1 / var0);
     }
 
     public static boolean isEmpty(GrimPlayer player, int x, int y, int z) {

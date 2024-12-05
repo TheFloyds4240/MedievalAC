@@ -8,12 +8,14 @@ import ac.grim.grimac.utils.data.packetentity.PacketEntityHorse;
 import ac.grim.grimac.utils.nmsutil.JumpPower;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.potion.PotionTypes;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class PredictionEngineRideableUtils {
     public static Set<VectorData> handleJumps(GrimPlayer player, Set<VectorData> possibleVectors) {
@@ -55,7 +57,7 @@ public class PredictionEngineRideableUtils {
             for (VectorData vectorData : possibleVectors) {
                 vectorData.vector.setY(d1);
                 if (f1 > 0.0F) {
-                    vectorData.vector.add(new Vector(-0.4F * f2 * player.vehicleData.horseJump, 0.0D, 0.4F * f3 * player.vehicleData.horseJump));
+                    vectorData.vector.add(newVector3D(-0.4F * f2 * player.vehicleData.horseJump, 0.0D, 0.4F * f3 * player.vehicleData.horseJump));
                 }
             }
 
@@ -71,7 +73,7 @@ public class PredictionEngineRideableUtils {
         return possibleVectors;
     }
 
-    public static List<VectorData> applyInputsToVelocityPossibilities(Vector movementVector, GrimPlayer player, Set<VectorData> possibleVectors, float speed) {
+    public static List<VectorData> applyInputsToVelocityPossibilities(Vector3D movementVector, GrimPlayer player, Set<VectorData> possibleVectors, float speed) {
         List<VectorData> returnVectors = new ArrayList<>();
 
         for (VectorData possibleLastTickOutput : possibleVectors) {

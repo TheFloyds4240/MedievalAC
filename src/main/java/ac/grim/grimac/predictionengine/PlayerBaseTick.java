@@ -9,15 +9,18 @@ import ac.grim.grimac.utils.enums.Pose;
 import ac.grim.grimac.utils.latency.CompensatedEntities;
 import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.nmsutil.*;
+import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.Optional;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class PlayerBaseTick {
     GrimPlayer player;
@@ -40,11 +43,11 @@ public class PlayerBaseTick {
 
     public void doBaseTick() {
         // Keep track of basetick stuff
-        player.baseTickAddition = new Vector();
-        player.baseTickWaterPushing = new Vector();
+        player.baseTickAddition = newVector3D();
+        player.baseTickWaterPushing = newVector3D();
 
         if (player.isFlying && player.isSneaking && !player.compensatedEntities.getSelf().inVehicle()) {
-            Vector flyingShift = new Vector(0, player.flySpeed * -3, 0);
+            Vector3D flyingShift = newVector3D(0, player.flySpeed * -3, 0);
             player.baseTickAddVector(flyingShift);
             player.trackBaseTickAddition(flyingShift);
         }
@@ -60,7 +63,7 @@ public class PlayerBaseTick {
         // You cannot crouch while flying, only shift - could be specific to 1.14?
         // pre-1.13 clients don't have this code
         if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && player.wasTouchingWater && player.isSneaking && !player.isFlying && !player.compensatedEntities.getSelf().inVehicle()) {
-            Vector waterPushVector = new Vector(0, -0.04f, 0);
+            Vector3D waterPushVector = newVector3D(0, -0.04f, 0);
             player.baseTickAddVector(waterPushVector);
             player.trackBaseTickAddition(waterPushVector);
         }
@@ -414,7 +417,7 @@ public class PlayerBaseTick {
         }
 
         boolean hasPushed = false;
-        Vector vec3 = new Vector();
+        Vector3D vec3 = newVector3D();
 
         for (int x = floorX; x < ceilX; ++x) {
             for (int y = floorY; y < ceilY; ++y) {
@@ -464,7 +467,7 @@ public class PlayerBaseTick {
         }
         double d2 = 0.0;
         boolean hasTouched = false;
-        Vector vec3 = new Vector();
+        Vector3D vec3 = newVector3D();
         int n7 = 0;
 
         for (int x = floorX; x < ceilX; ++x) {
@@ -489,7 +492,7 @@ public class PlayerBaseTick {
                     d2 = Math.max(fluidHeightToWorld - aABB.minY, d2);
 
                     if (!player.isFlying) {
-                        Vector vec32 = FluidTypeFlowing.getFlow(player, x, y, z);
+                        Vector3D vec32 = FluidTypeFlowing.getFlow(player, x, y, z);
                         if (d2 < 0.4) {
                             vec32 = vec32.multiply(d2);
                         }

@@ -9,7 +9,7 @@ import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import ac.grim.grimac.utils.lists.EvictingQueue;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,8 +45,8 @@ public class DebugHandler extends Check implements PostPredictionCheck {
 
         ChatColor color = pickColor(offset, offset);
 
-        Vector predicted = player.predictedVelocity.vector;
-        Vector actually = player.actualMovement;
+        Vector3D predicted = player.predictedVelocity.vector;
+        Vector3D actually = player.actualMovement;
 
         ChatColor xColor = pickColor(Math.abs(predicted.getX() - actually.getX()), offset);
         ChatColor yColor = pickColor(Math.abs(predicted.getY() - actually.getY()), offset);

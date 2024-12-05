@@ -13,9 +13,11 @@ import ac.grim.grimac.utils.nmsutil.ReachUtils;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.*;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class UncertaintyHandler {
     private final GrimPlayer player;
@@ -147,15 +149,15 @@ public class UncertaintyHandler {
             entityBox.maxY -= height;
             entityBox.expand(-width / 2, 0, -width / 2);
 
-            Vector maxLocation = new Vector(entityBox.maxX, entityBox.maxY, entityBox.maxZ);
-            Vector minLocation = new Vector(entityBox.minX, entityBox.minY, entityBox.minZ);
+            Vector3D maxLocation = newVector3D(entityBox.maxX, entityBox.maxY, entityBox.maxZ);
+            Vector3D minLocation = newVector3D(entityBox.minX, entityBox.minY, entityBox.minZ);
 
-            Vector diff = minLocation.subtract(new Vector(player.lastX, player.lastY + 0.8 * 1.8, player.lastZ)).multiply(0.1);
+            Vector3D diff = minLocation.subtract(newVector3D(player.lastX, player.lastY + 0.8 * 1.8, player.lastZ)).multiply(0.1);
             fishingRodPullBox.minX = Math.min(0, diff.getX());
             fishingRodPullBox.minY = Math.min(0, diff.getY());
             fishingRodPullBox.minZ = Math.min(0, diff.getZ());
 
-            diff = maxLocation.subtract(new Vector(player.lastX, player.lastY + 0.8 * 1.8, player.lastZ)).multiply(0.1);
+            diff = maxLocation.subtract(newVector3D(player.lastX, player.lastY + 0.8 * 1.8, player.lastZ)).multiply(0.1);
             fishingRodPullBox.maxX = Math.max(0, diff.getX());
             fishingRodPullBox.maxY = Math.max(0, diff.getY());
             fishingRodPullBox.maxZ = Math.max(0, diff.getZ());
@@ -170,8 +172,8 @@ public class UncertaintyHandler {
 
         fireworksBox = new SimpleCollisionBox();
 
-        Vector currentLook = ReachUtils.getLook(player, player.xRot, player.yRot);
-        Vector lastLook = ReachUtils.getLook(player, player.lastXRot, player.lastYRot);
+        Vector3D currentLook = ReachUtils.getLook(player, player.xRot, player.yRot);
+        ac.grim.grimac.utils.vector.Vector3D lastLook = ReachUtils.getLook(player, player.lastXRot, player.lastYRot);
 
         double antiTickSkipping = player.isPointThree() ? 0 : 0.05; // With 0.03, let that handle tick skipping
 

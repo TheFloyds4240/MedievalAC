@@ -5,7 +5,9 @@ import ac.grim.grimac.utils.data.packetentity.PacketEntityHorse;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class MovementTickerHorse extends MovementTickerLivingVehicle {
 
@@ -26,7 +28,7 @@ public class MovementTickerHorse extends MovementTickerLivingVehicle {
             forwardsInput *= 0.25F;
         }
 
-        this.movementInput = new Vector(horizInput, 0, forwardsInput);
+        this.movementInput = newVector3D(horizInput, 0, forwardsInput);
         if (movementInput.lengthSquared() > 1) movementInput.normalize();
     }
 

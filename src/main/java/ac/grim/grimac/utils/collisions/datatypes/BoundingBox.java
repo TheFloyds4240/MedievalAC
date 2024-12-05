@@ -1,6 +1,9 @@
 package ac.grim.grimac.utils.collisions.datatypes;
 
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
+import ac.grim.grimac.utils.vector.Vector3D;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 public class BoundingBox {
 
@@ -15,7 +18,7 @@ public class BoundingBox {
         this.maxZ = maxZ;
     }
 
-    public BoundingBox(Vector min, Vector max) {
+    public BoundingBox(Vector3D min, Vector3D max) {
         this.minX = (float) Math.min(min.getX(), max.getX());
         this.minY = (float) Math.min(min.getY(), max.getY());
         this.minZ = (float) Math.min(min.getZ(), max.getZ());
@@ -44,7 +47,7 @@ public class BoundingBox {
         return new BoundingBox(newMinX, newMinY, newMinZ, newMaxX, newMaxY, newMaxZ);
     }
 
-    public BoundingBox add(Vector vector) {
+    public BoundingBox add(Vector3D vector) {
         float x = (float) vector.getX(), y = (float) vector.getY(), z = (float) vector.getZ();
 
         float newMinX = minX + x;
@@ -87,27 +90,27 @@ public class BoundingBox {
         return new BoundingBox(this.minX - minX, this.minY - minY, this.minZ - minZ, this.maxX - maxX, this.maxY - maxY, this.maxZ - maxZ);
     }
 
-    public boolean intersectsWithBox(Vector vector) {
+    public boolean intersectsWithBox(Vector3D vector) {
         return (vector.getX() > this.minX && vector.getX() < this.maxX) && ((vector.getY() > this.minY && vector.getY() < this.maxY) && (vector.getZ() > this.minZ && vector.getZ() < this.maxZ));
     }
 
-    public Vector getMinimum() {
-        return new Vector(minX, minY, minZ);
+    public Vector3D getMinimum() {
+        return newVector3D(minX, minY, minZ);
     }
 
-    public Vector getMaximum() {
-        return new Vector(maxX, maxY, maxZ);
+    public Vector3D getMaximum() {
+        return newVector3D(maxX, maxY, maxZ);
     }
 
-    public boolean collides(Vector vector) {
+    public boolean collides(Vector3D vector) {
         return (vector.getX() >= this.minX && vector.getX() <= this.maxX) && ((vector.getY() >= this.minY && vector.getY() <= this.maxY) && (vector.getZ() >= this.minZ && vector.getZ() <= this.maxZ));
     }
 
-    public boolean collidesHorizontally(Vector vector) {
+    public boolean collidesHorizontally(Vector3D vector) {
         return (vector.getX() >= this.minX && vector.getX() <= this.maxX) && ((vector.getY() > this.minY && vector.getY() < this.maxY) && (vector.getZ() >= this.minZ && vector.getZ() <= this.maxZ));
     }
 
-    public boolean collidesVertically(Vector vector) {
+    public boolean collidesVertically(Vector3D vector) {
         return (vector.getX() > this.minX && vector.getX() < this.maxX) && ((vector.getY() >= this.minY && vector.getY() <= this.maxY) && (vector.getZ() > this.minZ && vector.getZ() < this.maxZ));
     }
 

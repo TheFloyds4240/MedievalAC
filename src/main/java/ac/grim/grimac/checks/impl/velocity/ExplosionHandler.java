@@ -19,11 +19,13 @@ import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerExplosion;
 import lombok.Getter;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Deque;
 import java.util.LinkedList;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 @CheckData(name = "AntiExplosion", configName = "Explosion", setback = 10)
 public class ExplosionHandler extends Check implements PostPredictionCheck {
@@ -121,7 +123,7 @@ public class ExplosionHandler extends Check implements PostPredictionCheck {
     }
 
     public void addPlayerExplosion(int breadOne, Vector3f explosion) {
-        firstBreadMap.add(new VelocityData(-1, breadOne, player.getSetbackTeleportUtil().isSendingSetback, new Vector(explosion.getX(), explosion.getY(), explosion.getZ())));
+        firstBreadMap.add(new VelocityData(-1, breadOne, player.getSetbackTeleportUtil().isSendingSetback, newVector3D(explosion.getX(), explosion.getY(), explosion.getZ())));
     }
 
     public void setPointThree(boolean isPointThree) {

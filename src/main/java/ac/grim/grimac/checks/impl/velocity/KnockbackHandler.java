@@ -15,11 +15,13 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
 import lombok.Getter;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Deque;
 import java.util.LinkedList;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 // We are making a velocity sandwich between two pieces of transaction packets (bread)
 @CheckData(name = "AntiKB", alternativeName = "AntiKnockback", configName = "Knockback", setback = 10, decay = 0.025)
@@ -71,12 +73,12 @@ public class KnockbackHandler extends Check implements PostPredictionCheck {
 
             // Wrap velocity between two transactions
             player.sendTransaction();
-            addPlayerKnockback(entityId, player.lastTransactionSent.get(), new Vector(playerVelocity.getX(), playerVelocity.getY(), playerVelocity.getZ()));
+            addPlayerKnockback(entityId, player.lastTransactionSent.get(), newVector3D(playerVelocity.getX(), playerVelocity.getY(), playerVelocity.getZ()));
             event.getTasksAfterSend().add(player::sendTransaction);
         }
     }
 
-    @NotNull public Pair<VelocityData, Vector> getFutureKnockback() {
+    @NotNull public Pair<VelocityData, Vector3D> getFutureKnockback() {
         // Chronologically in the future
         if (firstBreadMap.size() > 0) {
             VelocityData data = firstBreadMap.peek();
@@ -98,7 +100,7 @@ public class KnockbackHandler extends Check implements PostPredictionCheck {
         return new Pair<>(null, null);
     }
 
-    private void addPlayerKnockback(int entityID, int breadOne, Vector knockback) {
+    private void addPlayerKnockback(int entityID, int breadOne, Vector3D knockback) {
         firstBreadMap.add(new VelocityData(entityID, breadOne, player.getSetbackTeleportUtil().isSendingSetback, knockback));
     }
 

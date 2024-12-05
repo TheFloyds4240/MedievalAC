@@ -49,7 +49,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import org.bukkit.Bukkit;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.*;
 
@@ -686,7 +686,7 @@ public class CompensatedWorld {
         return maxHeight;
     }
 
-    public WrappedBlockState getWrappedBlockStateAt(Vector aboveCCWPos) {
+    public WrappedBlockState getWrappedBlockStateAt(Vector3D aboveCCWPos) {
         return getWrappedBlockStateAt(aboveCCWPos.getX(), aboveCCWPos.getY(), aboveCCWPos.getZ());
     }
 }

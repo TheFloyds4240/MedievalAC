@@ -9,7 +9,9 @@ import ac.grim.grimac.utils.math.VectorUtils;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
-import org.bukkit.util.Vector;
+import ac.grim.grimac.utils.vector.Vector3D;
+
+import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
 @CheckData(name = "FarPlace")
 public class FarPlace extends BlockPlaceCheck {
@@ -27,8 +29,8 @@ public class FarPlace extends BlockPlaceCheck {
         final double[] possibleEyeHeights = player.getPossibleEyeHeights();
         for (double d : possibleEyeHeights) {
             SimpleCollisionBox box = new SimpleCollisionBox(blockPos);
-            Vector eyes = new Vector(player.x, player.y + d, player.z);
-            Vector best = VectorUtils.cutBoxToVector(eyes, box);
+            Vector3D eyes = newVector3D(player.x, player.y + d, player.z);
+            Vector3D best = VectorUtils.cutBoxToVector(eyes, box);
             min = Math.min(min, eyes.distanceSquared(best));
         }
 
