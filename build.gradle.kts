@@ -189,20 +189,29 @@ java {
             compileClasspath += main.get().output
             runtimeClasspath += main.get().output
         }
+        create("java21") {
+            java {
+                srcDirs("src/main/java21")
+            }
+            compileClasspath += main.get().output
+            runtimeClasspath += main.get().output
+        }
         create("jmh") {
             java {
                 srcDir("src/jmh/java")
             }
             compileClasspath += sourceSets.main.get().output +
                     sourceSets.getByName("java18").output +
+                    sourceSets.getByName("java21").output +
                     configurations["jmh"]
             runtimeClasspath += sourceSets.main.get().output +
                     sourceSets.getByName("java18").output +
+                    sourceSets.getByName("java21").output +
                     configurations["jmh"]
         }
     }
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -215,10 +224,10 @@ tasks.withType<JavaCompile> {
         sourceCompatibility = "18"
         targetCompatibility = "18"
     }
-    if (name == "compileJmhJava") {
-        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
-        sourceCompatibility = "18"
-        targetCompatibility = "18"
+    if (name == "compileJava21Java") {
+        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
 }
 
@@ -230,6 +239,9 @@ tasks.withType<Jar> {
     from(sourceSets.main.get().output)
     from(sourceSets.getByName("java18").output) {
         into("META-INF/versions/18")
+    }
+    from(sourceSets.getByName("java21").output) {
+        into("META-INF/versions/21")
     }
 }
 
@@ -262,6 +274,7 @@ tasks.register<Jar>("jmhJar") {
 
     from(sourceSets["main"].output)
     from(sourceSets["java18"].output)
+    from(sourceSets["java21"].output)
     from(sourceSets["jmh"].output)
     from("${buildDir}/classes/java/jmh")
     from(configurations["jmh"].map { if (it.isDirectory) it else zipTree(it) })
@@ -285,6 +298,8 @@ tasks.register<JavaCompile>("compileGeneratedJmh") {
     source = fileTree("${buildDir}/generated-sources/jmh")
 
     classpath = sourceSets["jmh"].compileClasspath +
+            sourceSets["java21"].output +
+            sourceSets["java21"].compileClasspath
             sourceSets["java18"].output +
             sourceSets["java18"].compileClasspath +
             sourceSets.main.get().output +
@@ -293,8 +308,8 @@ tasks.register<JavaCompile>("compileGeneratedJmh") {
 
     destinationDirectory.set(file("${buildDir}/classes/java/jmh"))
 
-    sourceCompatibility = "18"
-    targetCompatibility = "18"
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
 }
 
@@ -323,11 +338,12 @@ tasks.named<JavaCompile>("compileJmhJava") {
     source = fileTree("src/jmh/java")
     classpath = sourceSets["jmh"].compileClasspath +
             sourceSets.main.get().output +
-            sourceSets["java18"].output
+            sourceSets["java18"].output +
+            sourceSets["java21"].output
     destinationDirectory.set(file("${buildDir}/classes/java/jmh"))
 
-    sourceCompatibility = "18"
-    targetCompatibility = "18"
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
 }
 
