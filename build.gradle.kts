@@ -304,6 +304,7 @@ tasks.register("jmh") {
         javaexec {
             classpath = files(tasks.named("jmhJar").get().outputs.files)
             mainClass.set("org.openjdk.jmh.Main")
+            jvmArgs = listOf("--add-modules", "jdk.incubator.vector")
         }
     }
 }
