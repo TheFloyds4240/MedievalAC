@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 
 // Factory that loads once at startup
 public final class VectorFactory {
-    private static final VectorOperations INSTANCE;
+    public static final VectorOperations INSTANCE;
 
     static {
         // This happens once during class initialization
@@ -43,11 +43,6 @@ public final class VectorFactory {
 
     public static Vector3D newVector3D(double x, double y, double z) {
         return INSTANCE.newVector(x, y, z);
-    }
-
-
-    public static VectorOperations get() {
-        return INSTANCE;
     }
 
     private static boolean isSimdApiAvailable() {
