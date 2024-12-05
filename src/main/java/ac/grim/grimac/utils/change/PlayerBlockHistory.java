@@ -3,6 +3,7 @@ package ac.grim.grimac.utils.change;
 
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class PlayerBlockHistory {
     private final ConcurrentLinkedDeque<BlockModification> blockHistory = new ConcurrentLinkedDeque<>();
@@ -14,7 +15,7 @@ public class PlayerBlockHistory {
 
     // Get all recent modifications (optionally filtered by a condition).
     public Iterable<BlockModification> getRecentModifications(Predicate<BlockModification> filter) {
-        return blockHistory.stream().filter(filter).toList(); // Java 8+ compatible
+        return blockHistory.stream().filter(filter).collect(Collectors.toList()); // Java 8+ compatible
     }
 
     // Remove old modifications older than maxTick
