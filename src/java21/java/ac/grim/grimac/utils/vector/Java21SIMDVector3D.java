@@ -2,7 +2,7 @@ package ac.grim.grimac.utils.vector;
 
 import jdk.incubator.vector.*;
 
-public final class SIMDVector3D implements Vector3D {
+public final class Java21SIMDVector3D implements Vector3D {
 
     private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_256;
     private static final VectorMask<Double> LENGTH_3_ARRAY_MASK = SPECIES.indexInRange(0, 3);
@@ -12,7 +12,7 @@ public final class SIMDVector3D implements Vector3D {
 
     private DoubleVector vector;
 
-    public SIMDVector3D(double x, double y, double z) {
+    public Java21SIMDVector3D(double x, double y, double z) {
         this.vector = DoubleVector.fromArray(SPECIES, new double[]{x, y, z, 0}, 0, LENGTH_3_ARRAY_MASK);
     }
 
@@ -78,7 +78,7 @@ public final class SIMDVector3D implements Vector3D {
 
     @Override
     public Vector3D crossProduct(Vector3D other) {
-        SIMDVector3D o = (SIMDVector3D) other;
+        Java21SIMDVector3D o = (Java21SIMDVector3D) other;
 
         DoubleVector tmp0 = this.vector.rearrange(CROSS_PRODUCT_SHUFFLE1);
         DoubleVector tmp1 = o.vector.rearrange(CROSS_PRODUCT_SHUFFLE2);
@@ -94,19 +94,19 @@ public final class SIMDVector3D implements Vector3D {
 
     @Override
     public Vector3D add(Vector3D o) {
-        this.vector = this.vector.add(((SIMDVector3D) o).vector);
+        this.vector = this.vector.add(((Java21SIMDVector3D) o).vector);
         return this;
     }
 
     @Override
     public Vector3D subtract(Vector3D o) {
-        this.vector = this.vector.sub(((SIMDVector3D) o).vector);
+        this.vector = this.vector.sub(((Java21SIMDVector3D) o).vector);
         return this;
     }
 
     @Override
     public Vector3D multiply(Vector3D o) {
-        this.vector = this.vector.mul(((SIMDVector3D) o).vector);
+        this.vector = this.vector.mul(((Java21SIMDVector3D) o).vector);
         return this;
     }
 
@@ -117,13 +117,13 @@ public final class SIMDVector3D implements Vector3D {
 
     @Override
     public double distanceSquared(Vector3D o) {
-        DoubleVector diff = this.vector.sub(((SIMDVector3D) o).vector);
+        DoubleVector diff = this.vector.sub(((Java21SIMDVector3D) o).vector);
         return diff.mul(diff).reduceLanes(VectorOperators.ADD);
     }
 
     @Override
     public double dot(Vector3D o) {
-        return this.vector.mul(((SIMDVector3D) o).vector).reduceLanes(VectorOperators.ADD);
+        return this.vector.mul(((Java21SIMDVector3D) o).vector).reduceLanes(VectorOperators.ADD);
     }
 
 
@@ -136,7 +136,7 @@ public final class SIMDVector3D implements Vector3D {
 //            throw new Error(e);
 //        }
         try {
-            SIMDVector3D cloned = (SIMDVector3D) super.clone();
+            Java21SIMDVector3D cloned = (Java21SIMDVector3D) super.clone();
             // Create a new DoubleVector with the same values
             cloned.vector = DoubleVector.fromArray(SPECIES,
                     new double[]{this.getX(), this.getY(), this.getZ(), 0}, 0);

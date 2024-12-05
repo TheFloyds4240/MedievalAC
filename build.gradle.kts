@@ -202,16 +202,14 @@ java {
             }
             compileClasspath += sourceSets.main.get().output +
                     sourceSets.getByName("java18").output +
-                    sourceSets.getByName("java21").output +
                     configurations["jmh"]
             runtimeClasspath += sourceSets.main.get().output +
                     sourceSets.getByName("java18").output +
-                    sourceSets.getByName("java21").output +
                     configurations["jmh"]
         }
     }
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -225,7 +223,12 @@ tasks.withType<JavaCompile> {
         targetCompatibility = "18"
     }
     if (name == "compileJava21Java") {
-        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
+        options.compilerArgs.addAll(listOf("--enable-preview", "--add-modules", "jdk.incubator.vector", "-Xlint:unchecked"))
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
+    if (name == "compileJmhJava") {
+        options.compilerArgs.addAll(listOf("--enable-preview", "--add-modules", "jdk.incubator.vector"))
         sourceCompatibility = "21"
         targetCompatibility = "21"
     }
@@ -298,10 +301,10 @@ tasks.register<JavaCompile>("compileGeneratedJmh") {
     source = fileTree("${buildDir}/generated-sources/jmh")
 
     classpath = sourceSets["jmh"].compileClasspath +
-            sourceSets["java21"].output +
-            sourceSets["java21"].compileClasspath
             sourceSets["java18"].output +
             sourceSets["java18"].compileClasspath +
+            sourceSets["java21"].output +
+            sourceSets["java21"].compileClasspath +
             sourceSets.main.get().output +
             sourceSets.main.get().compileClasspath +
             files("${buildDir}/classes/java/jmh")
@@ -321,7 +324,7 @@ tasks.register("jmh") {
         javaexec {
             classpath = files(tasks.named("jmhJar").get().outputs.files)
             mainClass.set("org.openjdk.jmh.Main")
-            jvmArgs = listOf("--add-modules", "jdk.incubator.vector")
+            jvmArgs = listOf("--enable-preview", "--add-modules", "jdk.incubator.vector")
 
             // Initialize the args list with default settings
             args = mutableListOf<String>().apply {
