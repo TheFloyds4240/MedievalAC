@@ -109,13 +109,14 @@ public class ScalarVector3D implements Vector3D {
 
     @Override
     public double distance(@NotNull Vector3D o) {
-        double dSquared = this.distanceSquared(o);
-        return dSquared * dSquared;
+        return Math.sqrt(distanceSquared(o));
     }
 
     @Override
     public double distanceSquared(@NotNull Vector3D o) {
-        return (this.x - o.getX()) + (this.y - o.getY()) + (this.z - o.getZ());
+        return (this.x - o.getX()) * (this.x - o.getX())
+                + (this.y - o.getY()) * (this.y - o.getY())
+                + (this.z - o.getZ()) * (this.z - o.getZ());
     }
 
     @Override

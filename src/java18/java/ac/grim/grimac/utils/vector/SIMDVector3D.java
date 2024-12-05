@@ -4,7 +4,7 @@ import jdk.incubator.vector.*;
 
 public final class SIMDVector3D implements Vector3D {
 
-    private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
+    private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_256;
     private static final VectorMask<Double> LENGTH_3_ARRAY_MASK = SPECIES.indexInRange(0, 3);
     private static final VectorShuffle<Double> CROSS_PRODUCT_SHUFFLE1 = VectorShuffle.fromArray(SPECIES, new int[]{1, 2, 0, 3}, 0);
     private static final VectorShuffle<Double> CROSS_PRODUCT_SHUFFLE2 = VectorShuffle.fromArray(SPECIES, new int[]{2, 0, 1, 3}, 0);
