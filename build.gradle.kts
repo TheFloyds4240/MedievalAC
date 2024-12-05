@@ -7,7 +7,6 @@ plugins {
     id("io.freefair.lombok") version "8.6"
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
     id("com.diffplug.spotless") version "6.25.0"
-    id("me.champeau.jmh") version "0.7.2"
 }
 
 spotless {
@@ -60,6 +59,13 @@ repositories {
     // FastUtil, Discord-Webhooks
 }
 
+// Add JMH configuration
+configurations {
+    create("jmh")
+    create("jmhAnnotationProcessor")
+}
+
+
 dependencies {
     implementation("com.github.retrooper:packetevents-spigot:2.6.1-SNAPSHOT")
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
@@ -78,8 +84,9 @@ dependencies {
     //
     compileOnly("io.netty:netty-all:4.1.85.Final")
 
-    jmh("org.openjdk.jmh:jmh-core:1.37")
-    jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
+    // Replace jmhImplementation with the new configuration
+    "jmh"("org.openjdk.jmh:jmh-core:1.37")
+    "jmhAnnotationProcessor"("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 }
 
 bukkit {
@@ -182,15 +189,17 @@ java {
             compileClasspath += main.get().output
             runtimeClasspath += main.get().output
         }
-//        create("jmh") {
-//            java.srcDir("src/jmh/java")
-//            compileClasspath += sourceSets.main.get().output +
-//                    sourceSets.getByName("java18").output +
-//                    configurations.jmh.get()
-//            runtimeClasspath += sourceSets.main.get().output +
-//                    sourceSets.getByName("java18").output +
-//                    configurations.jmh.get()
-//        }
+        create("jmh") {
+            java {
+                srcDir("src/jmh/java")
+            }
+            compileClasspath += sourceSets.main.get().output +
+                    sourceSets.getByName("java18").output +
+                    configurations["jmh"]
+            runtimeClasspath += sourceSets.main.get().output +
+                    sourceSets.getByName("java18").output +
+                    configurations["jmh"]
+        }
     }
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -248,23 +257,86 @@ tasks.shadowJar {
     }
 }
 
-jmh {
-//    warmupIterations.set(2)
-//    iterations.set(5)
-//    fork.set(2)
-    jvmArgs.add("-Xms2G")
-    jvmArgs.add("-Xmx2G")
-    jvmArgs.add("--add-modules")
-    jvmArgs.add("jdk.incubator.vector")
+tasks.register<Jar>("jmhJar") {
+    dependsOn("compileGeneratedJmh")
 
-    // Ensure `java18` output is included
-    sourceSets {
-        getByName("jmh").compileClasspath += sourceSets.getByName("java18").output
-        getByName("jmh").runtimeClasspath += sourceSets.getByName("java18").output
+    from(sourceSets["main"].output)
+    from(sourceSets["java18"].output)
+    from(sourceSets["jmh"].output)
+    from("${buildDir}/classes/java/jmh")
+    from(configurations["jmh"].map { if (it.isDirectory) it else zipTree(it) })
+
+    manifest {
+        attributes(
+            "Main-Class" to "org.openjdk.jmh.Main",
+            "Add-Opens" to "java.base/java.lang java.base/java.io java.base/java.util java.base/java.util.concurrent java.base/java.net",
+            "Add-Modules" to "jdk.incubator.vector"
+        )
     }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveClassifier.set("benchmarks")
 }
 
 
-tasks.jmhJar {
-    dependsOn(tasks.jmhClasses) // Ensure the classes are compiled
+
+tasks.register<JavaCompile>("compileGeneratedJmh") {
+    dependsOn("compileJmhJava")
+
+    source = fileTree("${buildDir}/generated-sources/jmh")
+
+    classpath = sourceSets["jmh"].compileClasspath +
+            sourceSets["java18"].output +
+            sourceSets["java18"].compileClasspath +
+            sourceSets.main.get().output +
+            sourceSets.main.get().compileClasspath +
+            files("${buildDir}/classes/java/jmh")
+
+    destinationDirectory.set(file("${buildDir}/classes/java/jmh"))
+
+    sourceCompatibility = "18"
+    targetCompatibility = "18"
+    options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
+
+    doFirst {
+        println("Executing compileGeneratedJmh task")
+        println("Source files:")
+        source.forEach { println(it) }
+        println("Classpath:")
+        classpath.forEach { println(it) }
+    }
+}
+
+tasks.register("jmh") {
+    dependsOn("jmhJar")
+    doLast {
+        javaexec {
+            classpath = files(tasks.named("jmhJar").get().outputs.files)
+            mainClass.set("org.openjdk.jmh.Main")
+        }
+    }
+}
+
+tasks.named<JavaCompile>("compileJmhJava") {
+    source = fileTree("src/jmh/java")
+    classpath = sourceSets["jmh"].compileClasspath +
+            sourceSets.main.get().output +
+            sourceSets["java18"].output
+    destinationDirectory.set(file("${buildDir}/classes/java/jmh"))
+
+    sourceCompatibility = "18"
+    targetCompatibility = "18"
+    options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
+
+    doFirst {
+        println("Compiling JMH sources")
+        println("Source files:")
+        source.forEach { println(it) }
+        println("Classpath:")
+        classpath.forEach { println(it) }
+    }
+}
+
+tasks.named("jmhJar") {
+    dependsOn("compileJmhJava")
 }
