@@ -14,7 +14,6 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityAnimation;
 
 import java.util.ArrayDeque;
@@ -67,12 +66,7 @@ public class Post extends Check implements PostPredictionCheck {
 
     @Override
     public void onPacketReceive(final PacketReceiveEvent event) {
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
-            // Don't count teleports or duplicates as movements
-            if (player.packetStateData.lastPacketWasTeleport || player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
-                return;
-            }
-
+        if (isTickPacket(event.getPacketType())) { // Don't count teleports or duplicates as movements
             post.clear();
             sentFlying = true;
         } else {

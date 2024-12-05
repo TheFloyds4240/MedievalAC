@@ -575,9 +575,16 @@ public class GrimPlayer implements GrimUser {
     //     - 3 ticks is a magic value, but it should buffer out incorrect predictions somewhat.
     // 2. The player is in a vehicle
     public boolean isTickingReliablyFor(int ticks) {
-        return (getClientVersion().isOlderThan(ClientVersion.V_1_9)
-                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks))
+        // 1.21.2+: Tick end packet, on servers 1.21.2+
+        // 1.8-: Flying packet
+        return supportsEndTick()
+                || getClientVersion().isOlderThan(ClientVersion.V_1_9)
+                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
                 || compensatedEntities.getSelf().inVehicle();
+    }
+
+    public boolean inVehicle() {
+        return compensatedEntities.getSelf().inVehicle();
     }
 
     public boolean canThePlayerBeCloseToZeroMovement(int ticks) {
@@ -705,6 +712,11 @@ public class GrimPlayer implements GrimUser {
         // This check was added in 1.11
         // 1.11+ players must be in creative and have a permission level at or above 2
         return getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_10) || (gamemode == GameMode.CREATIVE && compensatedEntities.getSelf().getOpLevel() >= 2);
+    }
+
+    public boolean supportsEndTick() {
+        // TODO: Bypass viaversion
+        return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2);
     }
 
     @Override

@@ -8,7 +8,6 @@ import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "Timer", configName = "TimerA", setback = 10)
 public class TimerCheck extends Check implements PacketCheck {
@@ -107,8 +106,7 @@ public class TimerCheck extends Check implements PacketCheck {
 
     public boolean shouldCountPacketForTimer(PacketTypeCommon packetType) {
         // If not flying, or this was a teleport, or this was a duplicate 1.17 mojang stupidity packet
-        return WrapperPlayClientPlayerFlying.isFlying(packetType) &&
-                !player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate;
+        return isTickPacket(packetType);
     }
 
     @Override

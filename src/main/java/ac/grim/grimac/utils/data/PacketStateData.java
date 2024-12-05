@@ -24,6 +24,9 @@ public class PacketStateData {
     // This works on 1.8 only
     public boolean didLastLastMovementIncludePosition = false;
     public boolean didLastMovementIncludePosition = false;
+    // This works on 1.21.2+ only
+    public boolean didSendMovementBeforeTickEnd = false;
+    public KnownInput knownInput = new KnownInput(false, false, false, false, false, false, false);
     public Vector3d lastClaimedPosition = new Vector3d(0, 0, 0);
 
     public float lastHealth, lastSaturation;

@@ -190,6 +190,7 @@ public class CheckManager {
 
         prePredictionChecks = new ImmutableClassToInstanceMap.Builder<PacketCheck>()
                 .put(TimerCheck.class, new TimerCheck(player))
+                .put(TickTimer.class, new TickTimer(player))
                 .put(CrashA.class, new CrashA(player))
                 .put(CrashB.class, new CrashB(player))
                 .put(CrashC.class, new CrashC(player))

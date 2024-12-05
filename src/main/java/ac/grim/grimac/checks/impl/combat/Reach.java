@@ -134,9 +134,7 @@ public class Reach extends Check implements PacketCheck {
 
         // If the player set their look, or we know they have a new tick
         final boolean isFlying = WrapperPlayClientPlayerFlying.isFlying(event.getPacketType());
-        if (isFlying ||
-                event.getPacketType() == PacketType.Play.Client.PONG ||
-                event.getPacketType() == PacketType.Play.Client.WINDOW_CONFIRMATION) {
+        if (isUpdate(event.getPacketType())) {
             tickBetterReachCheckWithAngle(isFlying);
         }
     }

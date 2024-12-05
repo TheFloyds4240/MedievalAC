@@ -8,6 +8,8 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.common.ConfigReloadObserver;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -148,6 +150,39 @@ public class Check implements AbstractCheck, ConfigReloadObserver {
     public boolean isTransaction(PacketTypeCommon packetType) {
         return packetType == PacketType.Play.Client.PONG ||
                 packetType == PacketType.Play.Client.WINDOW_CONFIRMATION;
+    }
+
+    public boolean isFlying(PacketTypeCommon packetType) {
+        return WrapperPlayClientPlayerFlying.isFlying(packetType);
+    }
+
+    public boolean isUpdate(PacketTypeCommon packetType) {
+        return isFlying(packetType)
+                || packetType == PacketType.Play.Client.CLIENT_TICK_END
+                || isTransaction(packetType);
+    }
+
+    public boolean isTickPacket(PacketTypeCommon packetType) {
+        if (isTickPacketIncludingNonMovement(packetType)) {
+            if (isFlying(packetType)) {
+                return !player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isTickPacketIncludingNonMovement(PacketTypeCommon packetType) {
+        // On 1.21.2+ fall back to the TICK_END packet IF the player did not send a movement packet for their tick
+        // TickTimer checks to see if player did not send a tick end packet before new flying packet is sent
+        if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2)
+                && !player.packetStateData.didSendMovementBeforeTickEnd) {
+            if (packetType == PacketType.Play.Client.CLIENT_TICK_END) {
+                return true;
+            }
+        }
+
+        return isFlying(packetType);
     }
 
     @Override

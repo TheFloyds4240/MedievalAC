@@ -639,5 +639,4 @@ public class MovementCheckRunner extends Check implements PositionCheck {
     public void onReload(ConfigManager config) {
         allowSprintJumpingWithElytra = config.getBooleanElse("exploit.allow-sprint-jumping-when-using-elytra", true);
     }
-
 }
