@@ -2,7 +2,7 @@ package ac.grim.grimac.utils.vector;
 
 import org.jetbrains.annotations.NotNull;
 
-public interface Vector3D {
+public interface Vector3D extends Cloneable {
     double getX();
     double getY();
     double getZ();
