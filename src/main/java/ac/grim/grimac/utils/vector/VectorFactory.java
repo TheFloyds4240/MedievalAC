@@ -29,6 +29,23 @@ public final class VectorFactory {
         INSTANCE = ops;
     }
 
+    public static Vector3D newVector3D() {
+        return INSTANCE.newVector(0 ,0, 0);
+    }
+
+    public static Vector3D newVector3D(int x, int y, int z) {
+        return INSTANCE.newVector(x, y, z);
+    }
+
+    public static Vector3D newVector3D(float x, float y, float z) {
+        return INSTANCE.newVector(x, y, z);
+    }
+
+    public static Vector3D newVector3D(double x, double y, double z) {
+        return INSTANCE.newVector(x, y, z);
+    }
+
+
     public static VectorOperations get() {
         return INSTANCE;
     }
