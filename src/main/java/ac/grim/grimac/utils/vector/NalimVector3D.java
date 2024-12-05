@@ -17,13 +17,14 @@ public class NalimVector3D implements Vector3D {
         Linker.linkClass(NalimVector3D.class);
     }
 
-    private static final double[] loc = new double[]{0, 7, 10};
+    double[] loc;
 
     public final long nativePtr;  // Holds pointer to SimdVector
     @Link(name = "create_vector")
     private static native long create_vector(double x, double y, double z);
 
     public NalimVector3D(double x, double y, double z) {
+        loc = new double[]{x, y, z};
         nativePtr = create_vector(0, 0, 0);
     }
 
@@ -98,8 +99,8 @@ public class NalimVector3D implements Vector3D {
 
     @Override
     public @NotNull Vector3D crossProduct(@NotNull Vector3D o) {
-        cross_product(nativePtr, ((NalimVector3D) o).nativePtr);
-//        crossProduct(this.loc, ((NalimVector3D) o).loc);
+//        cross_product(nativePtr, ((NalimVector3D) o).nativePtr);
+        crossProduct(this.loc, ((NalimVector3D) o).loc);
         return this;
     }
 
