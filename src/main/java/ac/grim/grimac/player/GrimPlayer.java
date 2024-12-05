@@ -64,7 +64,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static ac.grim.grimac.utils.data.VectorData.VectorType;
 import static ac.grim.grimac.utils.data.VectorData.VectorType.Normal;
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
@@ -246,6 +245,7 @@ public class GrimPlayer implements GrimUser {
 
         packetStateData = new PacketStateData();
 
+        uncertaintyHandler.riptideEntities.add(0);
         uncertaintyHandler.collidingEntities.add(0);
 
         if (getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_14)) {
@@ -296,7 +296,7 @@ public class GrimPlayer implements GrimUser {
         // If the player has that client sided riptide thing and has colliding with an entity
         // This was determined in the previous tick but whatever just include the 2 ticks around it
         // for a bit of safety as I doubt people will try to bypass this, it would be a very useless cheat
-        if (riptideSpinAttackTicks >= 0 && Collections.max(uncertaintyHandler.collidingEntities) > 0) {
+        if (riptideSpinAttackTicks >= 0 && Collections.max(uncertaintyHandler.riptideEntities) > 0) {
             possibleMovements.add(new VectorData(clientVelocity.clone().multiply(-0.2), VectorData.VectorType.Trident));
         }
 
@@ -569,9 +569,16 @@ public class GrimPlayer implements GrimUser {
     //     - 3 ticks is a magic value, but it should buffer out incorrect predictions somewhat.
     // 2. The player is in a vehicle
     public boolean isTickingReliablyFor(int ticks) {
-        return (getClientVersion().isOlderThan(ClientVersion.V_1_9)
-                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks))
+        // 1.21.2+: Tick end packet, on servers 1.21.2+
+        // 1.8-: Flying packet
+        return supportsEndTick()
+                || getClientVersion().isOlderThan(ClientVersion.V_1_9)
+                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
                 || compensatedEntities.getSelf().inVehicle();
+    }
+
+    public boolean inVehicle() {
+        return compensatedEntities.getSelf().inVehicle();
     }
 
     public boolean canThePlayerBeCloseToZeroMovement(int ticks) {
@@ -701,6 +708,11 @@ public class GrimPlayer implements GrimUser {
         return getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_10) || (gamemode == GameMode.CREATIVE && compensatedEntities.getSelf().getOpLevel() >= 2);
     }
 
+    public boolean supportsEndTick() {
+        // TODO: Bypass viaversion
+        return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2);
+    }
+
     @Override
     public void runSafely(Runnable runnable) {
         ChannelHelper.runInEventLoop(this.user.getChannel(), runnable);
@@ -755,6 +767,7 @@ public class GrimPlayer implements GrimUser {
     @Getter private boolean ignoreDuplicatePacketRotation = false;
     @Getter private boolean experimentalChecks = false;
     @Getter private boolean cancelDuplicatePacket = true;
+    @Getter private boolean exemptElytra = false;
 
     @Override
     public void reload(ConfigManager config) {
@@ -763,6 +776,7 @@ public class GrimPlayer implements GrimUser {
         experimentalChecks = config.getBooleanElse("experimental-checks", false);
         ignoreDuplicatePacketRotation = config.getBooleanElse("ignore-duplicate-packet-rotation", false);
         cancelDuplicatePacket = config.getBooleanElse("cancel-duplicate-packet", true);
+        exemptElytra = config.getBooleanElse("exempt-elytra", false);
         // reload all checks
         for (AbstractCheck value : checkManager.allChecks.values()) value.reload(config);
         // reload punishment manager

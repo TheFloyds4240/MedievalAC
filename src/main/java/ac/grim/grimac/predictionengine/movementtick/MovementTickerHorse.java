@@ -5,7 +5,6 @@ import ac.grim.grimac.utils.data.packetentity.PacketEntityHorse;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import ac.grim.grimac.utils.vector.Vector3D;
 
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 

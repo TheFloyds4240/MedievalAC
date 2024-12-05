@@ -6,31 +6,6 @@ import ac.grim.grimac.utils.vector.Vector3D;
 import java.util.Objects;
 
 public class VectorData {
-    public static final class MoveVectorData extends VectorData {
-        public int x;
-        public int z;
-
-        public MoveVectorData(Vector3D vector, VectorData lastVector, VectorType vectorType, int x, int z) {
-            super(vector, lastVector, vectorType);
-            this.x = x;
-            this.z = z;
-
-            if (x != 0 || z != 0) {
-                addVectorType(VectorType.WithInput);
-            }
-        }
-
-        public MoveVectorData(Vector3D vector, VectorType vectorType, int x, int z) {
-            super(vector, vectorType);
-            this.x = x;
-            this.z = z;
-
-            if (x != 0 || z != 0) {
-                addVectorType(VectorType.WithInput);
-            }
-        }
-    }
-
     public VectorType vectorType;
     public VectorData lastVector;
     public VectorData preUncertainty;
@@ -58,7 +33,6 @@ public class VectorData {
             isJump = lastVector.isJump;
             preUncertainty = lastVector.preUncertainty;
             isAttackSlow = lastVector.isAttackSlow;
-            isWithInput = lastVector.isWithInput;
         }
 
         addVectorType(vectorType);
@@ -126,9 +100,6 @@ public class VectorData {
             case AttackSlow:
                 isAttackSlow = true;
                 break;
-            case WithInput:
-                isWithInput = true;
-                break;
         }
     }
 
@@ -155,7 +126,6 @@ public class VectorData {
         Explosion,
         FirstBreadExplosion,
         InputResult,
-        WithInput,
         StuckMultiplier,
         Spectator,
         Dead,

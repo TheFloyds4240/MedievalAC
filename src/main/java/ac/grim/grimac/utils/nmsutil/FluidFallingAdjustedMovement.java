@@ -2,7 +2,6 @@ package ac.grim.grimac.utils.nmsutil;
 
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.vector.Vector3D;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import ac.grim.grimac.utils.vector.Vector3D;
 
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;

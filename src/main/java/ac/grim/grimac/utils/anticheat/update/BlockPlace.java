@@ -16,7 +16,6 @@ import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.nmsutil.BoundingBoxSize;
 import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
 import ac.grim.grimac.utils.nmsutil.Materials;
-import ac.grim.grimac.utils.nmsutil.ReachUtils;
 import ac.grim.grimac.utils.vector.Vector3D;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
@@ -674,7 +673,7 @@ public class BlockPlace {
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(PLAYER_BLOCK_INTERACTION_RANGE) + 3;
         Vector3D eyePos = newVector3D(player.x, player.y + player.getEyeHeight(), player.z);
         Vector3D endReachPos = eyePos.clone().add(newVector3D(look.getX() * distance, look.getY() * distance, look.getZ() * distance));
-        Vector3D intercept = calculateIntercept(box, eyePos, endReachPos).getFirst();
+        Vector3D intercept = calculateIntercept(box, eyePos, endReachPos).first();
 
         // Bring this back to relative to the block
         // The player didn't even click the block... (we should force resync BEFORE we get here!)

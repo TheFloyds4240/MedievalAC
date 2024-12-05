@@ -17,6 +17,8 @@ import ac.grim.grimac.utils.latency.CompensatedWorld;
 import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.math.VectorUtils;
 import ac.grim.grimac.utils.nmsutil.*;
+import ac.grim.grimac.utils.vector.Vector3D;
+import ac.grim.grimac.utils.vector.VectorFactory;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
@@ -47,7 +49,6 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgeBlockChanges;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -371,9 +372,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     // Manual filter on FINISH_DIGGING to prevent clients setting non-breakable blocks to air
-    private static final Function<StateType, Boolean> BREAKABLE = type -> {
-        return !type.isAir() && type.getHardness() != -1.0f && type != StateTypes.WATER && type != StateTypes.LAVA;
-    };
+    private static final Function<StateType, Boolean> BREAKABLE = type -> !type.isAir() && type.getHardness() != -1.0f && type != StateTypes.WATER && type != StateTypes.LAVA;
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -455,43 +454,43 @@ public class CheckManagerListener extends PacketListenerAbstract {
         }
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
-            WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
-            final Vector3i digPosition = dig.getBlockPosition();
-            WrappedBlockState block = player.compensatedWorld.getWrappedBlockStateAt(digPosition);
-            final StateType type = block.getType();
+            final WrapperPlayClientPlayerDigging packet = new WrapperPlayClientPlayerDigging(event);
+            final BlockBreak blockBreak = new BlockBreak(packet, player);
 
-            player.checkManager.getPacketCheck(BadPacketsX.class).handle(event, dig, type);
-            player.checkManager.getPacketCheck(BadPacketsZ.class).handle(event, dig);
+            player.checkManager.getPacketCheck(BadPacketsX.class).handle(blockBreak);
+            player.checkManager.getPacketCheck(BadPacketsZ.class).handle(blockBreak);
 
-            if (dig.getAction() == DiggingAction.FINISHED_DIGGING) {
-                // Not unbreakable
-                if (BREAKABLE.apply(type) && !event.isCancelled()) {
-                    player.compensatedWorld.startPredicting();
-                    player.compensatedWorld.updateBlock(digPosition.getX(), digPosition.getY(), digPosition.getZ(), 0);
-                    player.compensatedWorld.stopPredicting(dig);
-                }
-            }
-
-            if (dig.getAction() == DiggingAction.START_DIGGING && !event.isCancelled()) {
-                double damage = BlockBreakSpeed.getBlockDamage(player, digPosition);
-
-                //Instant breaking, no damage means it is unbreakable by creative players (with swords)
-                if (damage >= 1) {
-                    player.compensatedWorld.startPredicting();
-                    if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), block)) {
-                        // Vanilla uses a method to grab water flowing, but as you can't break flowing water
-                        // We can simply treat all waterlogged blocks or source blocks as source blocks
-                        player.compensatedWorld.updateBlock(digPosition, StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
-                    } else {
-                        player.compensatedWorld.updateBlock(digPosition.getX(), digPosition.getY(), digPosition.getZ(), 0);
-                    }
-                    player.compensatedWorld.stopPredicting(dig);
-                }
+            if (blockBreak.isCancelled()) {
+                event.setCancelled(true);
+                player.onPacketCancel();
             }
 
             if (!event.isCancelled()) {
-                if (dig.getAction() == DiggingAction.START_DIGGING || dig.getAction() == DiggingAction.FINISHED_DIGGING || dig.getAction() == DiggingAction.CANCELLED_DIGGING) {
-                    player.compensatedWorld.handleBlockBreakPrediction(dig);
+                if (blockBreak.action == DiggingAction.FINISHED_DIGGING && BREAKABLE.apply(blockBreak.block.getType())) {
+                    player.compensatedWorld.startPredicting();
+                    player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
+                    player.compensatedWorld.stopPredicting(packet);
+                }
+
+                if (blockBreak.action == DiggingAction.START_DIGGING) {
+                    double damage = BlockBreakSpeed.getBlockDamage(player, blockBreak.position);
+
+                    // Instant breaking, no damage means it is unbreakable by creative players (with swords)
+                    if (damage >= 1) {
+                        player.compensatedWorld.startPredicting();
+                        if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), blockBreak.block)) {
+                            // Vanilla uses a method to grab water flowing, but as you can't break flowing water
+                            // We can simply treat all waterlogged blocks or source blocks as source blocks
+                            player.compensatedWorld.updateBlock(blockBreak.position, StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
+                        } else {
+                            player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
+                        }
+                        player.compensatedWorld.stopPredicting(packet);
+                    }
+                }
+
+                if (blockBreak.action == DiggingAction.START_DIGGING || blockBreak.action == DiggingAction.FINISHED_DIGGING || blockBreak.action == DiggingAction.CANCELLED_DIGGING) {
+                    player.compensatedWorld.handleBlockBreakPrediction(packet);
                 }
             }
         }
@@ -576,6 +575,15 @@ public class CheckManagerListener extends PacketListenerAbstract {
         if (player.packetStateData.cancelDuplicatePacket) {
             event.setCancelled(true);
             player.packetStateData.cancelDuplicatePacket = false;
+        }
+
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
+            if (!player.packetStateData.didSendMovementBeforeTickEnd) {
+                // The player didn't send a movement packet, so we can predict this like we had idle tick on 1.8
+                player.packetStateData.didLastLastMovementIncludePosition = player.packetStateData.didLastMovementIncludePosition;
+                player.packetStateData.didLastMovementIncludePosition = false;
+            }
+            player.packetStateData.didSendMovementBeforeTickEnd = false;
         }
 
         // Finally, remove the packet state variables on this packet
@@ -747,6 +755,10 @@ public class CheckManagerListener extends PacketListenerAbstract {
 
         player.packetStateData.didLastLastMovementIncludePosition = player.packetStateData.didLastMovementIncludePosition;
         player.packetStateData.didLastMovementIncludePosition = hasPosition;
+
+        if (!player.packetStateData.lastPacketWasTeleport) {
+            player.packetStateData.didSendMovementBeforeTickEnd = true;
+        }
     }
 
     private static void placeLilypad(GrimPlayer player, InteractionHand hand) {
@@ -782,10 +794,10 @@ public class CheckManagerListener extends PacketListenerAbstract {
 
     private static HitData getNearestHitResult(GrimPlayer player, StateType heldItem, boolean sourcesHaveHitbox) {
         Vector3d startingPos = new Vector3d(player.x, player.y + player.getEyeHeight(), player.z);
-        Vector startingVec = new Vector(startingPos.getX(), startingPos.getY(), startingPos.getZ());
+        Vector3D startingVec = VectorFactory.newVector3D(startingPos.getX(), startingPos.getY(), startingPos.getZ());
         Ray trace = new Ray(player, startingPos.getX(), startingPos.getY(), startingPos.getZ(), player.xRot, player.yRot);
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
-        Vector endVec = trace.getPointAtDistance(distance);
+        Vector3D endVec = trace.getPointAtDistance(distance);
         Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
 
         return traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
@@ -794,14 +806,14 @@ public class CheckManagerListener extends PacketListenerAbstract {
             data.downCast(boxes);
 
             double bestHitResult = Double.MAX_VALUE;
-            Vector bestHitLoc = null;
+            Vector3D bestHitLoc = null;
             BlockFace bestFace = null;
 
             for (SimpleCollisionBox box : boxes) {
-                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
+                Pair<Vector3D, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
                 if (intercept.first() == null) continue; // No intercept
 
-                Vector hitLoc = intercept.first();
+                Vector3D hitLoc = intercept.first();
 
                 if (hitLoc.distanceSquared(startingVec) < bestHitResult) {
                     bestHitResult = hitLoc.distanceSquared(startingVec);
@@ -819,7 +831,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 double waterHeight = player.compensatedWorld.getFluidLevelAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
                 SimpleCollisionBox box = new SimpleCollisionBox(vector3i.getX(), vector3i.getY(), vector3i.getZ(), vector3i.getX() + 1, vector3i.getY() + waterHeight, vector3i.getZ() + 1);
 
-                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
+                Pair<Vector3D, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
 
                 if (intercept.first() != null) {
                     return new HitData(vector3i, intercept.first(), intercept.second(), block);

@@ -14,7 +14,6 @@ import ac.grim.grimac.utils.vector.Vector3D;
 import java.util.HashSet;
 import java.util.Set;
 
-import static ac.grim.grimac.utils.data.VectorData.VectorType;
 import static ac.grim.grimac.utils.data.VectorData.VectorType.SwimmingSpace;
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 

@@ -43,7 +43,7 @@ public class BadPacketsH extends Check implements PacketCheck {
             if (player.getClientVersion().isOlderThan(ClientVersion.V_1_9)
                     && PacketEvents.getAPI().getServerManager().getVersion().isNewerThan(ServerVersion.V_1_8)) return;
 
-            if (!sentAnimation && flagAndAlert()) {
+            if (!sentAnimation && flagAndAlert() && shouldModifyPackets()) {
                 event.setCancelled(true);
                 player.onPacketCancel();
             }

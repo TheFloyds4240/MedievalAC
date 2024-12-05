@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.List;
-import java.util.Vector;
 
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 

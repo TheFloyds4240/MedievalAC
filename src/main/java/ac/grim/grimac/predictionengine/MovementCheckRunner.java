@@ -40,7 +40,6 @@ import com.github.retrooper.packetevents.protocol.world.states.defaulttags.Block
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import ac.grim.grimac.utils.vector.Vector3D;
 
-import static ac.grim.grimac.utils.data.VectorData.VectorType;
 import static ac.grim.grimac.utils.data.VectorData.VectorType.Dead;
 import static ac.grim.grimac.utils.vector.VectorFactory.newVector3D;
 
@@ -432,7 +431,7 @@ public class MovementCheckRunner extends Check implements PositionCheck {
             // Dead players can't cheat, if you find a way how they could, open an issue
             player.predictedVelocity = new VectorData(newVector3D(), Dead);
             player.clientVelocity = newVector3D();
-        } else if (player.disableGrim || (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_8) && player.gamemode == GameMode.SPECTATOR) || player.isFlying) {
+        } else if (player.disableGrim || (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_8) && player.gamemode == GameMode.SPECTATOR) || player.isFlying || (player.isExemptElytra() && player.isGliding)) {
             // We could technically check spectator but what's the point...
             // Added complexity to analyze a gamemode used mainly by moderators
             //
@@ -642,5 +641,4 @@ public class MovementCheckRunner extends Check implements PositionCheck {
     public void onReload(ConfigManager config) {
         allowSprintJumpingWithElytra = config.getBooleanElse("exploit.allow-sprint-jumping-when-using-elytra", true);
     }
-
 }

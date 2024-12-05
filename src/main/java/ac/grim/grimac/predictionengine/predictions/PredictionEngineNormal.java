@@ -3,7 +3,6 @@ package ac.grim.grimac.predictionengine.predictions;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.VectorData;
-import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import ac.grim.grimac.utils.nmsutil.JumpPower;
 import ac.grim.grimac.utils.vector.Vector3D;
@@ -43,6 +42,10 @@ public class PredictionEngineNormal extends PredictionEngine {
 
     @Override
     public void addJumpsToPossibilities(GrimPlayer player, Set<VectorData> existingVelocities) {
+        if (player.supportsEndTick() && !player.packetStateData.knownInput.jump()) {
+            return;
+        }
+
         for (VectorData vector : new HashSet<>(existingVelocities)) {
             Vector3D jump = vector.vector.clone();
 

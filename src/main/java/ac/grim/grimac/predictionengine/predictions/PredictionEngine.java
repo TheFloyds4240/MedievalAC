@@ -4,6 +4,7 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.predictionengine.SneakingEstimator;
 import ac.grim.grimac.predictionengine.movementtick.MovementTickerPlayer;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
+import ac.grim.grimac.utils.data.KnownInput;
 import ac.grim.grimac.utils.data.Pair;
 import ac.grim.grimac.utils.data.VectorData;
 import ac.grim.grimac.utils.math.VectorUtils;
@@ -12,13 +13,11 @@ import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
 import ac.grim.grimac.utils.nmsutil.JumpPower;
 import ac.grim.grimac.utils.nmsutil.Riptide;
 import ac.grim.grimac.utils.vector.Vector3D;
-import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import ac.grim.grimac.utils.vector.Vector3D;
 
 import java.util.*;
 
-import static ac.grim.grimac.utils.data.VectorData.VectorType;
 import static ac.grim.grimac.utils.data.VectorData.VectorType.ZeroPointZeroThree;
 import static ac.grim.grimac.utils.nmsutil.Collisions.isEmpty;
 import static ac.grim.grimac.utils.nmsutil.GetBoundingBox.getBoundingBoxFromPosAndSize;
@@ -122,7 +121,9 @@ public class PredictionEngine {
         SimpleCollisionBox originalBB = player.boundingBox;
         // 0.03 doesn't exist with vehicles, thank god
         // 1.13+ clients have stupid poses that desync because mojang brilliantly removed the idle packet in 1.9
-        SimpleCollisionBox pointThreeThanksMojang = player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) ? GetBoundingBox.getBoundingBoxFromPosAndSize(player, player.lastX, player.lastY, player.lastZ, 0.6f, 0.6f) : originalBB;
+        SimpleCollisionBox pointThreeThanksMojang = player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13)
+                ? GetBoundingBox.getBoundingBoxFromPosAndSize(player, player.lastX, player.lastY, player.lastZ, 0.6f, 0.6f)
+                : originalBB;
 
         player.skippedTickInActualMovement = false;
 
@@ -144,8 +145,8 @@ public class PredictionEngine {
 
             // Returns pair of primary push movement, and then outputvel
             Pair<Vector3D, Vector3D> output = doSeekingWallCollisions(player, primaryPushMovement, originalClientVel, clientVelAfterInput);
-            primaryPushMovement = output.getFirst();
-            Vector3D outputVel = clampMovementToHardBorder(player, output.getSecond());
+            primaryPushMovement = output.first();
+            Vector3D outputVel = clampMovementToHardBorder(player, output.second());
 
             double resultAccuracy = outputVel.distanceSquared(player.actualMovement);
 
@@ -711,7 +712,36 @@ public class PredictionEngine {
         // Optimization - Also cuts down scenarios by 2/3
         // For some reason the player sprints while swimming no matter what
         // Probably as a way to tell the server it is swimming
-        int zMin = player.isSprinting && !player.isSwimming ? 1 : -1;
+        int forwardMin = player.isSprinting && !player.isSwimming ? 1 : -1;
+        int forwardMax = 1;
+        int strafeMin = -1;
+        int strafeMax = 1;
+
+        // Calculate inputs by the players known inputs on 1.21.2+
+        if (player.supportsEndTick()) {
+            forwardMin = forwardMax = strafeMin = strafeMax = 0;
+
+            final KnownInput knownInput = player.packetStateData.knownInput;
+            if (knownInput.forward()) {
+                forwardMax++;
+                forwardMin++;
+            }
+
+            if (knownInput.backward() && (!player.isSprinting || player.isSwimming)) {
+                forwardMax--;
+                forwardMin--;
+            }
+
+            if (knownInput.left()) {
+                strafeMax++;
+                strafeMin++;
+            }
+
+            if (knownInput.right()) {
+                strafeMax--;
+                strafeMin--;
+            }
+        }
 
         for (int loopSlowed = 0; loopSlowed <= 1; loopSlowed++) {
             // Loop twice for the using item status if the player is using a trident
@@ -723,9 +753,11 @@ public class PredictionEngine {
                 for (VectorData possibleLastTickOutput : possibleVectors) {
                     // Only do this when there is tick skipping
                     if (loopSlowed == 1 && !possibleLastTickOutput.isZeroPointZeroThree()) continue;
-                    for (int x = -1; x <= 1; x++) {
-                        for (int z = zMin; z <= 1; z++) {
-                            VectorData result = new VectorData(possibleLastTickOutput.vector.clone().add(getMovementResultFromInput(player, transformInputsToVector(player, newVector3D(x, 0, z)), speed, player.xRot)), possibleLastTickOutput, VectorData.VectorType.InputResult);
+                    for (int strafe = strafeMin; strafe <= strafeMax; strafe++) {
+                        for (int forward = forwardMin; forward <= forwardMax; forward++) {
+                            VectorData result = new VectorData(possibleLastTickOutput.vector.clone()
+                                    .add(getMovementResultFromInput(player, transformInputsToVector(player, newVector3D(strafe, 0, forward)), speed, player.xRot)),
+                                    possibleLastTickOutput, VectorData.VectorType.InputResult);
                             result = result.returnNewModified(result.vector.clone().multiply(player.stuckSpeedMultiplier), VectorData.VectorType.StuckMultiplier);
                             result = result.returnNewModified(handleOnClimbable(result.vector.clone(), player), VectorData.VectorType.Climbable);
                             // Signal that we need to flip sneaking bounding box
