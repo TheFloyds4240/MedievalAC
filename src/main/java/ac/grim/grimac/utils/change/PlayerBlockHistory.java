@@ -1,12 +1,12 @@
 package ac.grim.grimac.utils.change;
 
-
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class PlayerBlockHistory {
-    private final ConcurrentLinkedDeque<BlockModification> blockHistory = new ConcurrentLinkedDeque<>();
+    private final Deque<BlockModification> blockHistory = new ArrayDeque<>();
 
     // Add a new block modification to the history.
     public void add(BlockModification modification) {
