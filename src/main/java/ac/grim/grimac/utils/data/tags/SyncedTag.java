@@ -3,7 +3,9 @@ package ac.grim.grimac.utils.data.tags;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTags;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -15,7 +17,7 @@ public final class SyncedTag<T> {
 
     private SyncedTag(ResourceLocation location, Function<Integer, T> remapper, Set<T> defaultValues) {
         this.location = location;
-        this.values = new HashSet<>();
+        this.values = Collections.newSetFromMap(new IdentityHashMap<>());
         this.remapper = remapper;
         this.values.addAll(defaultValues);
     }
