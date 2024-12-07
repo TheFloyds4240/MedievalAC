@@ -40,6 +40,11 @@ val relocate: Boolean = project.findProperty("relocate")?.toString()?.toBoolean(
 
 repositories {
     mavenLocal()
+    maven("https://repo.booky.dev/releases/") { // TODO remove when Adventure 4.18 releases
+        content {
+            includeGroup("net.kyori")
+        }
+    }
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot
     maven("https://jitpack.io/") { // Grim API
         content {
@@ -58,7 +63,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.retrooper:packetevents-spigot:2.6.1-SNAPSHOT")
+    implementation("com.github.retrooper:packetevents-spigot:2.7.0-SNAPSHOT")
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
     implementation("club.minnced:discord-webhooks:0.8.0") // Newer versions include kotlin-stdlib, which leads to incompatibility with plugins that use Kotlin
     implementation("it.unimi.dsi:fastutil:8.5.15")
