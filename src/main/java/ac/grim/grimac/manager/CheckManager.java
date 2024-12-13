@@ -106,7 +106,6 @@ public class CheckManager {
                 .put(MultiActionsC.class, new MultiActionsC(player))
                 .put(MultiActionsD.class, new MultiActionsD(player))
                 .put(MultiActionsE.class, new MultiActionsE(player))
-                .put(FastBreak.class, new FastBreak(player))
                 .put(PacketOrderB.class, new PacketOrderB(player))
                 .put(PacketOrderC.class, new PacketOrderC(player))
                 .put(PacketOrderD.class, new PacketOrderD(player))
