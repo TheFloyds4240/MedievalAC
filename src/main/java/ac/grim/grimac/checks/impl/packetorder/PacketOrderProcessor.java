@@ -104,7 +104,7 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             closingInventory = true;
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(packetType) && !player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
+        if (isTickPacket(packetType)) {
             openingInventory = false;
             swapping = false;
             dropping = false;
