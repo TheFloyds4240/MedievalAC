@@ -41,7 +41,7 @@ public class PacketOrderG extends Check implements PostPredictionCheck {
                     || player.packetOrderProcessor.isPicking()
                     || player.packetOrderProcessor.isDigging()
             ) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                if (!player.canSkipTicks()) {
                     if (flagAndAlert() && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
@@ -55,8 +55,7 @@ public class PacketOrderG extends Check implements PostPredictionCheck {
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        // we don't need to check pre-1.9 players here (no tick skipping)
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) return;
+        if (!player.canSkipTicks()) return;
 
         if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
             for (; invalid >= 1; invalid--) {

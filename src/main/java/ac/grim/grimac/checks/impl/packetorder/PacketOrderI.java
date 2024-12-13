@@ -13,7 +13,6 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 import java.util.ArrayDeque;
 
@@ -34,7 +33,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
         if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             if (new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
                 if (player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isPicking() || player.packetOrderProcessor.isReleasing() || player.packetOrderProcessor.isDigging()) {
-                    if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                    if (!player.canSkipTicks()) {
                         if (flagAndAlert("attack") && shouldModifyPackets()) {
                             event.setCancelled(true);
                             player.onPacketCancel();
@@ -44,7 +43,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                     }
                 }
             } else if (player.packetOrderProcessor.isReleasing() || player.packetOrderProcessor.isDigging()) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                if (!player.canSkipTicks()) {
                     if (flagAndAlert("interact") && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
@@ -57,7 +56,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
             if (player.packetOrderProcessor.isReleasing() || digging) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                if (!player.canSkipTicks()) {
                     if (flagAndAlert("place/use") && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
@@ -74,7 +73,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
             switch (packet.getAction()) {
                 case RELEASE_USE_ITEM:
                     if (player.packetOrderProcessor.isAttacking() || player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isPicking() || player.packetOrderProcessor.isDigging()) {
-                        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                        if (!player.canSkipTicks()) {
                             if (flagAndAlert("release")) {
                                 setback = true;
                             }
@@ -97,29 +96,32 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
             }
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8) && !player.packetStateData.lastPacketWasTeleport) {
+        if (isTickPacket(event.getPacketType())) {
             digging = false;
         }
     }
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+        if (!player.canSkipTicks()) {
             if (setback) {
                 setbackIfAboveSetbackVL();
                 setback = false;
             }
-        } else if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
+            return;
+        }
+
+        if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
             for (String verbose : flags) {
                 if (flagAndAlert(verbose) && setback) {
                     setbackIfAboveSetbackVL();
                     setback = false;
                 }
             }
-        }
 
-        flags.clear();
-        setback = digging = false;
+            flags.clear();
+            setback = false;
+        }
     }
 
     @Override

@@ -56,6 +56,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -570,8 +571,7 @@ public class GrimPlayer implements GrimUser {
     public boolean isTickingReliablyFor(int ticks) {
         // 1.21.2+: Tick end packet, on servers 1.21.2+
         // 1.8-: Flying packet
-        return supportsEndTick()
-                || getClientVersion().isOlderThan(ClientVersion.V_1_9)
+        return !canSkipTicks()
                 || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
                 || compensatedEntities.getSelf().inVehicle();
     }
@@ -707,6 +707,11 @@ public class GrimPlayer implements GrimUser {
     public boolean supportsEndTick() {
         // TODO: Bypass viaversion
         return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2);
+    }
+
+    @Contract(pure = true)
+    public boolean canSkipTicks() {
+        return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) && !supportsEndTick();
     }
 
     @Override

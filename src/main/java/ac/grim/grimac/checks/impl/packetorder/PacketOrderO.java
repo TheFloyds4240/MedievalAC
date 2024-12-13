@@ -10,7 +10,6 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity.InteractAction;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 @CheckData(name = "PacketOrderO", experimental = true)
 public class PacketOrderO extends Check implements PacketCheck {
@@ -56,7 +55,7 @@ public class PacketOrderO extends Check implements PacketCheck {
             }
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && !player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
+        if (isTickPacket(event.getPacketType())) {
             sentMainhand = false;
         }
     }

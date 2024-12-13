@@ -7,7 +7,6 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 
 import java.util.ArrayDeque;
@@ -25,7 +24,7 @@ public class PacketOrderK extends Check implements PostPredictionCheck {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
             if (new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT) {
                 if (player.packetOrderProcessor.isClickingInInventory() || player.packetOrderProcessor.isClosingInventory()) {
-                    if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                    if (!player.canSkipTicks()) {
                         flagAndAlert("open");
                     } else {
                         flags.add("open");
@@ -36,7 +35,7 @@ public class PacketOrderK extends Check implements PostPredictionCheck {
 
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW || event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
             if (player.packetOrderProcessor.isOpeningInventory()) {
-                if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                if (!player.canSkipTicks()) {
                     if (flagAndAlert(event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW ? "click" : "close") && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
@@ -50,8 +49,7 @@ public class PacketOrderK extends Check implements PostPredictionCheck {
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        // we don't need to check pre-1.9 players here (no tick skipping)
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) return;
+        if (!player.canSkipTicks()) return;
 
         if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
             for (String verbose : flags) {
