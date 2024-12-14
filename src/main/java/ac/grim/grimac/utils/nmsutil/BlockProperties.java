@@ -37,7 +37,7 @@ public class BlockProperties {
 
                 PacketEntityStrider strider = (PacketEntityStrider) player.compensatedEntities.getSelf().getRiding();
                 // Vanilla multiplies by 0.1 to calculate speed
-                return (float) strider.getAttributeValue(Attributes.GENERIC_MOVEMENT_SPEED) * (strider.isShaking ? 0.66F : 1.0F) * 0.1f;
+                return (float) strider.getAttributeValue(Attributes.MOVEMENT_SPEED) * (strider.isShaking ? 0.66F : 1.0F) * 0.1f;
             }
         }
 
@@ -206,6 +206,6 @@ public class BlockProperties {
 
     private static float getModernVelocityMultiplier(GrimPlayer player, float blockSpeedFactor) {
         if (player.getClientVersion().isOlderThan(ClientVersion.V_1_21)) return blockSpeedFactor;
-        return (float) GrimMath.lerp((float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.GENERIC_MOVEMENT_EFFICIENCY), blockSpeedFactor, 1.0F);
+        return (float) GrimMath.lerp((float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.MOVEMENT_EFFICIENCY), blockSpeedFactor, 1.0F);
     }
 }

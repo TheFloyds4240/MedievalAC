@@ -14,7 +14,7 @@ import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 
-@CheckData(name = "BadPacketsU", experimental = true)
+@CheckData(name = "BadPacketsU", description = "Sent impossible use item packet", experimental = true)
 public class BadPacketsU extends Check implements PacketCheck {
     public BadPacketsU(GrimPlayer player) {
         super(player);

@@ -13,8 +13,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 
 import java.util.Locale;
 
-// checks for impossible dig packets
-@CheckData(name = "BadPacketsL")
+@CheckData(name = "BadPacketsL", description = "Sent impossible dig packet")
 public class BadPacketsL extends Check implements PacketCheck {
 
     public BadPacketsL(GrimPlayer player) {

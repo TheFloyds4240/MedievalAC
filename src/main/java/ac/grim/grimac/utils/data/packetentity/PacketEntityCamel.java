@@ -13,8 +13,8 @@ public class PacketEntityCamel extends PacketEntityHorse {
     public PacketEntityCamel(GrimPlayer player, UUID uuid, EntityType type, double x, double y, double z, float xRot) {
         super(player, uuid, type, x, y, z, xRot);
 
-        setAttribute(Attributes.GENERIC_JUMP_STRENGTH, 0.42f);
-        setAttribute(Attributes.GENERIC_MOVEMENT_SPEED, 0.09f);
-        setAttribute(Attributes.GENERIC_STEP_HEIGHT, 1.5f);
+        setAttribute(Attributes.JUMP_STRENGTH, 0.42f);
+        setAttribute(Attributes.MOVEMENT_SPEED, 0.09f);
+        setAttribute(Attributes.STEP_HEIGHT, 1.5f);
     }
 }

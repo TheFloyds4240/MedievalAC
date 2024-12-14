@@ -11,7 +11,7 @@ import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
 import org.bukkit.util.Vector;
 
-@CheckData(name = "FarPlace")
+@CheckData(name = "FarPlace", description = "Placing blocks from too far away")
 public class FarPlace extends BlockPlaceCheck {
     public FarPlace(GrimPlayer player) {
         super(player);
@@ -34,7 +34,7 @@ public class FarPlace extends BlockPlaceCheck {
 
         // getPickRange() determines this?
         // With 1.20.5+ the new attribute determines creative mode reach using a modifier
-        double maxReach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_INTERACTION_RANGE);
+        double maxReach = player.compensatedEntities.getSelf().getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
         double threshold = player.getMovementThreshold();
         maxReach += Math.hypot(threshold, threshold);
 

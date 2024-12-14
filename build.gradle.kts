@@ -40,11 +40,6 @@ val relocate: Boolean = project.findProperty("relocate")?.toString()?.toBoolean(
 
 repositories {
     mavenLocal()
-    maven("https://repo.booky.dev/releases/") { // TODO remove when Adventure 4.18 releases
-        content {
-            includeGroup("net.kyori")
-        }
-    }
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot
     maven("https://jitpack.io/") { // Grim API
         content {
@@ -58,6 +53,7 @@ repositories {
     maven("https://repo.opencollab.dev/maven-releases/") // Cumulus (for Floodgate)
     maven("https://repo.codemc.io/repository/maven-releases/") // PacketEvents
     maven("https://repo.codemc.io/repository/maven-snapshots/")
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     mavenCentral()
     // FastUtil, Discord-Webhooks
 }

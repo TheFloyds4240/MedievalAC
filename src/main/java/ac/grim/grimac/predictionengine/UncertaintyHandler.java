@@ -141,7 +141,7 @@ public class UncertaintyHandler {
             if (entity == null) continue;
 
             SimpleCollisionBox entityBox = entity.getPossibleCollisionBoxes();
-            final float scale = (float) entity.getAttributeValue(Attributes.GENERIC_SCALE);
+            final float scale = (float) entity.getAttributeValue(Attributes.SCALE);
             float width = BoundingBoxSize.getWidth(player, entity) * scale;
             float height = BoundingBoxSize.getHeight(player, entity) * scale;
 

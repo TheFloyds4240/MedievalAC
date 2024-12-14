@@ -19,11 +19,11 @@ public class PacketEntityHorse extends PacketEntityTrackXRot {
 
     public PacketEntityHorse(GrimPlayer player, UUID uuid, EntityType type, double x, double y, double z, float xRot) {
         super(player, uuid, type, x, y, z, xRot);
-        setAttribute(Attributes.GENERIC_STEP_HEIGHT, 1.0f);
+        setAttribute(Attributes.STEP_HEIGHT, 1.0f);
 
         final boolean preAttribute = player.getClientVersion().isOlderThan(ClientVersion.V_1_20_5);
         // This was horse.jump_strength pre-attribute
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_JUMP_STRENGTH, 0.7, 0, preAttribute ? 2 : 32)
+        trackAttribute(ValuedAttribute.ranged(Attributes.JUMP_STRENGTH, 0.7, 0, preAttribute ? 2 : 32)
                 .withSetRewriter((oldValue, newValue) -> {
                     // Seems viabackwards doesn't rewrite this (?)
                     if (preAttribute && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_20_5)) {
@@ -32,15 +32,15 @@ public class PacketEntityHorse extends PacketEntityTrackXRot {
                     // Modern player OR an old server setting legacy horse.jump_strength attribute
                     return newValue;
                 }));
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_MOVEMENT_SPEED, 0.225f, 0, 1024));
+        trackAttribute(ValuedAttribute.ranged(Attributes.MOVEMENT_SPEED, 0.225f, 0, 1024));
 
         if (EntityTypes.isTypeInstanceOf(type, EntityTypes.CHESTED_HORSE)) {
-            setAttribute(Attributes.GENERIC_JUMP_STRENGTH, 0.5);
-            setAttribute(Attributes.GENERIC_MOVEMENT_SPEED, 0.175f);
+            setAttribute(Attributes.JUMP_STRENGTH, 0.5);
+            setAttribute(Attributes.MOVEMENT_SPEED, 0.175f);
         }
 
         if (type == EntityTypes.ZOMBIE_HORSE || type == EntityTypes.SKELETON_HORSE) {
-            setAttribute(Attributes.GENERIC_MOVEMENT_SPEED, 0.2f);
+            setAttribute(Attributes.MOVEMENT_SPEED, 0.2f);
         }
     }
 }

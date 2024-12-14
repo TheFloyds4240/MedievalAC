@@ -5,9 +5,9 @@ import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
 
-@CheckData(name = "PacketOrderD")
-public class PacketOrderD extends Check implements PacketCheck {
-    public PacketOrderD(GrimPlayer player) {
+@CheckData(name = "TransactionOrder", experimental = false)
+public class TransactionOrder extends Check implements PacketCheck {
+    public TransactionOrder(GrimPlayer player) {
         super(player);
     }
 }

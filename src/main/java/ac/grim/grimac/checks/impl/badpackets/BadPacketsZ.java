@@ -2,7 +2,7 @@ package ac.grim.grimac.checks.impl.badpackets;
 
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
-import ac.grim.grimac.checks.type.PacketCheck;
+import ac.grim.grimac.checks.type.BlockBreakCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.MessageUtil;
 import ac.grim.grimac.utils.anticheat.update.BlockBreak;
@@ -12,11 +12,10 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.util.Vector3i;
 
-import static ac.grim.grimac.events.packets.patch.ResyncWorldUtil.resyncPosition;
 import static ac.grim.grimac.utils.nmsutil.BlockBreakSpeed.getBlockDamage;
 
 @CheckData(name = "BadPacketsZ")
-public class BadPacketsZ extends Check implements PacketCheck {
+public class BadPacketsZ extends Check implements BlockBreakCheck {
     public BadPacketsZ(final GrimPlayer player) {
         super(player);
     }
@@ -39,7 +38,8 @@ public class BadPacketsZ extends Check implements PacketCheck {
         return player.getClientVersion().isOlderThan(ClientVersion.V_1_14_4) || getBlockDamage(player, pos) < 1;
     }
 
-    public void handle(BlockBreak blockBreak) {
+    @Override
+    public void onBlockBreak(BlockBreak blockBreak) {
         if (blockBreak.action == DiggingAction.START_DIGGING) {
             final Vector3i pos = blockBreak.position;
 
@@ -65,7 +65,6 @@ public class BadPacketsZ extends Check implements PacketCheck {
                     if (flagAndAlert("action=CANCELLED_DIGGING" + ", last=" + MessageUtil.toUnlabledString(lastBlock) + ", pos=" + MessageUtil.toUnlabledString(pos))) {
                         if (shouldModifyPackets()) {
                             blockBreak.cancel();
-                            resyncPosition(player, pos);
                         }
                     }
                 }
@@ -85,7 +84,6 @@ public class BadPacketsZ extends Check implements PacketCheck {
                 if (flagAndAlert("action=FINISHED_DIGGING" + ", last=" + MessageUtil.toUnlabledString(lastBlock) + ", pos=" + MessageUtil.toUnlabledString(pos))) {
                     if (shouldModifyPackets()) {
                         blockBreak.cancel();
-                        resyncPosition(player, pos);
                     }
                 }
             }

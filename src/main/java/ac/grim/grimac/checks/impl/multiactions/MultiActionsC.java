@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
-@CheckData(name = "MultiActionsC", experimental = true)
+@CheckData(name = "MultiActionsC", description = "Clicked in inventory while performing other actions", experimental = true)
 public class MultiActionsC extends Check implements PacketCheck {
     public MultiActionsC(GrimPlayer player) {
         super(player);

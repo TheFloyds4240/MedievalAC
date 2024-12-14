@@ -12,19 +12,19 @@ import co.aikar.commands.annotation.Subcommand;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
+import java.util.Collections;
 
 @CommandAlias("grim|grimac")
 public class GrimStopSpectating extends BaseCommand {
-    public static final CommandCompletionHandler<BukkitCommandCompletionContext> completionHandler = context -> context.getSender().hasPermission("grim.spectate.stophere") ? List.of("here") : List.of();
+    public static final CommandCompletionHandler<BukkitCommandCompletionContext> completionHandler = context -> context.getSender().hasPermission("grim.spectate.stophere") ? Collections.singletonList("here") : Collections.emptyList();
 
     @Subcommand("stopspectating")
     @CommandPermission("grim.spectate")
     @CommandCompletion("@stopspectating")
     public void onStopSpectate(CommandSender sender, String[] args) {
-        String string = args.length > 0 ? args[0] : null;
         if (!(sender instanceof Player)) return;
-        Player player = (Player) sender;
+        Player player  = (Player) sender;
+        String string = args.length > 0 ? args[0] : null;
         if (GrimAPI.INSTANCE.getSpectateManager().isSpectating(player.getUniqueId())) {
             boolean teleportBack = string == null || !string.equalsIgnoreCase("here") || !sender.hasPermission("grim.spectate.stophere");
             GrimAPI.INSTANCE.getSpectateManager().disable(player, teleportBack);

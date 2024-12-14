@@ -123,7 +123,7 @@ public class BlockBreakSpeed {
 
         if (speedMultiplier > 1.0f) {
             if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
-                speedMultiplier += (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_MINING_EFFICIENCY);
+                speedMultiplier += (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.MINING_EFFICIENCY);
             } else {
                 int digSpeed = tool.getEnchantmentLevel(EnchantmentTypes.BLOCK_EFFICIENCY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion());
                 if (digSpeed > 0) {
@@ -158,11 +158,11 @@ public class BlockBreakSpeed {
             }
         }
 
-        speedMultiplier *= (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_BLOCK_BREAK_SPEED);
+        speedMultiplier *= (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
 
         if (player.fluidOnEyes == FluidTag.WATER) {
             if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
-                speedMultiplier *= (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.PLAYER_SUBMERGED_MINING_SPEED);
+                speedMultiplier *= (float) player.compensatedEntities.getSelf().getAttributeValue(Attributes.SUBMERGED_MINING_SPEED);
             } else {
                 if (EnchantmentHelper.getMaximumEnchantLevel(player.getInventory(), EnchantmentTypes.AQUA_AFFINITY, PacketEvents.getAPI().getServerManager().getVersion().toClientVersion()) == 0) {
                     speedMultiplier /= 5;

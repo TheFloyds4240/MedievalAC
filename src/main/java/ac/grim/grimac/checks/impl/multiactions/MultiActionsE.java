@@ -9,7 +9,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 
-@CheckData(name = "MultiActionsE", experimental = true)
+@CheckData(name = "MultiActionsE", description = "Swinging while using an item", experimental = true)
 public class MultiActionsE extends Check implements PacketCheck {
     public MultiActionsE(GrimPlayer player) {
         super(player);

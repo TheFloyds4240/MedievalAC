@@ -106,7 +106,7 @@ public class CompensatedEntities {
             // Check for sprinting attribute. Note that this value can desync: https://bugs.mojang.com/browse/MC-69459
             for (WrapperPlayServerUpdateAttributes.Property snapshotWrapper : objects) {
                 final Attribute attribute = snapshotWrapper.getAttribute();
-                if (attribute != Attributes.GENERIC_MOVEMENT_SPEED) continue;
+                if (attribute != Attributes.MOVEMENT_SPEED) continue;
 
                 boolean found = false;
                 List<WrapperPlayServerUpdateAttributes.PropertyModifier> modifiers = snapshotWrapper.getModifiers();
@@ -133,7 +133,7 @@ public class CompensatedEntities {
 
             // Rewrite horse.jumpStrength -> modern equivalent
             if (attribute == Attributes.HORSE_JUMP_STRENGTH) {
-                attribute = Attributes.GENERIC_JUMP_STRENGTH;
+                attribute = Attributes.JUMP_STRENGTH;
             }
 
             final Optional<ValuedAttribute> valuedAttribute = entity.getAttribute(attribute);

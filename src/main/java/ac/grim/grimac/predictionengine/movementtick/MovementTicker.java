@@ -335,8 +335,8 @@ public class MovementTicker {
 
     public void livingEntityTravel() {
         double playerGravity = player.compensatedEntities.getSelf().getRiding() == null
-                ? player.compensatedEntities.getSelf().getAttributeValue(Attributes.GENERIC_GRAVITY)
-                : player.compensatedEntities.getSelf().getRiding().getAttributeValue(Attributes.GENERIC_GRAVITY);
+                ? player.compensatedEntities.getSelf().getAttributeValue(Attributes.GRAVITY)
+                : player.compensatedEntities.getSelf().getRiding().getAttributeValue(Attributes.GRAVITY);
 
         boolean isFalling = player.actualMovement.getY() <= 0.0;
         if (isFalling && player.compensatedEntities.getSlowFallingAmplifier().isPresent()) {

@@ -77,7 +77,7 @@ public class PacketPlayerAttack extends PacketListenerAbstract {
                         // 1.9+ players who have attack speed cannot slow themselves twice in one tick because their attack cooldown gets reset on swing.
                         if (player.maxPlayerAttackSlow > 0
                                 && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9)
-                                && player.compensatedEntities.getSelf().getAttributeValue(Attributes.GENERIC_ATTACK_SPEED) < 16) { // 16 is a reasonable limit
+                                && player.compensatedEntities.getSelf().getAttributeValue(Attributes.ATTACK_SPEED) < 16) { // 16 is a reasonable limit
                             return;
                         }
 

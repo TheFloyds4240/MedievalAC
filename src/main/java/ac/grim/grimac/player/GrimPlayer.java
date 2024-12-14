@@ -7,7 +7,7 @@ import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
 import ac.grim.grimac.checks.impl.misc.ClientBrand;
-import ac.grim.grimac.checks.impl.packetorder.PacketOrderD;
+import ac.grim.grimac.checks.impl.packetorder.TransactionOrder;
 import ac.grim.grimac.checks.impl.packetorder.PacketOrderProcessor;
 import ac.grim.grimac.events.packets.CheckManagerListener;
 import ac.grim.grimac.manager.*;
@@ -254,7 +254,7 @@ public class GrimPlayer implements GrimUser {
         uncertaintyHandler.collidingEntities.add(0);
 
         if (getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_14)) {
-            final float scale = (float) compensatedEntities.getSelf().getAttributeValue(Attributes.GENERIC_SCALE);
+            final float scale = (float) compensatedEntities.getSelf().getAttributeValue(Attributes.SCALE);
             possibleEyeHeights[2] = new double[]{0.4 * scale, 1.62 * scale, 1.27 * scale}; // Elytra, standing, sneaking (1.14)
             possibleEyeHeights[1] = new double[]{1.27 * scale, 1.62 * scale, 0.4 * scale}; // sneaking (1.14), standing, Elytra
             possibleEyeHeights[0] = new double[]{1.62 * scale, 1.27 * scale, 0.4 * scale}; // standing, sneaking (1.14), Elytra
@@ -347,7 +347,7 @@ public class GrimPlayer implements GrimUser {
             if (packetTracker != null) packetTracker.setIntervalPackets(packetTracker.getIntervalPackets() - 1);
 
             if (skipped > 0 && System.currentTimeMillis() - joinTime > 5000)
-                checkManager.getPacketCheck(PacketOrderD.class).flagAndAlert("skipped: " + skipped);
+                checkManager.getPacketCheck(TransactionOrder.class).flagAndAlert("skipped: " + skipped);
 
             do {
                 data = transactionsSent.poll();
@@ -384,14 +384,14 @@ public class GrimPlayer implements GrimUser {
     public float getMaxUpStep() {
         final PacketEntitySelf self = compensatedEntities.getSelf();
         final PacketEntity riding = self.getRiding();
-        if (riding == null) return (float) self.getAttributeValue(Attributes.GENERIC_STEP_HEIGHT);
+        if (riding == null) return (float) self.getAttributeValue(Attributes.STEP_HEIGHT);
 
         if (riding.isBoat()) {
             return 0f;
         }
 
         // Pigs, horses, striders, and other vehicles all have 1 stepping height by default
-        return (float) riding.getAttributeValue(Attributes.GENERIC_STEP_HEIGHT);
+        return (float) riding.getAttributeValue(Attributes.STEP_HEIGHT);
     }
 
     public void sendTransaction() {
@@ -610,7 +610,7 @@ public class GrimPlayer implements GrimUser {
                 case CROUCHING:
                     return this.possibleEyeHeights[1]; // [sneaking height, standing height, swimming/gliding/riptide height]
                 default:
-                    return this.possibleEyeHeights[0]; // [standing height, sneaking height, swimming/gliding/riptide height]
+                    return  this.possibleEyeHeights[0]; // [standing height, sneaking height, swimming/gliding/riptide height]
             }
         }
     }

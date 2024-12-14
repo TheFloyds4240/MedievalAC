@@ -8,7 +8,7 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 
-@CheckData(name = "NoSlowA (Prediction)", configName = "NoSlowA", setback = 5)
+@CheckData(name = "NoSlowA (Prediction)", configName = "NoSlowA", description = "Was not slowed while using an item", setback = 5)
 public class NoSlowA extends Check implements PostPredictionCheck {
     double offsetToFlag;
     double bestOffset = 1;

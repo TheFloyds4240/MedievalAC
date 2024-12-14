@@ -1,8 +1,6 @@
 package ac.grim.grimac.events.packets;
 
 import ac.grim.grimac.GrimAPI;
-import ac.grim.grimac.checks.impl.badpackets.BadPacketsX;
-import ac.grim.grimac.checks.impl.badpackets.BadPacketsZ;
 import ac.grim.grimac.checks.impl.inventory.InventoryB;
 import ac.grim.grimac.events.packets.patch.ResyncWorldUtil;
 import ac.grim.grimac.player.GrimPlayer;
@@ -398,52 +396,52 @@ public class CheckManagerListener extends PacketListenerAbstract {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             final WrapperPlayClientPlayerDigging packet = new WrapperPlayClientPlayerDigging(event);
-            final BlockBreak blockBreak = new BlockBreak(packet, player);
+            final DiggingAction action = packet.getAction();
 
             player.checkManager.getPacketCheck(InventoryB.class).handle(event, packet);
 
-            player.checkManager.getPacketCheck(BadPacketsX.class).handle(blockBreak);
-            player.checkManager.getPacketCheck(BadPacketsZ.class).handle(blockBreak);
+            if (action == DiggingAction.START_DIGGING || action == DiggingAction.FINISHED_DIGGING || action == DiggingAction.CANCELLED_DIGGING) {
+                final BlockBreak blockBreak = new BlockBreak(packet.getBlockPosition(), packet.getBlockFace(), action, player.compensatedWorld.getWrappedBlockStateAt(packet.getBlockPosition()));
 
-            if (blockBreak.isCancelled()) {
-                event.setCancelled(true);
-                player.onPacketCancel();
-            }
+                player.checkManager.onBlockBreak(blockBreak);
 
-            if (!event.isCancelled()) {
-                if (blockBreak.action == DiggingAction.FINISHED_DIGGING && BREAKABLE.apply(blockBreak.block.getType())) {
-                    player.compensatedWorld.startPredicting();
-                    player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
-                    player.compensatedWorld.stopPredicting(packet);
-                }
-
-                if (blockBreak.action == DiggingAction.START_DIGGING) {
-                    double damage = BlockBreakSpeed.getBlockDamage(player, blockBreak.position);
-
-                    // Instant breaking, no damage means it is unbreakable by creative players (with swords)
-                    if (damage >= 1) {
+                if (blockBreak.isCancelled()) {
+                    event.setCancelled(true);
+                    player.onPacketCancel();
+                    ResyncWorldUtil.resyncPosition(player, blockBreak.position, packet.getSequence());
+                } else {
+                    if (action == DiggingAction.FINISHED_DIGGING && BREAKABLE.apply(blockBreak.block.getType())) {
                         player.compensatedWorld.startPredicting();
-                        player.blockHistory.add(
-                            new BlockModification(
-                                    player.compensatedWorld.getWrappedBlockStateAt(blockBreak.position),
-                                    WrappedBlockState.getByGlobalId(0),
-                                    packet.getBlockPosition(),
-                                    GrimAPI.INSTANCE.getTickManager().currentTick,
-                                    BlockModification.Cause.START_DIGGING
-                            )
-                    );
-                    if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), blockBreak.block)) {
-                            // Vanilla uses a method to grab water flowing, but as you can't break flowing water
-                            // We can simply treat all waterlogged blocks or source blocks as source blocks
-                            player.compensatedWorld.updateBlock(blockBreak.position, StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
-                        } else {
-                            player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
-                        }
+                        player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
                         player.compensatedWorld.stopPredicting(packet);
                     }
-                }
 
-                if (blockBreak.action == DiggingAction.START_DIGGING || blockBreak.action == DiggingAction.FINISHED_DIGGING || blockBreak.action == DiggingAction.CANCELLED_DIGGING) {
+                    if (action == DiggingAction.START_DIGGING) {
+                        double damage = BlockBreakSpeed.getBlockDamage(player, blockBreak.position);
+
+                        // Instant breaking, no damage means it is unbreakable by creative players (with swords)
+                        if (damage >= 1) {
+                            player.compensatedWorld.startPredicting();
+                            player.blockHistory.add(
+                                    new BlockModification(
+                                            player.compensatedWorld.getWrappedBlockStateAt(blockBreak.position),
+                                            WrappedBlockState.getByGlobalId(0),
+                                            packet.getBlockPosition(),
+                                            GrimAPI.INSTANCE.getTickManager().currentTick,
+                                            BlockModification.Cause.START_DIGGING
+                                    )
+                            );
+                            if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), blockBreak.block)) {
+                                // Vanilla uses a method to grab water flowing, but as you can't break flowing water
+                                // We can simply treat all waterlogged blocks or source blocks as source blocks
+                                player.compensatedWorld.updateBlock(blockBreak.position, StateTypes.WATER.createBlockState(CompensatedWorld.blockVersion));
+                            } else {
+                                player.compensatedWorld.updateBlock(blockBreak.position.x, blockBreak.position.y, blockBreak.position.z, 0);
+                            }
+                            player.compensatedWorld.stopPredicting(packet);
+                        }
+                    }
+
                     player.compensatedWorld.handleBlockBreakPrediction(packet);
                 }
             }

@@ -167,7 +167,7 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
             }
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
+        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) || event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
             final GrimPlayer player = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(event.getUser());
             if (player != null && player.packetStateData.isSlowedByUsingItem()
                     && !player.packetStateData.lastPacketWasTeleport
@@ -195,7 +195,7 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
 
             if (player.packetStateData.lastSlotSelected != slot) {
                 // just assume they tick after this
-                if (!player.isTickingReliablyFor(3) && player.skippedTickInActualMovement && player.packetStateData.eatingHand != InteractionHand.OFF_HAND) {
+                if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) && !player.supportsEndTick() && !player.isTickingReliablyFor(3) && player.packetStateData.eatingHand != InteractionHand.OFF_HAND) {
                     player.packetStateData.setSlowedByUsingItem(false);
                 }
             }

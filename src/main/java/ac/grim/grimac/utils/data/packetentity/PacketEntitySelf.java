@@ -44,10 +44,10 @@ public class PacketEntitySelf extends PacketEntity {
     protected void initAttributes(GrimPlayer player) {
         super.initAttributes(player);
         if (player.getClientVersion().isOlderThan(ClientVersion.V_1_8)) {
-            setAttribute(Attributes.GENERIC_STEP_HEIGHT, 0.5f);
+            setAttribute(Attributes.STEP_HEIGHT, 0.5f);
         }
 
-        getAttribute(Attributes.GENERIC_SCALE).get().withSetRewriter((oldValue, newValue) -> {
+        getAttribute(Attributes.SCALE).get().withSetRewriter((oldValue, newValue) -> {
             if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_20_5) || (newValue).equals(oldValue)) {
                 return oldValue;
             } else {
@@ -69,22 +69,22 @@ public class PacketEntitySelf extends PacketEntity {
             }
         });
 
-        final ValuedAttribute movementSpeed = ValuedAttribute.ranged(Attributes.GENERIC_MOVEMENT_SPEED, 0.1f, 0, 1024);
-        movementSpeed.with(new WrapperPlayServerUpdateAttributes.Property("MOVEMENT_SPEED", 0.1f, new ArrayList<>()));
+        final ValuedAttribute movementSpeed = ValuedAttribute.ranged(Attributes.MOVEMENT_SPEED, 0.1f, 0, 1024);
+        movementSpeed.with(new WrapperPlayServerUpdateAttributes.Property(Attributes.MOVEMENT_SPEED, 0.1f, new ArrayList<>()));
         trackAttribute(movementSpeed);
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_ATTACK_SPEED, 4, 0, 1024)
+        trackAttribute(ValuedAttribute.ranged(Attributes.ATTACK_SPEED, 4, 0, 1024)
                 .requiredVersion(player, ClientVersion.V_1_9));
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_JUMP_STRENGTH, 0.42f, 0, 32)
+        trackAttribute(ValuedAttribute.ranged(Attributes.JUMP_STRENGTH, 0.42f, 0, 32)
                 .requiredVersion(player, ClientVersion.V_1_20_5));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_BLOCK_BREAK_SPEED, 1.0, 0, 1024)
+        trackAttribute(ValuedAttribute.ranged(Attributes.BLOCK_BREAK_SPEED, 1.0, 0, 1024)
                 .requiredVersion(player, ClientVersion.V_1_20_5));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_MINING_EFFICIENCY, 0, 0, 1024)
+        trackAttribute(ValuedAttribute.ranged(Attributes.MINING_EFFICIENCY, 0, 0, 1024)
                 .requiredVersion(player, ClientVersion.V_1_21));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_SUBMERGED_MINING_SPEED, 0.2, 0, 20)
+        trackAttribute(ValuedAttribute.ranged(Attributes.SUBMERGED_MINING_SPEED, 0.2, 0, 20)
                 .requiredVersion(player, ClientVersion.V_1_21));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_ENTITY_INTERACTION_RANGE, 3, 0, 64)
+        trackAttribute(ValuedAttribute.ranged(Attributes.ENTITY_INTERACTION_RANGE, 3, 0, 64)
                 .requiredVersion(player, ClientVersion.V_1_20_5));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_BLOCK_INTERACTION_RANGE, 4.5, 0, 64)
+        trackAttribute(ValuedAttribute.ranged(Attributes.BLOCK_INTERACTION_RANGE, 4.5, 0, 64)
                 .withGetRewriter(value -> {
                     // Server versions older than 1.20.5 don't send the attribute, if the player is in creative then assume legacy max reach distance.
                     if (player.gamemode == GameMode.CREATIVE
@@ -95,7 +95,7 @@ public class PacketEntitySelf extends PacketEntity {
                     return value;
                 })
                 .requiredVersion(player, ClientVersion.V_1_20_5));
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_WATER_MOVEMENT_EFFICIENCY, 0, 0, 1)
+        trackAttribute(ValuedAttribute.ranged(Attributes.WATER_MOVEMENT_EFFICIENCY, 0, 0, 1)
                 .withGetRewriter(value -> {
                     // Depth strider was added in 1.8
                     if (player.getClientVersion().isOlderThan(ClientVersion.V_1_8)) {
@@ -118,9 +118,9 @@ public class PacketEntitySelf extends PacketEntity {
                     return value;
                 })
                 .requiredVersion(player, ClientVersion.V_1_21));
-        trackAttribute(ValuedAttribute.ranged(Attributes.GENERIC_MOVEMENT_EFFICIENCY, 0, 0, 1)
+        trackAttribute(ValuedAttribute.ranged(Attributes.MOVEMENT_EFFICIENCY, 0, 0, 1)
                 .requiredVersion(player, ClientVersion.V_1_21));
-        trackAttribute(ValuedAttribute.ranged(Attributes.PLAYER_SNEAKING_SPEED, 0.3, 0, 1)
+        trackAttribute(ValuedAttribute.ranged(Attributes.SNEAKING_SPEED, 0.3, 0, 1)
                 .withGetRewriter(value -> {
                     if (player.getClientVersion().isOlderThan(ClientVersion.V_1_19)) {
                         return (double) 0.3f;

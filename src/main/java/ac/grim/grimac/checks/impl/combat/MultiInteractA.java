@@ -13,7 +13,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 
 import java.util.ArrayList;
 
-@CheckData(name = "MultiInteractA", experimental = true)
+@CheckData(name = "MultiInteractA", description = "Interacted with multiple entities in the same tick", experimental = true)
 public class MultiInteractA extends Check implements PostPredictionCheck {
     public MultiInteractA(final GrimPlayer player) {
         super(player);
