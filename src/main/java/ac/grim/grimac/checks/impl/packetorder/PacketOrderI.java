@@ -118,10 +118,10 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
                     setback = false;
                 }
             }
-
-            flags.clear();
-            setback = false;
         }
+
+        flags.clear();
+        setback = false;
     }
 
     @Override
