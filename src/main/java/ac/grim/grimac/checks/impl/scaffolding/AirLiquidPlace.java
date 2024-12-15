@@ -12,8 +12,6 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.util.Vector3i;
 
-
-
 @CheckData(name = "AirLiquidPlace")
 public class AirLiquidPlace extends BlockPlaceCheck {
 

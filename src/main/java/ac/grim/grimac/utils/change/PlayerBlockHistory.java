@@ -1,6 +1,5 @@
 package ac.grim.grimac.utils.change;
 
-
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 
