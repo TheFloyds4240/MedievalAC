@@ -757,9 +757,9 @@ public class PredictionEngine {
                     if (loopSlowed == 1 && !possibleLastTickOutput.isZeroPointZeroThree()) continue;
                     for (int strafe = strafeMin; strafe <= strafeMax; strafe++) {
                         for (int forward = forwardMin; forward <= forwardMax; forward++) {
-                            VectorData result = new VectorData(possibleLastTickOutput.vector.clone()
+                            VectorData result = new VectorData.MoveVectorData(possibleLastTickOutput.vector.clone()
                                     .add(getMovementResultFromInput(player, transformInputsToVector(player, new Vector(strafe, 0, forward)), speed, player.xRot)),
-                                    possibleLastTickOutput, VectorData.VectorType.InputResult);
+                                    possibleLastTickOutput, VectorData.VectorType.InputResult, forward, strafe);
                             result = result.returnNewModified(result.vector.clone().multiply(player.stuckSpeedMultiplier), VectorData.VectorType.StuckMultiplier);
                             result = result.returnNewModified(handleOnClimbable(result.vector.clone(), player), VectorData.VectorType.Climbable);
                             // Signal that we need to flip sneaking bounding box
