@@ -171,12 +171,13 @@ public class Reach extends Check implements PacketCheck {
         for (Int2ObjectMap.Entry<Vector3d> attack : playerAttackQueue.int2ObjectEntrySet()) {
             PacketEntity reachEntity = player.compensatedEntities.entityMap.get(attack.getIntKey());
             if (reachEntity != null) {
-                String result = checkReach(reachEntity, attack.getValue(), false);
+                Pair<Class<? extends PacketCheck>, String> result = checkReach(reachEntity, attack.getValue(), false);
                 if (result != null) {
+                    PacketCheck check = player.checkManager.getPacketCheck(result.getFirst());
                     if (reachEntity.getType() == EntityTypes.PLAYER) {
-                        flagAndAlert(result);
+                        ((Check)check).flagAndAlert(result.getSecond());
                     } else {
-                        flagAndAlert(result + " type=" + reachEntity.getType().getName().getKey());
+                        ((Check) check).flagAndAlert(result.getSecond() + "type=" + reachEntity.getType().getName().getKey());
                     }
                 }
             }
@@ -187,7 +188,7 @@ public class Reach extends Check implements PacketCheck {
         if (isFlying) blocksChangedThisTick.clear();
     }
 
-    private String checkReach(PacketEntity reachEntity, Vector3d from, boolean isPrediction) {
+    private Pair<Class<? extends PacketCheck>, String> checkReach(PacketEntity reachEntity, Vector3d from, boolean isPrediction) {
         SimpleCollisionBox targetBox = reachEntity.getPossibleCollisionBoxes();
 
         if (reachEntity.getType() == EntityTypes.END_CRYSTAL) { // Hardcode end crystal box
@@ -233,7 +234,9 @@ public class Reach extends Check implements PacketCheck {
         // We can return in the flag the distance of the reach hit instead of a generic "player failed reach check"
         // +3 would be 3 + 3 = 6, which is the pre-1.20.5 behaviour, preventing "Missed Hitbox"
         final double distance = player.compensatedEntities.getSelf().getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE) + 3;
-        final double[] possibleEyeHeights = player.getPossibleEyeHeights();
+        double[] possibleEyeHeights = player.getPossibleEyeHeights();
+//        possibleEyeHeights = new double[]{possibleEyeHeights[0]};
+//        double realMinDistance = 0;
         for (Vector lookVec : possibleLookDirs) {
             for (double eye : possibleEyeHeights) {
                 Vector eyePos = new Vector(from.getX(), from.getY() + eye, from.getZ());
@@ -248,6 +251,9 @@ public class Reach extends Check implements PacketCheck {
 
                 if (intercept != null) {
                     minDistance = Math.min(eyePos.distance(intercept), minDistance);
+//                    if (eye == possibleEyeHeights[0]) {
+//                        realMinDistance = minDistance;
+//                    }
                 }
             }
         }
@@ -276,16 +282,16 @@ public class Reach extends Check implements PacketCheck {
             if (minDistance == Double.MIN_VALUE && foundHitData != null) {
                 cancelBuffer = 1;
                 if (foundHitData instanceof BlockHitData) {
-                    return "Hit block=" + ((BlockHitData) foundHitData).getState().getType().getName();
+                    return new Pair<>(HitboxBlock.class, "Hit block=" + ((BlockHitData) foundHitData).getState().getType().getName() + " ");
                 } else { // entity hit data
-                    return "Hit entity=" + ((EntityHitData) foundHitData).getEntity().getType().getName();
+                    return new Pair<>(HitboxEntity.class, "Hit entity=" + ((EntityHitData) foundHitData).getEntity().getType().getName() + " ");
                 }
             } else if (minDistance == Double.MAX_VALUE) {
                 cancelBuffer = 1;
-                return "Missed hitbox";
+                return new Pair<>(HitboxMiss.class, "");
             } else if (minDistance > player.compensatedEntities.getSelf().getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE)) {
                 cancelBuffer = 1;
-                return String.format("%.5f", minDistance) + " blocks";
+                return new Pair<>(Reach.class, String.format("%.5f", minDistance) + " blocks");
             } else {
                 cancelBuffer = Math.max(0, cancelBuffer - 0.25);
             }
@@ -340,6 +346,10 @@ public class Reach extends Check implements PacketCheck {
                         bestBlockingEntityHit = hitResult;
                     }
                 } else if (hitResult instanceof BlockHitData) {
+                    // don't false on recently rapidly changed blocks
+                    if (distanceSquared < (minDistance * minDistance) && blocksChangedThisTick.contains(((BlockHitData) hitResult).getPosition())) {
+                        return null;
+                    }
                     // Check if block is closer than any blocking entity found
                     if (bestBlockingEntityHit == null && distanceSquared < bestDistanceSq) {
                         bestDistanceSq = distanceSquared;

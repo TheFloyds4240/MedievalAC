@@ -31,6 +31,7 @@ Punishments:
       - "100:40 [alert]"
       - "100:100 [webhook]"
       - "100:100 [proxy]"
+      - "100:100 [log]"
   Knockback:
     remove-violations-after: 300
     checks:
@@ -40,6 +41,7 @@ Punishments:
       - "5:5 [alert]"
       - "20:20 [webhook]"
       - "20:20 [proxy]"
+      - "20:20 [log]"
   BadPackets:
     remove-violations-after: 300
     checks:
@@ -50,6 +52,7 @@ Punishments:
       - "20:20 [alert]"
       - "40:40 [webhook]"
       - "40:40 [proxy]"
+      - "40:40 [log]"
   Inventory:
     remove-violations-after: 300
     checks:
@@ -58,6 +61,7 @@ Punishments:
       - "10:10 [alert]"
       - "20:20 [webhook]"
       - "20:20 [proxy]"
+      - "20:20 [log]"
   Reach:
     remove-violations-after: 300
     checks:
@@ -66,6 +70,34 @@ Punishments:
       - "5:5 [alert]"
       - "5:5 [webhook]"
       - "5:5 [proxy]"
+      - "5:5 [log]"
+  HitboxMiss:
+    remove-violations-after: 300
+    checks:
+      - "HitboxMiss"
+    commands:
+      - "7:5 [alert]"
+      - "7:5 [webhook]"
+      - "7:5 [proxy]"
+      - "7:5 [log]"
+  HitboxBlock:
+    remove-violations-after: 300
+    checks:
+      - "HitboxBlock"
+    commands:
+      - "10:5 [alert]"
+      - "10:5 [webhook]"
+      - "10:5 [proxy]"
+      - "10:5 [log]"
+  HitboxEntity:
+    remove-violations-after: 300
+    checks:
+      - "HitboxEntity"
+    commands:
+      - "15:10 [alert]"
+      - "15:10 [webhook]"
+      - "15:10 [proxy]"
+      - "15:10 [log]"
   Misc:
     remove-violations-after: 300
     checks:
@@ -80,6 +112,7 @@ Punishments:
       - "10:5 [alert]"
       - "20:10 [webhook]"
       - "20:10 [proxy]"
+      - "20:10 [log]"
   Combat:
     remove-violations-after: 300
     checks:
@@ -88,6 +121,7 @@ Punishments:
       - "Aim"
     commands:
       - "20:40 [alert]"
+      - "20:40 [log]"
   # As of 2.2.10, there are no AutoClicker checks and this is a placeholder. Grim will include AutoClicker checks in the future.
   Autoclicker:
     remove-violations-after: 300
@@ -95,3 +129,4 @@ Punishments:
       - "Autoclicker"
     commands:
       - "20:40 [alert]"
+      - "20:40 [log]"
