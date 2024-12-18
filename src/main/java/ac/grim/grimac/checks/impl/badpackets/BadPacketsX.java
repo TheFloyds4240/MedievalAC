@@ -6,12 +6,17 @@ import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.BlockBreakCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.BlockBreak;
+import ac.grim.grimac.utils.change.BlockModification;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.Vector3i;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @CheckData(name = "BadPacketsX")
 public class BadPacketsX extends Check implements BlockBreakCheck {
@@ -45,26 +50,44 @@ public class BadPacketsX extends Check implements BlockBreakCheck {
                 && lastBlockType.getBlastResistance() == 0.0F
                 && block == StateTypes.WATER
         ) return;
-        lastTick = newTick;
-        lastBreakLoc = blockBreak.position;
-        lastBlockType = block;
 
-        // the block does not have a hitbox
-        boolean invalid = (block == StateTypes.LIGHT && !(player.getInventory().getHeldItem().is(ItemTypes.LIGHT) || player.getInventory().getOffHand().is(ItemTypes.LIGHT)))
-                || block.isAir()
-                || block == StateTypes.WATER
-                || block == StateTypes.LAVA
-                || block == StateTypes.BUBBLE_COLUMN
-                || block == StateTypes.MOVING_PISTON
-                || block == StateTypes.FIRE && noFireHitbox
-                // or the client claims to have broken an unbreakable block
-                || block.getHardness() == -1.0f && blockBreak.action == DiggingAction.FINISHED_DIGGING;
+        // prevents rare false on rapidly breaking short grass
+        List<StateType> previousBlockStates = player.blockHistory.modificationQueue.stream()
+                .filter((blockModification) -> blockModification.getLocation().equals(blockBreak.position)
+                        && newTick - blockModification.getTick() < 2
+                        && (blockModification.getCause() == BlockModification.Cause.START_DIGGING || blockModification.getCause() == BlockModification.Cause.HANDLE_NETTY_SYNC_TRANSACTION))
+                .flatMap(mod -> Stream.of(mod.getOldBlockContents().getType()))
+                .collect(Collectors.toList());
 
-        if (invalid && flagAndAlert("block=" + block.getName() + ", type=" + blockBreak.action) && shouldModifyPackets()) {
+        previousBlockStates.add(0, block);
+
+        boolean invalid = false;
+        for (StateType possibleBlockState : previousBlockStates) {
+            // the block does not have a hitbox
+            invalid = (possibleBlockState == StateTypes.LIGHT && !(player.getInventory().getHeldItem().is(ItemTypes.LIGHT) || player.getInventory().getOffHand().is(ItemTypes.LIGHT)))
+                    || possibleBlockState.isAir()
+                    || possibleBlockState == StateTypes.WATER
+                    || possibleBlockState == StateTypes.LAVA
+                    || possibleBlockState == StateTypes.BUBBLE_COLUMN
+                    || possibleBlockState == StateTypes.MOVING_PISTON
+                    || possibleBlockState == StateTypes.FIRE && noFireHitbox
+                    // or the client claims to have broken an unbreakable block
+                    || possibleBlockState.getHardness() == -1.0f && blockBreak.action == DiggingAction.FINISHED_DIGGING;
+            if (!invalid) {
+                break;
+            }
+        }
+
+        if (invalid && flagAndAlert("block=" + block.getName() + ", type=" + blockBreak.action)) {
             didLastFlag = true;
-            blockBreak.cancel();
+            if (shouldModifyPackets()) {
+                blockBreak.cancel();
+            }
         } else {
             didLastFlag = false;
         }
+        lastTick = newTick;
+        lastBreakLoc = blockBreak.position;
+        lastBlockType = block;
     }
 }

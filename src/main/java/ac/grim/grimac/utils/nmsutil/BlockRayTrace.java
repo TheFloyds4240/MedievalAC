@@ -1,7 +1,9 @@
 package ac.grim.grimac.utils.nmsutil;
 
+import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.checks.impl.combat.Reach;
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.utils.change.BlockModification;
 import ac.grim.grimac.utils.collisions.HitboxData;
 import ac.grim.grimac.utils.collisions.RaycastData;
 import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
@@ -27,6 +29,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -188,79 +191,107 @@ public class BlockRayTrace {
         };
 
         return (BlockHitData) traverseBlocks(player, startPos, endPos, (block, vector3i) -> {
-            CollisionBox data;
-            if (!raycastContext) {
-                data = HitboxData.getBlockHitbox(player, player.getInventory().getHeldItem().getType().getPlacedType(), player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
-            } else {
-                data = RaycastData.getBlockHitbox(player, null, player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
-            }
-            if (data == NoCollisionBox.INSTANCE) return null;
-            int size = data.downCast(boxes);
+            int currentTick = GrimAPI.INSTANCE.getTickManager().currentTick;
 
-            double bestHitResult = Double.MAX_VALUE;
-            double[] bestHitLoc = null;
-            BlockFace bestFace = null;
+            List<WrappedBlockState> blockModifications =
+                    player.blockHistory.getBlockStates((blockModification -> blockModification.getLocation().equals(vector3i)
+                            && currentTick - blockModification.getTick() < 2
+                            && (blockModification.getCause() == BlockModification.Cause.START_DIGGING || blockModification.getCause() == BlockModification.Cause.HANDLE_NETTY_SYNC_TRANSACTION)));
+            blockModifications.add(0, block);
 
+            BlockHitData hitData = null;
             boolean isTargetBlock = Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec);
-            if (isTargetBlock) {
-                // BEWARE OF https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
-                // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
-                if (block.getType() == StateTypes.BREWING_STAND && player.getClientVersion().equals(ClientVersion.V_1_8)) {
-                    size++;
-                    boxes[size] = new SimpleCollisionBox(0, 0, 0, 1, 1, 1, true);
-                }
-            }
-
-            double[] currentEnd = new double[]{
-                    startPos[0] + lookVec[0] * currentDistance,
-                    startPos[1] + lookVec[1] * currentDistance,
-                    startPos[2] + lookVec[2] * currentDistance
-            };
-
-            for (int i = 0; i < size; i++) {
-                Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(boxes[i], startPos, currentEnd);
-                if (intercept.first() == null) continue; // No intercept or wrong blockFace
-
-                double[] hitLoc = intercept.first();
-
-                double distSq = distanceSquared(hitLoc, startPos);
-                if (distSq < bestHitResult) {
-                    bestHitResult = distSq;
-                    bestHitLoc = hitLoc;
-                    bestFace = intercept.second();
-                    if (isTargetBlock && bestFace == expectedBlockFace) {
-                        return new BlockHitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, true);
+            for (WrappedBlockState wrappedBlockState : blockModifications) {
+                hitData = didHitBlock(player, startPos, lookVec, currentDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, raycastContext, wrappedBlockState, vector3i);
+                if (isTargetBlock) {
+                    // target block, check if any possible block allows the ray to hit
+                    if (hitData != null && hitData.success) {
+                        return hitData;
+                    }
+                } else {
+                    // non target block, we are checking if any possible block will allow the ray to pass through
+                    if (hitData == null) {
+                        return hitData;
                     }
                 }
             }
-
-            // Yes, this is not the most optimal algorithm for handling Cauldrons, Hoppers, Composters, and Scaffolding
-            //   that is to say, blocks that have a different outline/hitbox shape from the box used to calculate placement blockfaces
-            //   but it is the one vanilla uses
-            // No we will not
-            // 1. Calculate the ray trace from a new closer startPos to reduce iterations
-            //    because it adds a lot of code complexity for very little performance gain
-            // 2. Run a switch case on the target block and check if the index of the SimpleCollisionBox corresponds to a wall with an inside face
-            //    and hardcode in blockface fixes for placements against those compnents above a certain relative y level
-            //    because that is version-specific, will break if the implementation of the returned ComplexCollisionBox changes
-            //    and again, lots of code complexity for little performance gain
-            if (bestHitLoc != null) {
-                BlockHitData hitData = new BlockHitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, isTargetBlock);
-                if (!raycastContext) {
-                    BlockHitData hitData2 = BlockRayTrace.getNearestHitResult(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, true);
-                    if (hitData2 != null) {
-                        Vector startVector = new Vector(startPos[0], startPos[1], startPos[2]);
-                        if (hitData2.getBlockHitLocation().subtract(startVector).lengthSquared() <
-                                hitData.getBlockHitLocation().subtract(startVector).lengthSquared()) {
-                            return new BlockHitData(vector3i, hitData.getBlockHitLocation(), hitData2.getClosestDirection(), block, isTargetBlock);
-                        }
-                    }
-                }
-                return hitData;
-            }
-
-            return null;
+            return hitData;
         });
+    }
+
+    public static BlockHitData didHitBlock(GrimPlayer player, double[] startPos, double[] lookVec, double currentDistance, double maxDistance, int[] targetBlockVec, BlockFace expectedBlockFace, SimpleCollisionBox[] boxes, boolean raycastContext, WrappedBlockState block, Vector3i vector3i) {
+        CollisionBox data;
+        if (!raycastContext) {
+            data = HitboxData.getBlockHitbox(player, player.getInventory().getHeldItem().getType().getPlacedType(), player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
+        } else {
+            data = RaycastData.getBlockHitbox(player, null, player.getClientVersion(), block, vector3i.x, vector3i.y, vector3i.z);
+        }
+        if (data == NoCollisionBox.INSTANCE) return null;
+        int size = data.downCast(boxes);
+
+        double bestHitResult = Double.MAX_VALUE;
+        double[] bestHitLoc = null;
+        BlockFace bestFace = null;
+
+        boolean isTargetBlock = Arrays.equals(new int[]{vector3i.x, vector3i.y, vector3i.z}, targetBlockVec);
+        if (isTargetBlock) {
+            // BEWARE OF https://bugs.mojang.com/browse/MC-85109 FOR 1.8 PLAYERS
+            // 1.8 Brewing Stand hitbox is a fullblock until it is hit sometimes, can be caused be restarting client and joining server
+            if (block.getType() == StateTypes.BREWING_STAND && player.getClientVersion().equals(ClientVersion.V_1_8)) {
+                size++;
+                boxes[size] = new SimpleCollisionBox(0, 0, 0, 1, 1, 1, true);
+            }
+        }
+
+        double[] currentEnd = new double[]{
+                startPos[0] + lookVec[0] * currentDistance,
+                startPos[1] + lookVec[1] * currentDistance,
+                startPos[2] + lookVec[2] * currentDistance
+        };
+
+        for (int i = 0; i < size; i++) {
+            Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(boxes[i], startPos, currentEnd);
+            if (intercept.first() == null) continue; // No intercept or wrong blockFace
+
+            double[] hitLoc = intercept.first();
+
+            double distSq = distanceSquared(hitLoc, startPos);
+            if (distSq < bestHitResult) {
+                bestHitResult = distSq;
+                bestHitLoc = hitLoc;
+                bestFace = intercept.second();
+                if (isTargetBlock && bestFace == expectedBlockFace) {
+                    return new BlockHitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, true);
+                }
+            }
+        }
+
+        // Yes, this is not the most optimal algorithm for handling Cauldrons, Hoppers, Composters, and Scaffolding
+        //   that is to say, blocks that have a different outline/hitbox shape from the box used to calculate placement blockfaces
+        //   but it is the one vanilla uses
+        // No we will not
+        // 1. Calculate the ray trace from a new closer startPos to reduce iterations
+        //    because it adds a lot of code complexity for very little performance gain
+        // 2. Run a switch case on the target block and check if the index of the SimpleCollisionBox corresponds to a wall with an inside face
+        //    and hardcode in blockface fixes for placements against those compnents above a certain relative y level
+        //    because that is version-specific, will break if the implementation of the returned ComplexCollisionBox changes
+        //    and again, lots of code complexity for little performance gain
+        if (bestHitLoc != null) {
+            BlockHitData hitData = new BlockHitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, isTargetBlock);
+            if (!raycastContext) {
+                BlockHitData hitData2 = BlockRayTrace.didHitBlock(player, startPos, lookVec, maxDistance, maxDistance, targetBlockVec, expectedBlockFace, boxes, true, block, vector3i);
+                if (hitData2 != null) {
+                    Vector startVector = new Vector(startPos[0], startPos[1], startPos[2]);
+                    if (hitData2.getBlockHitLocation().subtract(startVector).lengthSquared() <
+                            hitData.getBlockHitLocation().subtract(startVector).lengthSquared()) {
+                        return new BlockHitData(vector3i, hitData.getBlockHitLocation(), hitData2.getClosestDirection(), block, isTargetBlock);
+                    }
+                }
+            }
+            return hitData;
+        }
+
+        return null;
     }
 
     private static double distanceSquared(double[] vec1, double[] vec2) {
