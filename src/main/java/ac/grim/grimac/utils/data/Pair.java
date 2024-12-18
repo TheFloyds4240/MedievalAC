@@ -33,11 +33,11 @@ public class Pair<A, B> {
         return new Pair<T, K>(a, b);
     }
 
-    public A getFirst() {
+    public A first() {
         return first;
     }
 
-    public B getSecond() {
+    public B second() {
         return second;
     }
 

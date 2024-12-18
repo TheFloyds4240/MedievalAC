@@ -7,7 +7,6 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 
 @CheckData(name = "PacketOrderE", experimental = true)
 public class PacketOrderE extends Check implements PostPredictionCheck {
@@ -31,7 +30,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
                     || player.packetOrderProcessor.isStartingToGlide()
                     || player.packetOrderProcessor.isJumpingWithMount()
             ) {
-                if (player.getClientVersion().isNewerThan(ClientVersion.V_1_8) || flagAndAlert()) {
+                if (player.canSkipTicks() || flagAndAlert()) {
                     invalid++;
 
                     if (player.packetOrderProcessor.isUsing()) {
@@ -44,7 +43,7 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+        if (!player.canSkipTicks()) {
             if (setback) {
                 setback = false;
                 setbackIfAboveSetbackVL();

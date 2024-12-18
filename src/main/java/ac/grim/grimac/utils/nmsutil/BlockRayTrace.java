@@ -219,15 +219,15 @@ public class BlockRayTrace {
 
             for (int i = 0; i < size; i++) {
                 Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(boxes[i], startPos, currentEnd);
-                if (intercept.getFirst() == null) continue; // No intercept or wrong blockFace
+                if (intercept.first() == null) continue; // No intercept or wrong blockFace
 
-                double[] hitLoc = intercept.getFirst();
+                double[] hitLoc = intercept.first();
 
                 double distSq = distanceSquared(hitLoc, startPos);
                 if (distSq < bestHitResult) {
                     bestHitResult = distSq;
                     bestHitLoc = hitLoc;
-                    bestFace = intercept.getSecond();
+                    bestFace = intercept.second();
                     if (isTargetBlock && bestFace == expectedBlockFace) {
                         return new BlockHitData(vector3i, new Vector(bestHitLoc[0], bestHitLoc[1], bestHitLoc[2]), bestFace, block, true);
                     }
@@ -342,11 +342,11 @@ public class BlockRayTrace {
 
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(Math.sqrt(closestDistanceSquared)));
 
-                if (intercept.getFirst() != null) {
-                    double distSquared = intercept.getFirst().distanceSquared(startingVec);
+                if (intercept.first() != null) {
+                    double distSquared = intercept.first().distanceSquared(startingVec);
                     if (distSquared < closestDistanceSquared) {
                         closestDistanceSquared = distSquared;
-                        closestHitVec = intercept.getFirst();
+                        closestHitVec = intercept.first();
                         closestEntity = entity;
                     }
                 }
@@ -373,9 +373,9 @@ public class BlockRayTrace {
             for (int i = 0; i < size; i++) {
                 if (shrinkBlocks) boxes[i].expand(-player.getMovementThreshold());
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(boxes[i], trace.getOrigin(), trace.getPointAtDistance(knownDistance));
-                if (intercept.getFirst() == null) continue; // No intercept
+                if (intercept.first() == null) continue; // No intercept
 
-                Vector hitLoc = intercept.getFirst();
+                Vector hitLoc = intercept.first();
 
                 // If inside a block, return empty result for reach check (don't bother checking this?)
                 if (checkInside && ReachUtils.isVecInside(boxes[i], trace.getOrigin())) {
@@ -385,7 +385,7 @@ public class BlockRayTrace {
                 if (hitLoc.distanceSquared(startingVec) < bestHitResult) {
                     bestHitResult = hitLoc.distanceSquared(startingVec);
                     bestHitLoc = hitLoc;
-                    bestFace = intercept.getSecond();
+                    bestFace = intercept.second();
                 }
             }
 
@@ -401,8 +401,8 @@ public class BlockRayTrace {
 
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(knownDistance));
 
-                if (intercept.getFirst() != null) {
-                    return new BlockHitData(vector3i, intercept.getFirst(), intercept.getSecond(), block, null);
+                if (intercept.first() != null) {
+                    return new BlockHitData(vector3i, intercept.first(), intercept.second(), block, null);
                 }
             }
 

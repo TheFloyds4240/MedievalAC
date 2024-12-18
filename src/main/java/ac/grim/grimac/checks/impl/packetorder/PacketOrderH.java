@@ -24,21 +24,32 @@ public class PacketOrderH extends Check implements PostPredictionCheck {
             switch (new WrapperPlayClientEntityAction(event).getAction()) {
                 case START_SPRINTING:
                 case STOP_SPRINTING:
-                    if (player.packetOrderProcessor.isSneaking()) {
-                        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+                    if (player.getClientVersion().isOlderThan(ClientVersion.V_1_21_2) && player.packetOrderProcessor.isSneaking()) {
+                        if (!player.canSkipTicks()) {
                             flagAndAlert();
                         } else {
                             invalid++;
                         }
                     }
+                    break;
+
+                case START_SNEAKING:
+                case STOP_SNEAKING:
+                    if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && player.packetOrderProcessor.isSprinting()) {
+                        if (!player.canSkipTicks()) {
+                            flagAndAlert();
+                        } else {
+                            invalid++;
+                        }
+                    }
+                    break;
             }
         }
     }
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        // we don't need to check pre-1.9 players here (no tick skipping)
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) return;
+        if (!player.canSkipTicks()) return;
 
         if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
             for (; invalid >= 1; invalid--) {
