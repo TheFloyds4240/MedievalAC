@@ -42,6 +42,15 @@ Punishments:
       - "20:20 [webhook]"
       - "20:20 [proxy]"
       - "20:20 [log]"
+  Post:
+    remove-violations-after: 300
+    checks:
+      - "Post"
+    commands:
+      - "20:20 [alert]"
+      - "40:40 [webhook]"
+      - "40:40 [proxy]"
+      - "40:40 [log]"
   BadPackets:
     remove-violations-after: 300
     checks:
@@ -107,7 +116,6 @@ Punishments:
       - "Place"
       - "Baritone"
       - "FastBreak"
-      - "TransactionOrder"
     commands:
       - "10:5 [alert]"
       - "20:10 [webhook]"
@@ -122,7 +130,7 @@ Punishments:
     commands:
       - "20:40 [alert]"
       - "20:40 [log]"
-  # A partir de la version 2.2.10, il n'y a plus de vérifications pour AutoClicker et c'est un placeholder. Grim inclura des vérifications AutoClicker dans le futur. 
+  # A partir de la version 2.2.10, il n'y a plus de vérifications pour AutoClicker et c'est un placeholder. Grim inclura des vérifications AutoClicker dans le futur.
   Autoclicker:
     remove-violations-after: 300
     checks:

@@ -7,7 +7,6 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
@@ -30,7 +29,7 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
                 || (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS
                 && new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT)
         ) if (player.packetOrderProcessor.isSprinting() || player.packetOrderProcessor.isSneaking()) {
-            if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) {
+            if (!player.canSkipTicks()) {
                 if (flagAndAlert() && shouldModifyPackets()) {
                     if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
                             && new WrapperPlayClientPlayerDigging(event).getAction() == DiggingAction.RELEASE_USE_ITEM
@@ -47,8 +46,7 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
 
     @Override
     public void onPredictionComplete(PredictionComplete predictionComplete) {
-        // we don't need to check pre-1.9 players here (no tick skipping)
-        if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_8)) return;
+        if (!player.canSkipTicks()) return;
 
         if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
             for (; invalid >= 1; invalid--) {

@@ -1,7 +1,7 @@
 package ac.grim.grimac.checks.impl.packetorder;
 
 import ac.grim.grimac.checks.Check;
-import ac.grim.grimac.checks.type.PostPredictionCheck;
+import ac.grim.grimac.checks.type.PacketCheck;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -12,7 +12,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
 @Getter
-public final class PacketOrderProcessor extends Check implements PostPredictionCheck {
+public final class PacketOrderProcessor extends Check implements PacketCheck {
     public PacketOrderProcessor(final GrimPlayer player) {
         super(player);
     }
@@ -135,7 +135,7 @@ public final class PacketOrderProcessor extends Check implements PostPredictionC
             closingInventory = true;
         }
 
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && !player.packetStateData.lastPacketWasTeleport && !player.packetStateData.lastPacketWasOnePointSeventeenDuplicate) {
+        if (isTickPacket(packetType)) {
             openingInventory = false;
             swapping = false;
             dropping = false;

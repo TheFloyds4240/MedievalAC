@@ -112,7 +112,6 @@ Punishments:
       - "Place"
       - "Baritone"
       - "FastBreak"
-      - "TransactionOrder"
     commands:
       - "10:5 [alert]"
       - "20:10 [webhook]"

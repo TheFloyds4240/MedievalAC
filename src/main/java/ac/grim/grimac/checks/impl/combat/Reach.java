@@ -173,11 +173,11 @@ public class Reach extends Check implements PacketCheck {
             if (reachEntity != null) {
                 Pair<Class<? extends PacketCheck>, String> result = checkReach(reachEntity, attack.getValue(), false);
                 if (result != null) {
-                    PacketCheck check = player.checkManager.getPacketCheck(result.getFirst());
+                    PacketCheck check = player.checkManager.getPacketCheck(result.first());
                     if (reachEntity.getType() == EntityTypes.PLAYER) {
-                        ((Check)check).flagAndAlert(result.getSecond());
+                        ((Check)check).flagAndAlert(result.second());
                     } else {
-                        ((Check) check).flagAndAlert(result.getSecond() + "type=" + reachEntity.getType().getName().getKey());
+                        ((Check) check).flagAndAlert(result.second() + "type=" + reachEntity.getType().getName().getKey());
                     }
                 }
             }
@@ -242,7 +242,7 @@ public class Reach extends Check implements PacketCheck {
                 Vector eyePos = new Vector(from.getX(), from.getY() + eye, from.getZ());
                 Vector endReachPos = eyePos.clone().add(new Vector(lookVec.getX() * distance, lookVec.getY() * distance, lookVec.getZ() * distance));
 
-                Vector intercept = ReachUtils.calculateIntercept(targetBox, eyePos, endReachPos).getFirst();
+                Vector intercept = ReachUtils.calculateIntercept(targetBox, eyePos, endReachPos).first();
 
                 if (ReachUtils.isVecInside(targetBox, eyePos)) {
                     minDistance = 0;
@@ -270,9 +270,9 @@ public class Reach extends Check implements PacketCheck {
                 // - This filters out when the ray trace hits the target entity without having to do an expensive .equals()
                 // - You may have to adjust the epsilon if you increase the reach threshold, especially by a lot
                 // ...but there is literally no reason you would ever want to increase it, only decrease, so that doesn't matter.
-                if (hitResult != null && (minDistance * minDistance) - hitResult.getFirst() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
+                if (hitResult != null && (minDistance * minDistance) - hitResult.first() > ENTITY_HITBOX_REACH_EPSILON) { // returned double is distanceSq
                     minDistance = Double.MIN_VALUE;
-                    foundHitData = hitResult.getSecond();
+                    foundHitData = hitResult.second();
                 }
             }
         }

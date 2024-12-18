@@ -7,8 +7,8 @@ import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
 import ac.grim.grimac.checks.impl.misc.ClientBrand;
-import ac.grim.grimac.checks.impl.packetorder.TransactionOrder;
 import ac.grim.grimac.checks.impl.packetorder.PacketOrderProcessor;
+import ac.grim.grimac.checks.impl.packetorder.PacketOrderD;
 import ac.grim.grimac.events.packets.CheckManagerListener;
 import ac.grim.grimac.manager.*;
 import ac.grim.grimac.predictionengine.MovementCheckRunner;
@@ -58,6 +58,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -335,7 +336,7 @@ public class GrimPlayer implements GrimUser {
         boolean hasID = false;
         int skipped = 0;
         for (Pair<Short, Long> iterator : transactionsSent) {
-            if (iterator.getFirst() == id) {
+            if (iterator.first() == id) {
                 hasID = true;
                 break;
             }
@@ -347,7 +348,7 @@ public class GrimPlayer implements GrimUser {
             if (packetTracker != null) packetTracker.setIntervalPackets(packetTracker.getIntervalPackets() - 1);
 
             if (skipped > 0 && System.currentTimeMillis() - joinTime > 5000)
-                checkManager.getPacketCheck(TransactionOrder.class).flagAndAlert("skipped: " + skipped);
+                checkManager.getPacketCheck(PacketOrderD.class).flagAndAlert("skipped: " + skipped);
 
             do {
                 data = transactionsSent.poll();
@@ -356,9 +357,9 @@ public class GrimPlayer implements GrimUser {
 
                 lastTransactionReceived.incrementAndGet();
                 lastTransReceived = System.currentTimeMillis();
-                transactionPing = (System.nanoTime() - data.getSecond());
-                playerClockAtLeast = data.getSecond();
-            } while (data.getFirst() != id);
+                transactionPing = (System.nanoTime() - data.second());
+                playerClockAtLeast = data.second();
+            } while (data.first() != id);
 
             // A transaction means a new tick, so apply any block places
             CheckManagerListener.handleQueuedPlaces(this, false, 0, 0, System.currentTimeMillis());
@@ -366,7 +367,7 @@ public class GrimPlayer implements GrimUser {
         }
 
         // Were we the ones who sent the packet?
-        return data != null && data.getFirst() == id;
+        return data != null && data.first() == id;
     }
 
     public void baseTickAddWaterPushing(Vector vector) {
@@ -577,8 +578,7 @@ public class GrimPlayer implements GrimUser {
     public boolean isTickingReliablyFor(int ticks) {
         // 1.21.2+: Tick end packet, on servers 1.21.2+
         // 1.8-: Flying packet
-        return supportsEndTick()
-                || getClientVersion().isOlderThan(ClientVersion.V_1_9)
+        return !canSkipTicks()
                 || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
                 || compensatedEntities.getSelf().inVehicle();
     }
@@ -717,6 +717,11 @@ public class GrimPlayer implements GrimUser {
     public boolean supportsEndTick() {
         // TODO: Bypass viaversion
         return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2);
+    }
+
+    @Contract(pure = true)
+    public boolean canSkipTicks() {
+        return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) && !supportsEndTick();
     }
 
     @Override

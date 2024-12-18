@@ -17,6 +17,8 @@ import ac.grim.grimac.checks.impl.misc.FastBreak;
 import ac.grim.grimac.checks.impl.misc.GhostBlockMitigation;
 import ac.grim.grimac.checks.impl.movement.*;
 import ac.grim.grimac.checks.impl.packetorder.*;
+import ac.grim.grimac.checks.impl.multiactions.*;
+import ac.grim.grimac.checks.impl.packetorder.*;
 import ac.grim.grimac.checks.impl.post.Post;
 import ac.grim.grimac.checks.impl.multiactions.*;
 import ac.grim.grimac.checks.impl.prediction.DebugHandler;
@@ -115,8 +117,7 @@ public class CheckManager {
                 .put(MultiActionsE.class, new MultiActionsE(player))
                 .put(PacketOrderB.class, new PacketOrderB(player))
                 .put(PacketOrderC.class, new PacketOrderC(player))
-                .put(TransactionOrder.class, new TransactionOrder(player))
-                .put(PacketOrderP.class, new PacketOrderP(player))
+                .put(PacketOrderD.class, new PacketOrderD(player))
                 .put(PacketOrderO.class, new PacketOrderO(player))
                 .put(NoSlowB.class, new NoSlowB(player))
                 .put(SetbackBlocker.class, new SetbackBlocker(player)) // Must be last class otherwise we can't check while blocking packets
