@@ -244,7 +244,7 @@ history:
   # How many entries should be shown for each page with /grim history <player>
   entries-per-page: 15
   # What should the inserted server name be for the history command? This is useful if you use the same database for multiple servers
-  server-name: Prison
+  server-name: Server-Name
   database:
     # Use SQLITE for local storage, use MYSQL if you have an external MySQL database. This is only updated on server restart
     type: SQLITE

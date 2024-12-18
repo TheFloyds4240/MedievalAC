@@ -31,6 +31,7 @@
       - "100:40 [alert]"
       - "100:100 [webhook]"
       - "100:100 [proxy]"
+      - "100:100 [log]"
   Knockback:
     remove-violations-after: 300
     checks:
@@ -40,6 +41,7 @@
       - "5:5 [alert]"
       - "20:20 [webhook]"
       - "20:20 [proxy]"
+      - "20:20 [log]"
   Post:
     remove-violations-after: 300
     checks:
@@ -48,6 +50,7 @@
       - "20:20 [alert]"
       - "40:40 [webhook]"
       - "40:40 [proxy]"
+      - "40:40 [log]"
   BadPackets:
     remove-violations-after: 300
     checks:
@@ -57,6 +60,7 @@
       - "20:20 [alert]"
       - "40:40 [webhook]"
       - "40:40 [proxy]"
+      - "40:40 [log]"
   Reach:
     remove-violations-after: 300
     checks:
@@ -65,6 +69,7 @@
       - "5:5 [alert]"
       - "5:5 [webhook]"
       - "5:5 [proxy]"
+      - "5:5 [log]"
   HitboxMiss:
     remove-violations-after: 300
     checks:
@@ -73,6 +78,7 @@
       - "7:5 [alert]"
       - "7:5 [webhook]"
       - "7:5 [proxy]"
+      - "7:5 [log]"
   HitboxBlock:
     remove-violations-after: 300
     checks:
@@ -81,6 +87,7 @@
       - "10:5 [alert]"
       - "10:5 [webhook]"
       - "10:5 [proxy]"
+      - "10:5 [log]"
   HitboxEntity:
     remove-violations-after: 300
     checks:
@@ -89,6 +96,7 @@
       - "15:10 [alert]"
       - "15:10 [webhook]"
       - "15:10 [proxy]"
+      - "15:10 [log]"
   Misc:
     remove-violations-after: 300
     checks:
@@ -102,6 +110,7 @@
       - "10:5 [alert]"
       - "20:10 [webhook]"
       - "20:10 [proxy]"
+      - "20:10 [log]"
   Combat:
     remove-violations-after: 300
     checks:
@@ -109,6 +118,7 @@
       - "Aim"
     commands:
       - "20:40 [alert]"
+      - "20:40 [log]"
   # バージョン2.2.10時点では、AutoClickerのチェックはまだなく、これはプレースホルダーです。Grimは将来的にAutoClickerのチェックを追加予定です。
   Autoclicker:
     remove-violations-after: 300
@@ -116,3 +126,4 @@
       - "Autoclicker"
     commands:
       - "20:40 [alert]"
+      - "20:40 [log]"
