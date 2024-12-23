@@ -2,15 +2,16 @@ package ac.grim.grimac.utils.change;
 
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PlayerBlockHistory {
-    public final Deque<BlockModification> modificationQueue = new ArrayDeque<>();
+    // TODO, figure out how its possible for this to CME!
+    public final Deque<BlockModification> modificationQueue = new ConcurrentLinkedDeque<>();
 
     // Add a new block modification to the history.
     public void add(BlockModification modification) {
