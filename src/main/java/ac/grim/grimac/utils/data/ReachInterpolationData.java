@@ -104,7 +104,7 @@ public class ReachInterpolationData {
 
         // Check if there's actual overlap along each axis
         if (overlapMinX > overlapMaxX || overlapMinY > overlapMaxY || overlapMinZ > overlapMaxZ) {
-            return null; // No overlap, return null or an appropriate "empty" box representation
+            return NoCollisionBox.INSTANCE; // No overlap, return null or an appropriate "empty" box representation
         }
 
         // Return the overlapping hitbox
@@ -172,12 +172,6 @@ public class ReachInterpolationData {
                     startingLocation.maxX + (step * stepMaxX),
                     startingLocation.maxY + (step * stepMaxY),
                     startingLocation.maxZ + (step * stepMaxZ)));
-
-            if (overlapLocation == null) {
-                // No overlap found, you might want to handle this case specifically
-                // For example, return null or a default box
-                return NoCollisionBox.INSTANCE;
-            }
         }
 
         return overlapLocation;
