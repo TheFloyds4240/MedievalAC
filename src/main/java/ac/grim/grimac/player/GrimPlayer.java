@@ -578,17 +578,13 @@ public class GrimPlayer implements GrimUser {
     public boolean isTickingReliablyFor(int ticks) {
         // 1.21.2+: Tick end packet, on servers 1.21.2+
         // 1.8-: Flying packet
-        return !canSkipTicks()
+        return !canSkipTicks() || inVehicle()
                 || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
-                || compensatedEntities.getSelf().inVehicle();
+                && !uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0);
     }
 
     public boolean inVehicle() {
         return compensatedEntities.getSelf().inVehicle();
-    }
-
-    public boolean canThePlayerBeCloseToZeroMovement(int ticks) {
-        return (!uncertaintyHandler.lastPointThree.hasOccurredSince(ticks));
     }
 
     public CompensatedInventory getInventory() {
@@ -714,6 +710,7 @@ public class GrimPlayer implements GrimUser {
         return getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_10) || (gamemode == GameMode.CREATIVE && compensatedEntities.getSelf().getOpLevel() >= 2);
     }
 
+    @Contract(pure = true)
     public boolean supportsEndTick() {
         // TODO: Bypass viaversion
         return getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2);
@@ -789,7 +786,7 @@ public class GrimPlayer implements GrimUser {
         cancelDuplicatePacket = config.getBooleanElse("cancel-duplicate-packet", true);
         exemptElytra = config.getBooleanElse("exempt-elytra", false);
         // reload all checks
-        for (AbstractCheck value : checkManager.allChecks.values()) value.reload(config);
+        for (AbstractCheck value : checkManager.allChecks.values()) value.reload();
         // reload punishment manager
         punishmentManager.reload(config);
     }
