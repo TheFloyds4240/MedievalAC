@@ -26,7 +26,8 @@ public final class PredictionEngineRideableUtils {
 
         PacketEntityHorse horse = (PacketEntityHorse) player.compensatedEntities.getSelf().getRiding();
 
-        if (horse instanceof PacketEntityCamel camel) {
+        if (horse instanceof PacketEntityCamel) {
+            PacketEntityCamel camel = (PacketEntityCamel) horse;
             handleCamelDash(player, possibleVectors, camel);
         } else {
             handleHorseJumping(player, possibleVectors, horse);

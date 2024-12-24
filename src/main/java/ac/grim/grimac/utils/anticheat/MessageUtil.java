@@ -41,7 +41,12 @@ public class MessageUtil {
 
     public @NotNull String replacePlaceholders(@Nullable Object object, @NotNull String string) {
         if (!hasPlaceholderAPI) return string;
-        return PlaceholderAPI.setPlaceholders(object instanceof OfflinePlayer player ? player : null, string);
+
+        OfflinePlayer player = null;
+        if (object instanceof  OfflinePlayer) {
+            player = (OfflinePlayer) object;
+        }
+        return PlaceholderAPI.setPlaceholders(player, string);
     }
 
     public @NotNull Component miniMessage(@NotNull String string) {

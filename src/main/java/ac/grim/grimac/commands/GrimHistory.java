@@ -39,22 +39,22 @@ public class GrimHistory extends BaseCommand {
             List<Violation> logs = violations.getViolations(targetPlayer.getUniqueId(), notNullPage, entriesPerPage);
 
             int maxPages = (int) Math.ceil((float) logCount / entriesPerPage);
-            sender.sendMessage(MessageUtil.format(header
+            MessageUtil.sendMessage(sender, MessageUtil.miniMessage(MessageUtil.replacePlaceholders(sender, header
                     .replace("%player%", targetPlayer.getName())
                     .replace("%page%", String.valueOf(notNullPage))
-                    .replace("%maxPages%", String.valueOf(maxPages)))
-            );
+                    .replace("%maxPages%", String.valueOf(maxPages))
+            )));
 
             for (int i = logs.size() - 1; i >= 0; i--) {
                 Violation log = logs.get(i);
-                sender.sendMessage(MessageUtil.format(logFormat
+                MessageUtil.sendMessage(sender, MessageUtil.miniMessage(MessageUtil.replacePlaceholders(sender, logFormat
                         .replace("%player%", targetPlayer.getName())
                         .replace("%check%", log.getCheckName())
                         .replace("%verbose%", log.getVerbose())
                         .replace("%vl%", String.valueOf(log.getVl()))
                         .replace("%timeago%", getTimeAgo(log.getCreatedAt()))
                         .replace("%server%", log.getServerName())
-                ));
+                )));
             }
         });
     }
