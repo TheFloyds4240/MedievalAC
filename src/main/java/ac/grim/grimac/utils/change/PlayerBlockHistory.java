@@ -9,16 +9,26 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Tracks block modifications made by a player over time.
+ */
 public class PlayerBlockHistory {
     // TODO, figure out how its possible for this to CME!
     public final Deque<BlockModification> modificationQueue = new ConcurrentLinkedDeque<>();
 
-    // Add a new block modification to the history.
+    /**
+     * Adds a new block modification to the history.
+     * @param modification The block modification to add
+     */
     public void add(BlockModification modification) {
         modificationQueue.add(modification);
     }
 
-    // Get all recent modifications (optionally filtered by a condition).
+    /**
+     * Retrieves recent modifications that match the given filter.
+     * @param filter Predicate to filter modifications
+     * @return Filtered list of block modifications
+     */
     public List<BlockModification> getRecentModifications(Predicate<BlockModification> filter) {
         return modificationQueue.stream().filter(filter).collect(Collectors.toList()); // Java 8+ compatible
     }
@@ -44,7 +54,10 @@ public class PlayerBlockHistory {
                 .collect(Collectors.toList());
     }
 
-    // Remove old modifications older than maxTick
+    /**
+     * Removes modifications older than the specified tick.
+     * @param maxTick The maximum tick age to keep
+     */
     public void cleanup(int maxTick) {
         while (!modificationQueue.isEmpty() && maxTick - modificationQueue.peekFirst().getTick() > 0) {
             modificationQueue.removeFirst();

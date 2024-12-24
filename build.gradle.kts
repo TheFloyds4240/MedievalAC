@@ -54,12 +54,13 @@ repositories {
     maven("https://repo.codemc.io/repository/maven-releases/") // PacketEvents
     maven("https://repo.codemc.io/repository/maven-snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") // placeholderapi
     mavenCentral()
     // FastUtil, Discord-Webhooks
 }
 
 dependencies {
-    implementation("com.github.retrooper:packetevents-spigot:2.7.0-SNAPSHOT")
+    implementation("com.github.retrooper:packetevents-spigot:2.7.1-SNAPSHOT")
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
     implementation("club.minnced:discord-webhooks:0.8.0") // Newer versions include kotlin-stdlib, which leads to incompatibility with plugins that use Kotlin
     implementation("it.unimi.dsi:fastutil:8.5.15")
@@ -68,13 +69,16 @@ dependencies {
 
     //implementation("com.github.grimanticheat:grimapi:1193c4fa41")
     // Used for local testing: implementation("ac.grim.grimac:GRIMAPI:1.0")
-    implementation("com.github.grimanticheat:grimapi:fc5634e444")
+    implementation("com.github.grimanticheat:grimapi:d7fdef7186")
+
+    implementation("net.kyori:adventure-text-minimessage:4.17.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
 
     implementation("org.jetbrains:annotations:24.1.0")
-    compileOnly("org.geysermc.floodgate:api:2.2.3-SNAPSHOT")
+    compileOnly("org.geysermc.floodgate:api:2.0-SNAPSHOT")
     compileOnly("org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly("com.viaversion:viaversion-api:5.1.1-SNAPSHOT")
-    //
+    compileOnly("com.viaversion:viaversion-api:5.0.4-SNAPSHOT")
+    compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("io.netty:netty-all:4.1.85.Final")
 }
 
@@ -95,7 +99,8 @@ bukkit {
         "ViaRewind",
         "Geyser-Spigot",
         "floodgate",
-        "FastLogin"
+        "FastLogin",
+        "PlaceholderAPI",
     )
 
     permissions {

@@ -53,8 +53,7 @@ public class GrimExternalAPI implements GrimAbstractAPI, ConfigReloadObserver, I
     @Getter
     private final Map<String, String> staticReplacements = new ConcurrentHashMap<>();
 
-    public String replaceVariables(GrimUser user, String content, boolean colors) {
-        if (colors) content = ChatColor.translateAlternateColorCodes('&', content);
+    public String replaceVariables(GrimUser user, String content) {
         for (Map.Entry<String, String> entry : staticReplacements.entrySet()) {
             content = content.replace(entry.getKey(), entry.getValue());
         }
@@ -112,6 +111,11 @@ public class GrimExternalAPI implements GrimAbstractAPI, ConfigReloadObserver, I
     @Override
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+
+    @Override
+    public boolean hasStarted() {
+        return started;
     }
 
     private ConfigManager configManager = null;
@@ -208,7 +212,7 @@ public class GrimExternalAPI implements GrimAbstractAPI, ConfigReloadObserver, I
         variableReplacements.putIfAbsent("%tps%", user -> String.format("%.2f", SpigotReflectionUtil.getTPS()));
         variableReplacements.putIfAbsent("%version%", GrimUser::getVersionName);
         // static variables
-        staticReplacements.putIfAbsent("%prefix%", ChatColor.translateAlternateColorCodes('&', GrimAPI.INSTANCE.getConfigManager().getPrefix()));
+        staticReplacements.put("%prefix%", ChatColor.translateAlternateColorCodes('&', GrimAPI.INSTANCE.getConfigManager().getPrefix()));
         staticReplacements.putIfAbsent("%grim_version%", getGrimVersion());
     }
 

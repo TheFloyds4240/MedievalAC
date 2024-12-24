@@ -7,7 +7,7 @@ import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 
-@CheckData(name = "NegativeTimer", configName = "NegativeTimer", setback = -1, experimental = true)
+@CheckData(name = "NegativeTimer", setback = -1, experimental = true)
 public class NegativeTimerCheck extends TimerCheck implements PostPredictionCheck {
 
     public NegativeTimerCheck(GrimPlayer player) {
@@ -18,7 +18,7 @@ public class NegativeTimerCheck extends TimerCheck implements PostPredictionChec
     @Override
     public void onPredictionComplete(final PredictionComplete predictionComplete) {
         // We can't negative timer check a 1.9+ player who is standing still.
-        if (!player.canThePlayerBeCloseToZeroMovement(2) || !predictionComplete.isChecked()) {
+        if (player.uncertaintyHandler.lastPointThree.hasOccurredSince(2) || !predictionComplete.isChecked()) {
             timerBalanceRealTime = System.nanoTime() + clockDrift;
         }
 

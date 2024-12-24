@@ -10,8 +10,7 @@ public class BlockModification {
     private final WrappedBlockState newBlockContents;
     private final Vector3i location;
     private final int tick;
-    private final Cause cause; // Optional enum for cause
-//    private final long time; // System time in milliseconds or nanoseconds for ordering
+    private final Cause cause;
 
     public BlockModification(WrappedBlockState oldBlockContents, WrappedBlockState newBlockContents,
                              Vector3i location, int tick, Cause cause) {
