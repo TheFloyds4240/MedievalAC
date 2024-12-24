@@ -55,13 +55,12 @@ public class MessageUtil {
         // hex codes
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_16)) {
             Matcher matcher = HEX_PATTERN.matcher(string);
-            StringBuilder sb = new StringBuilder(string.length());
-
+            StringBuffer sb = new StringBuffer();
             while (matcher.find()) {
                 matcher.appendReplacement(sb, "<#" + matcher.group(1) + ">");
             }
-
-            string = matcher.appendTail(sb).toString();
+            matcher.appendTail(sb);
+            string = sb.toString();
         }
 
         // MiniMessage doesn't like legacy formatting codes
