@@ -8,6 +8,10 @@ import ac.grim.grimac.utils.anticheat.update.*;
 import ac.grim.grimac.utils.blockplace.BlockPlaceResult;
 import ac.grim.grimac.utils.blockplace.ConsumesBlockPlace;
 import ac.grim.grimac.utils.change.BlockModification;
+import ac.grim.grimac.utils.collisions.CollisionData;
+import ac.grim.grimac.utils.collisions.HitboxData;
+import ac.grim.grimac.utils.collisions.datatypes.CollisionBox;
+import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.*;
 import ac.grim.grimac.utils.inventory.Inventory;
 import ac.grim.grimac.utils.latency.CompensatedWorld;
@@ -20,6 +24,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
@@ -42,8 +47,13 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgeBlockChanges;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
+
+import static ac.grim.grimac.utils.nmsutil.BlockRayTrace.traverseBlocks;
 
 public class CheckManagerListener extends PacketListenerAbstract {
 
@@ -52,9 +62,8 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeWaterLavaSnowBucket(GrimPlayer player, ItemStack held, StateType toPlace, InteractionHand hand) {
-        HitData hitData = BlockRayTrace.getNearestHitResult(player, StateTypes.AIR, false);
-        if (hitData instanceof BlockHitData) {
-            BlockHitData data = (BlockHitData) hitData;
+        BlockHitData data = getNearestHitResult(player, StateTypes.AIR, false, true, true);
+        if (data != null) {
             BlockPlace blockPlace = new BlockPlace(player, hand, data.getPosition(), data.getClosestDirection().getFaceValue(), data.getClosestDirection(), held, data);
 
             boolean didPlace = false;
@@ -190,14 +199,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
             // The offhand is unable to interact with blocks like this... try to stop some desync points before they happen
             if ((!player.isSneaking || onlyAir) && place.getHand() == InteractionHand.MAIN_HAND) {
                 Vector3i blockPosition = place.getBlockPosition();
-                // TODO potential future issue and optimization opportunity
-                // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
-                // Should we raytrace ignoring entities?
-                HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-                if (hitData instanceof EntityHitData) {
-                    throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in trapdoorhandler for CheckManagerListener.");
-                }
-                BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), place.getFace(), placedWith, (BlockHitData) hitData);
+                BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), place.getFace(), placedWith, getNearestHitResult(player, null, true, false, false));
 
                 // Right-clicking a trapdoor/door/etc.
                 StateType placedAgainst = blockPlace.getPlacedAgainstMaterial();
@@ -237,15 +239,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 placedWith = player.getInventory().getOffHand();
             }
 
-            // TODO potential future issue and optimization oppurtunity
-            // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
-            // Should we raytrace ignoring entities?
-            HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-            if (hitData instanceof EntityHitData) {
-                throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " fire charge handler in CheckManagerListener");
-            }
-
-            BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), face, placedWith, (BlockHitData) hitData);
+            BlockPlace blockPlace = new BlockPlace(player, place.getHand(), blockPosition, place.getFaceId(), face, placedWith, getNearestHitResult(player, null, true, false, false));
             // At this point, it is too late to cancel, so we can only flag, and cancel subsequent block places more aggressively
             if (!player.compensatedEntities.getSelf().inVehicle()) {
                 player.checkManager.onPostFlyingBlockPlace(blockPlace);
@@ -423,13 +417,13 @@ public class CheckManagerListener extends PacketListenerAbstract {
                         if (damage >= 1) {
                             player.compensatedWorld.startPredicting();
                             player.blockHistory.add(
-                                    new BlockModification(
-                                            player.compensatedWorld.getWrappedBlockStateAt(blockBreak.position),
-                                            WrappedBlockState.getByGlobalId(0),
-                                            packet.getBlockPosition(),
-                                            GrimAPI.INSTANCE.getTickManager().currentTick,
-                                            BlockModification.Cause.START_DIGGING
-                                    )
+                                new BlockModification(
+                                    player.compensatedWorld.getWrappedBlockStateAt(blockBreak.position),
+                                    WrappedBlockState.getByGlobalId(0),
+                                    blockBreak.position,
+                                    GrimAPI.INSTANCE.getTickManager().currentTick,
+                                    BlockModification.Cause.START_DIGGING
+                                )
                             );
                             if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_13) && Materials.isWaterSource(player.getClientVersion(), blockBreak.block)) {
                                 // Vanilla uses a method to grab water flowing, but as you can't break flowing water
@@ -460,16 +454,8 @@ public class CheckManagerListener extends PacketListenerAbstract {
             if (packet.getFace() == BlockFace.OTHER && PacketEvents.getAPI().getServerManager().getVersion().isOlderThan(ServerVersion.V_1_9)) {
                 player.placeUseItemPackets.add(new BlockPlaceSnapshot(packet, player.isSneaking));
             } else {
-                // TODO potential future issue and optimization oppurtunity
-                // I'm not sure what this is doing... are we supposed to ignore the case where an entity is blocking our target block?
-                // Should we raytrace ignoring entities?
-                HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
-                if (hitData instanceof EntityHitData) {
-                    throw new IllegalArgumentException("Error while getting hitdata: " + hitData + " in anti-air place for CheckManagerListener");
-                }
-
                 // Anti-air place
-                BlockPlace blockPlace = new BlockPlace(player, packet.getHand(), packet.getBlockPosition(), packet.getFaceId(), packet.getFace(), placedWith, (BlockHitData) hitData);
+                BlockPlace blockPlace = new BlockPlace(player, packet.getHand(), packet.getBlockPosition(), packet.getFaceId(), packet.getFace(), placedWith, getNearestHitResult(player, null, true, false, false));
                 blockPlace.setCursor(packet.getCursorPosition());
 
                 if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_11) && player.getClientVersion().isOlderThan(ClientVersion.V_1_11)) {
@@ -552,10 +538,9 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeBucket(GrimPlayer player, InteractionHand hand) {
-        HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
+        BlockHitData data = getNearestHitResult(player, null, true, false, true);
 
-        if (hitData instanceof BlockHitData) {
-            BlockHitData data = (BlockHitData) hitData;
+        if (data != null) {
             BlockPlace blockPlace = new BlockPlace(player, hand, data.getPosition(), data.getClosestDirection().getFaceValue(), data.getClosestDirection(), ItemStack.EMPTY, data);
             blockPlace.setReplaceClicked(true); // Replace the block clicked, not the block in the direction
 
@@ -723,10 +708,9 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeLilypad(GrimPlayer player, InteractionHand hand) {
-        HitData hitData = BlockRayTrace.getNearestHitResult(player, null, true);
+        BlockHitData data = getNearestHitResult(player, null, true, false, true);
 
-        if (hitData instanceof BlockHitData) {
-            BlockHitData data = (BlockHitData) hitData;
+        if (data != null) {
             // A lilypad cannot replace a fluid
             if (player.compensatedWorld.getFluidLevelAt(data.getPosition().getX(), data.getPosition().getY() + 1, data.getPosition().getZ()) > 0)
                 return;
@@ -752,6 +736,62 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 }
             }
         }
+    }
+
+    private static BlockHitData getNearestHitResult(GrimPlayer player, StateType heldItem, boolean sourcesHaveHitbox, boolean fluidPlacement, boolean itemUsePlacement) {
+        Vector3d startingPos = new Vector3d(player.x, player.y + player.getEyeHeight(), player.z);
+        Vector startingVec = new Vector(startingPos.getX(), startingPos.getY(), startingPos.getZ());
+        Ray trace = new Ray(player, startingPos.getX(), startingPos.getY(), startingPos.getZ(), player.xRot, player.yRot);
+        final double distance = itemUsePlacement && player.getClientVersion().isOlderThan(ClientVersion.V_1_20_5) ? 5 : player.compensatedEntities.getSelf().getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
+        Vector endVec = trace.getPointAtDistance(distance);
+        Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
+
+        return (BlockHitData) traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
+            if (fluidPlacement && player.getClientVersion().isOlderThan(ClientVersion.V_1_13) && CollisionData.getData(block.getType())
+                    .getMovementCollisionBox(player, player.getClientVersion(), block, vector3i.getX(), vector3i.getY(), vector3i.getZ()).isNull()) {
+                return null;
+            }
+
+            CollisionBox data = HitboxData.getBlockHitbox(player, heldItem, player.getClientVersion(), block, vector3i.getX(), vector3i.getY(), vector3i.getZ());
+            List<SimpleCollisionBox> boxes = new ArrayList<>();
+            data.downCast(boxes);
+
+            double bestHitResult = Double.MAX_VALUE;
+            Vector bestHitLoc = null;
+            BlockFace bestFace = null;
+
+            for (SimpleCollisionBox box : boxes) {
+                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
+                if (intercept.first() == null) continue; // No intercept
+
+                Vector hitLoc = intercept.first();
+
+                if (hitLoc.distanceSquared(startingVec) < bestHitResult) {
+                    bestHitResult = hitLoc.distanceSquared(startingVec);
+                    bestHitLoc = hitLoc;
+                    bestFace = intercept.second();
+                }
+            }
+            if (bestHitLoc != null) {
+                return new BlockHitData(vector3i, bestHitLoc, bestFace, block, true);
+            }
+
+            if (sourcesHaveHitbox &&
+                    (player.compensatedWorld.isWaterSourceBlock(vector3i.getX(), vector3i.getY(), vector3i.getZ())
+                            || player.compensatedWorld.getLavaFluidLevelAt(vector3i.getX(), vector3i.getY(), vector3i.getZ()) == (8 / 9f))) {
+                double waterHeight = player.getClientVersion().isOlderThan(ClientVersion.V_1_13) ? 1
+                        : player.compensatedWorld.getFluidLevelAt(vector3i.getX(), vector3i.getY(), vector3i.getZ());
+                SimpleCollisionBox box = new SimpleCollisionBox(vector3i.getX(), vector3i.getY(), vector3i.getZ(), vector3i.getX() + 1, vector3i.getY() + waterHeight, vector3i.getZ() + 1);
+
+                Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
+
+                if (intercept.first() != null) {
+                    return new BlockHitData(vector3i, intercept.first(), intercept.second(), block, true);
+                }
+            }
+
+            return null;
+        });
     }
 
     @Override

@@ -2,8 +2,6 @@ package ac.grim.grimac.utils.anticheat;
 
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.player.GrimPlayer;
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.util.reflection.Reflection;
@@ -23,7 +21,7 @@ import java.util.regex.Pattern;
 
 @UtilityClass
 public class MessageUtil {
-    private final Pattern HEX_PATTERN = Pattern.compile("[&§]#[A-Fa-f0-9]{6}");
+    private final Pattern HEX_PATTERN = Pattern.compile("([&§]#[A-Fa-f0-9]{6})|([&§]x([&§][A-Fa-f0-9]){6})");
     private final BukkitAudiences adventure = BukkitAudiences.create(GrimAPI.INSTANCE.getPlugin());
     private final boolean hasPlaceholderAPI = Reflection.getClassByNameWithoutException("me.clip.placeholderapi.PlaceholderAPI") != null;
 
@@ -53,15 +51,15 @@ public class MessageUtil {
         string = string.replace("%prefix%", GrimAPI.INSTANCE.getConfigManager().getConfig().getStringElse("prefix", "&bGrim &8»"));
 
         // hex codes
-        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_16)) {
-            Matcher matcher = HEX_PATTERN.matcher(string);
-            StringBuffer sb = new StringBuffer();
-            while (matcher.find()) {
-                matcher.appendReplacement(sb, "<#" + matcher.group(1) + ">");
-            }
-            matcher.appendTail(sb);
-            string = sb.toString();
+        Matcher matcher = HEX_PATTERN.matcher(string);
+        StringBuffer sb = new StringBuffer(string.length()); // this is synchronized but doesn't need to be; its easier for upstream compat though
+
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, "<#" + matcher.group(0).replaceAll("[&§#x]", "") + ">");
         }
+
+        matcher.appendTail(sb);
+        string = sb.toString();
 
         // MiniMessage doesn't like legacy formatting codes
         string = ChatColor.translateAlternateColorCodes('&', string)

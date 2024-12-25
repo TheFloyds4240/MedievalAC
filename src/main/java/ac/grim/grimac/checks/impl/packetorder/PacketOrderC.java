@@ -13,7 +13,7 @@ import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
-@CheckData(name = "PacketOrderC", experimental = true)
+@CheckData(name = "PacketOrderC")
 public class PacketOrderC extends Check implements PacketCheck {
     public PacketOrderC(final GrimPlayer player) {
         super(player);
