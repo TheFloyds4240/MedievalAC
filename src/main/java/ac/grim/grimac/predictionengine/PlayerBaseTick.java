@@ -18,6 +18,7 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import org.bukkit.util.Vector;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class PlayerBaseTick {
@@ -150,7 +151,7 @@ public class PlayerBaseTick {
         // Pre-1.17 clients don't have powder snow and therefore don't desync
         if (player.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_16_4)) return;
 
-        final ValuedAttribute playerSpeed = player.compensatedEntities.getSelf().getAttribute(Attributes.MOVEMENT_SPEED).orElseThrow();
+        final ValuedAttribute playerSpeed = player.compensatedEntities.getSelf().getAttribute(Attributes.MOVEMENT_SPEED).orElseThrow(() -> new NoSuchElementException("No value present"));
 
         // Might be null after respawn?
         final Optional<WrapperPlayServerUpdateAttributes.Property> property = playerSpeed.property();

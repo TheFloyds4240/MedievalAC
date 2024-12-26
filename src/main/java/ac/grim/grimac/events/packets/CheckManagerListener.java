@@ -53,6 +53,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static ac.grim.grimac.utils.nmsutil.BlockRayTrace.traverseBlocks;
+
 public class CheckManagerListener extends PacketListenerAbstract {
 
     public CheckManagerListener() {
@@ -60,7 +62,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeWaterLavaSnowBucket(GrimPlayer player, ItemStack held, StateType toPlace, InteractionHand hand) {
-        HitData data = getNearestHitResult(player, StateTypes.AIR, false, true, true);
+        BlockHitData data = getNearestHitResult(player, StateTypes.AIR, false, true, true);
         if (data != null) {
             BlockPlace blockPlace = new BlockPlace(player, hand, data.getPosition(), data.getClosestDirection().getFaceValue(), data.getClosestDirection(), held, data);
 
@@ -536,7 +538,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeBucket(GrimPlayer player, InteractionHand hand) {
-        HitData data = getNearestHitResult(player, null, true, false, true);
+        BlockHitData data = getNearestHitResult(player, null, true, false, true);
 
         if (data != null) {
             BlockPlace blockPlace = new BlockPlace(player, hand, data.getPosition(), data.getClosestDirection().getFaceValue(), data.getClosestDirection(), ItemStack.EMPTY, data);
@@ -706,7 +708,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
     }
 
     private static void placeLilypad(GrimPlayer player, InteractionHand hand) {
-        HitData data = getNearestHitResult(player, null, true, false, true);
+        BlockHitData data = getNearestHitResult(player, null, true, false, true);
 
         if (data != null) {
             // A lilypad cannot replace a fluid
@@ -736,7 +738,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
         }
     }
 
-    private static HitData getNearestHitResult(GrimPlayer player, StateType heldItem, boolean sourcesHaveHitbox, boolean fluidPlacement, boolean itemUsePlacement) {
+    private static BlockHitData getNearestHitResult(GrimPlayer player, StateType heldItem, boolean sourcesHaveHitbox, boolean fluidPlacement, boolean itemUsePlacement) {
         Vector3d startingPos = new Vector3d(player.x, player.y + player.getEyeHeight(), player.z);
         Vector startingVec = new Vector(startingPos.getX(), startingPos.getY(), startingPos.getZ());
         Ray trace = new Ray(player, startingPos.getX(), startingPos.getY(), startingPos.getZ(), player.xRot, player.yRot);
@@ -744,7 +746,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
         Vector endVec = trace.getPointAtDistance(distance);
         Vector3d endPos = new Vector3d(endVec.getX(), endVec.getY(), endVec.getZ());
 
-        return traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
+        return (BlockHitData) traverseBlocks(player, startingPos, endPos, (block, vector3i) -> {
             if (fluidPlacement && player.getClientVersion().isOlderThan(ClientVersion.V_1_13) && CollisionData.getData(block.getType())
                     .getMovementCollisionBox(player, player.getClientVersion(), block, vector3i.getX(), vector3i.getY(), vector3i.getZ()).isNull()) {
                 return null;
@@ -771,7 +773,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 }
             }
             if (bestHitLoc != null) {
-                return new HitData(vector3i, bestHitLoc, bestFace, block);
+                return new BlockHitData(vector3i, bestHitLoc, bestFace, block, true);
             }
 
             if (sourcesHaveHitbox &&
@@ -784,7 +786,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 Pair<Vector, BlockFace> intercept = ReachUtils.calculateIntercept(box, trace.getOrigin(), trace.getPointAtDistance(distance));
 
                 if (intercept.first() != null) {
-                    return new HitData(vector3i, intercept.first(), intercept.second(), block);
+                    return new BlockHitData(vector3i, intercept.first(), intercept.second(), block, true);
                 }
             }
 
