@@ -58,7 +58,7 @@ public class PacketOrderL extends Check implements PostPredictionCheck {
     public void onPredictionComplete(PredictionComplete predictionComplete) {
         if (!player.canSkipTicks()) return;
 
-        if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
+        if (player.isTickingReliablyFor(3)) {
             for (String verbose : flags) {
                 flagAndAlert(verbose);
             }

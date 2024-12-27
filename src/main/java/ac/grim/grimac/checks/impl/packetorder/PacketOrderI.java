@@ -111,7 +111,7 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
             return;
         }
 
-        if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
+        if (player.isTickingReliablyFor(3)) {
             for (String verbose : flags) {
                 if (flagAndAlert(verbose) && setback) {
                     setbackIfAboveSetbackVL();
