@@ -111,8 +111,7 @@ public class SetbackTeleportUtil extends Check implements PostPredictionCheck {
         // Setbacks aren't allowed
         if (player.disableGrim) return true;
         // Player has permission to cheat, permission not given to OP by default.
-        if (player.bukkitPlayer != null && player.noSetbackPermission) return true;
-        return false;
+        return player.bukkitPlayer != null && player.noSetbackPermission;
     }
 
     private void simulateFriction(Vector vector) {

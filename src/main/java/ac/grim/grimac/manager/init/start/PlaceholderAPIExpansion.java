@@ -46,7 +46,8 @@ public class PlaceholderAPIExpansion extends PlaceholderExpansion {
             }
         }
 
-        if (offlinePlayer instanceof Player player) {
+        if (offlinePlayer instanceof Player) {
+            Player player = (Player) offlinePlayer;
             GrimPlayer grimPlayer = GrimAPI.INSTANCE.getPlayerDataManager().getPlayer(player);
             if (grimPlayer == null) return null;
 

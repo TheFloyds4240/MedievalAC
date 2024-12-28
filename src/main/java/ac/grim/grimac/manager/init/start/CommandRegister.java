@@ -4,7 +4,6 @@ import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.commands.*;
 import ac.grim.grimac.manager.init.Initable;
 import co.aikar.commands.PaperCommandManager;
-import org.bukkit.Bukkit;
 
 public class CommandRegister implements Initable {
     @Override

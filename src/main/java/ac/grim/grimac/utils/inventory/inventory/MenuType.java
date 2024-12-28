@@ -56,9 +56,7 @@ public enum MenuType {
 
         MENU_BY_ID_ARRAY = new MenuType[menuIdLimit];
 
-        for (int itr = 0; itr < menuIdLimit; itr++) {
-            MENU_BY_ID_ARRAY[itr] = menuTypes[itr];
-        }
+        System.arraycopy(menuTypes, 0, MENU_BY_ID_ARRAY, 0, menuIdLimit);
     }
 
     public static MenuType getMenuType(int id) {

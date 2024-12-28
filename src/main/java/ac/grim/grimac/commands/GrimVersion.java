@@ -16,13 +16,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 
 @CommandAlias("grim|grimac")
@@ -36,8 +34,6 @@ public class GrimVersion extends BaseCommand {
 
     private static long lastCheck;
     private static final AtomicReference<Component> updateMessage = new AtomicReference<>();
-
-    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
     public static void checkForUpdatesAsync(CommandSender sender) {
         String current = GrimAPI.INSTANCE.getExternalAPI().getGrimVersion();
@@ -59,46 +55,78 @@ public class GrimVersion extends BaseCommand {
     // Using UserAgent format recommended by https://docs.modrinth.com/api/
     private static void checkForUpdates(CommandSender sender) {
         String current = GrimAPI.INSTANCE.getExternalAPI().getGrimVersion();
+        HttpURLConnection connection = null;
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.modrinth.com/v2/project/LJNGWSvH/version"))
-                    .GET()
-                    .header("User-Agent", "GrimAnticheat/Grim/" + GrimAPI.INSTANCE.getExternalAPI().getGrimVersion())
-                    .header("Content-Type", "application/json")
-                    .timeout(Duration.of(5, ChronoUnit.SECONDS))
-                    .build();
+            // Create the URL object
+            URL url = new URL("https://api.modrinth.com/v2/project/LJNGWSvH/version");
 
-            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            // Open the connection
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "GrimAnticheat/Grim/" + GrimAPI.INSTANCE.getExternalAPI().getGrimVersion());
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setConnectTimeout(5000); // Set timeout to 5 seconds
+            connection.setReadTimeout(5000);    // Set read timeout to 5 seconds
+
+            // Get the response code
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
                 Component msg = updateMessage.get();
-                MessageUtil.sendMessage(sender, Objects.requireNonNullElseGet(msg, () -> Component.text()
-                        .append(Component.text("Failed to check latest version.").color(NamedTextColor.RED))
-                        .build()));
-                LogUtil.error("Failed to check latest GrimAC version. Response code: " + response.statusCode());
+                if (msg == null) {
+                    msg = Component.text()
+                            .append(Component.text("Failed to check latest version.").color(NamedTextColor.RED))
+                            .build();
+                }
+                MessageUtil.sendMessage(sender, msg);
+                LogUtil.error("Failed to check latest GrimAC version. Response code: " + responseCode);
                 return;
             }
-            JsonObject object = JsonParser.parseString(response.body()).getAsJsonArray().get(0).getAsJsonObject();
-            String latest = object.get("version_number").getAsString();
-            Status status = compareVersions(current, latest);
-            Component msg = switch (status) {
-                case AHEAD ->
-                        Component.text("You are using a development version of GrimAC").color(NamedTextColor.LIGHT_PURPLE);
-                case UPDATED ->
-                        Component.text("You are using the latest version of GrimAC").color(NamedTextColor.GREEN);
-                case OUTDATED -> Component.text()
-                        .append(Component.text("New GrimAC version found!").color(NamedTextColor.AQUA))
-                        .append(Component.text(" Version ").color(NamedTextColor.GRAY))
-                        .append(Component.text(latest).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC))
-                        .append(Component.text(" is available to be downloaded here: ").color(NamedTextColor.GRAY))
-                        .append(Component.text("https://modrinth.com/plugin/grimac").color(NamedTextColor.GRAY).decorate(TextDecoration.UNDERLINED)
-                                .clickEvent(ClickEvent.openUrl("https://modrinth.com/plugin/grimac")))
-                        .build();
-            };
-            updateMessage.set(msg);
-            MessageUtil.sendMessage(sender, msg);
-        } catch (Exception ignored) {
+
+            // Read the response body
+            try (InputStream inputStream = connection.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                // Parse the response JSON
+                JsonObject object = JsonParser.parseString(response.toString()).getAsJsonArray().get(0).getAsJsonObject();
+                String latest = object.get("version_number").getAsString();
+
+                // Compare versions
+                Status status = compareVersions(current, latest);
+                Component msg = null;
+                switch (status) {
+                    case AHEAD:
+                        msg = Component.text("You are using a development version of GrimAC").color(NamedTextColor.LIGHT_PURPLE);
+                        break;
+                    case UPDATED:
+                        msg = Component.text("You are using the latest version of GrimAC").color(NamedTextColor.GREEN);
+                        break;
+                    case OUTDATED:
+                        msg = Component.text()
+                                .append(Component.text("New GrimAC version found!").color(NamedTextColor.AQUA))
+                                .append(Component.text(" Version ").color(NamedTextColor.GRAY))
+                                .append(Component.text(latest).color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC))
+                                .append(Component.text(" is available to be downloaded here: ").color(NamedTextColor.GRAY))
+                                .append(Component.text("https://modrinth.com/plugin/grimac").color(NamedTextColor.GRAY).decorate(TextDecoration.UNDERLINED)
+                                        .clickEvent(ClickEvent.openUrl("https://modrinth.com/plugin/grimac")))
+                                .build();
+                        break;
+                }
+                updateMessage.set(msg);
+                MessageUtil.sendMessage(sender, msg);
+            }
+        } catch (Exception e) {
             MessageUtil.sendMessage(sender, Component.text("Failed to check latest version.").color(NamedTextColor.RED));
-            LogUtil.error("Failed to check latest GrimAC version.", ignored);
+            LogUtil.error("Failed to check latest GrimAC version.", e);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 

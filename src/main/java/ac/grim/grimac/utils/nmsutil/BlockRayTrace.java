@@ -250,6 +250,17 @@ public class BlockRayTrace {
         };
 
         for (int i = 0; i < size; i++) {
+            // temporary debugging code
+            if (boxes[i] == null) {
+                StringBuilder boxesStr = new StringBuilder();
+                for (int j = 0; j < size; j++) {
+                    boxesStr.append("Box[").append(j).append("]=").append(boxes[j]).append(" ");
+                }
+                throw new NullPointerException("block=" + block.getType().toString() +
+                        " i=" + i +
+                        " raycastContext=" + raycastContext +
+                        " boxes=[" + boxesStr + "]");
+            }
             Pair<double[], BlockFace> intercept = ReachUtilsPrimitives.calculateIntercept(boxes[i], startPos, currentEnd);
             if (intercept.first() == null) continue; // No intercept or wrong blockFace
 
