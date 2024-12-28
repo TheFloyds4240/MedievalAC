@@ -33,36 +33,42 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
         if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             if (new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
                 if (player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isPicking() || player.packetOrderProcessor.isReleasing() || player.packetOrderProcessor.isDigging()) {
+                    String verbose = "type=attack, rightClicking=" + player.packetOrderProcessor.isRightClicking()
+                            + ", picking=" + player.packetOrderProcessor.isPicking()
+                            + ", releasing=" + player.packetOrderProcessor.isReleasing()
+                            + ", digging=" + player.packetOrderProcessor.isDigging();
                     if (!player.canSkipTicks()) {
-                        if (flagAndAlert("attack") && shouldModifyPackets()) {
+                        if (flagAndAlert(verbose) && shouldModifyPackets()) {
                             event.setCancelled(true);
                             player.onPacketCancel();
                         }
                     } else {
-                        flags.add("attack");
+                        flags.add(verbose);
                     }
                 }
             } else if (player.packetOrderProcessor.isReleasing() || player.packetOrderProcessor.isDigging()) {
+                String verbose = "type=interact, releasing=" + player.packetOrderProcessor.isReleasing() + ", digging=" + player.packetOrderProcessor.isDigging();
                 if (!player.canSkipTicks()) {
-                    if (flagAndAlert("interact") && shouldModifyPackets()) {
+                    if (flagAndAlert(verbose) && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
                     }
                 } else {
-                    flags.add("interact");
+                    flags.add(verbose);
                 }
             }
         }
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
             if (player.packetOrderProcessor.isReleasing() || digging) {
+                String verbose = "type=place/use, releasing=" + player.packetOrderProcessor.isReleasing() + ", digging=" + digging;
                 if (!player.canSkipTicks()) {
-                    if (flagAndAlert("place/use") && shouldModifyPackets()) {
+                    if (flagAndAlert(verbose) && shouldModifyPackets()) {
                         event.setCancelled(true);
                         player.onPacketCancel();
                     }
                 } else {
-                    flags.add("place");
+                    flags.add(verbose);
                 }
             }
         }
@@ -73,12 +79,16 @@ public class PacketOrderI extends Check implements PostPredictionCheck {
             switch (packet.getAction()) {
                 case RELEASE_USE_ITEM:
                     if (player.packetOrderProcessor.isAttacking() || player.packetOrderProcessor.isRightClicking() || player.packetOrderProcessor.isPicking() || player.packetOrderProcessor.isDigging()) {
+                        String verbose = "type=release, attacking=" + player.packetOrderProcessor.isAttacking()
+                                + ", rightClicking=" + player.packetOrderProcessor.isRightClicking()
+                                + ", picking=" + player.packetOrderProcessor.isPicking()
+                                + ", digging=" + player.packetOrderProcessor.isDigging();
                         if (!player.canSkipTicks()) {
-                            if (flagAndAlert("release")) {
+                            if (flagAndAlert(verbose)) {
                                 setback = true;
                             }
                         } else {
-                            flags.add("release");
+                            flags.add(verbose);
                             setback = true;
                         }
                     }

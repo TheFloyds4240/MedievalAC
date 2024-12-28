@@ -8,13 +8,15 @@ import ac.grim.grimac.utils.anticheat.update.PredictionComplete;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
+import java.util.ArrayDeque;
+
 @CheckData(name = "PacketOrderE", experimental = true)
 public class PacketOrderE extends Check implements PostPredictionCheck {
     public PacketOrderE(final GrimPlayer player) {
         super(player);
     }
 
-    private int invalid;
+    private final ArrayDeque<String> flags = new ArrayDeque<>();
     private boolean setback;
 
     @Override
@@ -30,9 +32,17 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
                     || player.packetOrderProcessor.isStartingToGlide()
                     || player.packetOrderProcessor.isJumpingWithMount()
             ) {
-                if (player.canSkipTicks() || flagAndAlert()) {
-                    invalid++;
-
+                String verbose = "attacking=" + player.packetOrderProcessor.isAttacking()
+                        + ", rightClicking=" + player.packetOrderProcessor.isRightClicking()
+                        + ", openingInventory=" + player.packetOrderProcessor.isOpeningInventory()
+                        + ", releasing=" + player.packetOrderProcessor.isReleasing()
+                        + ", sneaking=" + player.packetOrderProcessor.isSneaking()
+                        + ", sprinting=" + player.packetOrderProcessor.isSprinting()
+                        + ", bed=" + player.packetOrderProcessor.isLeavingBed()
+                        + ", sprinting=" + player.packetOrderProcessor.isSprinting()
+                        + ", gliding=" + player.packetOrderProcessor.isStartingToGlide()
+                        + ", mountJumping=" + player.packetOrderProcessor.isJumpingWithMount();
+                if (player.canSkipTicks() && flags.add(verbose) || flagAndAlert(verbose)) {
                     if (player.packetOrderProcessor.isUsing()) {
                         setback = true;
                     }
@@ -52,14 +62,15 @@ public class PacketOrderE extends Check implements PostPredictionCheck {
         }
 
         if (player.isTickingReliablyFor(3)) {
-            for (; invalid >= 1; invalid--) {
-                if (flagAndAlert() && setback) {
+            for (String verbose : flags) {
+                if (flagAndAlert(verbose) && setback) {
                     setback = false;
                     setbackIfAboveSetbackVL();
                 }
             }
         }
 
-        invalid = 0;
+        setback = false;
+        flags.clear();
     }
 }
