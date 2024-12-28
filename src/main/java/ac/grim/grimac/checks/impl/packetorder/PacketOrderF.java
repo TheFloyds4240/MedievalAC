@@ -11,13 +11,15 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+import java.util.ArrayDeque;
+
 @CheckData(name = "PacketOrderF", experimental = true)
 public class PacketOrderF extends Check implements PostPredictionCheck {
     public PacketOrderF(GrimPlayer player) {
         super(player);
     }
 
-    private int invalid;
+    private final ArrayDeque<String> flags = new ArrayDeque<>();
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -29,8 +31,16 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
                 || (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS
                 && new WrapperPlayClientClientStatus(event).getAction() == WrapperPlayClientClientStatus.Action.OPEN_INVENTORY_ACHIEVEMENT)
         ) if (player.packetOrderProcessor.isSprinting() || player.packetOrderProcessor.isSneaking()) {
+            String verbose = "action=" + (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY ? "interact"
+                    : event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT ? "place"
+                    : event.getPacketType() == PacketType.Play.Client.USE_ITEM ? "use"
+                    : event.getPacketType() == PacketType.Play.Client.PICK_ITEM ? "pick"
+                    : event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING ? "dig"
+                    : "openInventory")
+                    + ", sprinting=" + player.packetOrderProcessor.isSprinting()
+                    + ", sneaking=" + player.packetOrderProcessor.isSneaking();
             if (!player.canSkipTicks()) {
-                if (flagAndAlert() && shouldModifyPackets()) {
+                if (flagAndAlert(verbose) && shouldModifyPackets()) {
                     if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
                             && new WrapperPlayClientPlayerDigging(event).getAction() == DiggingAction.RELEASE_USE_ITEM
                     ) return; // don't cause a noslow
@@ -39,7 +49,7 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
                     player.onPacketCancel();
                 }
             } else {
-                invalid++;
+                flags.add(verbose);
             }
         }
     }
@@ -48,12 +58,12 @@ public class PacketOrderF extends Check implements PostPredictionCheck {
     public void onPredictionComplete(PredictionComplete predictionComplete) {
         if (!player.canSkipTicks()) return;
 
-        if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
-            for (; invalid >= 1; invalid--) {
-                flagAndAlert();
+        if (player.isTickingReliablyFor(3)) {
+            for (String verbose : flags) {
+                flagAndAlert(verbose);
             }
         }
 
-        invalid = 0;
+        flags.clear();
     }
 }

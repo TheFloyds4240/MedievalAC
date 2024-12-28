@@ -54,7 +54,7 @@ public class PacketOrderN extends BlockPlaceCheck {
     public void onPredictionComplete(PredictionComplete predictionComplete) {
         if (!player.canSkipTicks()) return;
 
-        if (player.isTickingReliablyFor(3) && !player.uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0)) {
+        if (player.isTickingReliablyFor(3)) {
             for (; invalid >= 1; invalid--) {
                 flagAndAlert();
             }

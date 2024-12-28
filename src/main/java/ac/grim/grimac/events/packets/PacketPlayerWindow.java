@@ -155,9 +155,7 @@ public class PacketPlayerWindow extends PacketListenerAbstract {
                 player.pointThreeEstimator.isNearNetherPortal) {
             PacketEntitySelf playerEntity = player.compensatedEntities.getSelf();
             // Client ignore nether portal if player has passengers or riding an entity
-            if (!playerEntity.inVehicle() && playerEntity.passengers.isEmpty()) {
-                return true;
-            }
+            return !playerEntity.inVehicle() && playerEntity.passengers.isEmpty();
         }
 
         return false;
