@@ -250,7 +250,7 @@ public class BlockRayTrace {
         };
 
         for (int i = 0; i < size; i++) {
-            // temporary debugging code
+            // TODO temporary debugging code remove later
             if (boxes[i] == null) {
                 StringBuilder boxesStr = new StringBuilder();
                 for (int j = 0; j < size; j++) {
