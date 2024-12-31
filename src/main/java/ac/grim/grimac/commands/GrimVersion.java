@@ -53,6 +53,7 @@ public class GrimVersion extends BaseCommand {
     }
 
     // Using UserAgent format recommended by https://docs.modrinth.com/api/
+    @SuppressWarnings("deprecation")
     private static void checkForUpdates(CommandSender sender) {
         String current = GrimAPI.INSTANCE.getExternalAPI().getGrimVersion();
         HttpURLConnection connection = null;

@@ -78,15 +78,17 @@ public class KnockbackHandler extends Check implements PostPredictionCheck {
 
     @NotNull public Pair<VelocityData, Vector> getFutureKnockback() {
         // Chronologically in the future
-        if (firstBreadMap.size() > 0) {
+        if (!firstBreadMap.isEmpty()) {
             VelocityData data = firstBreadMap.peek();
             return new Pair<>(data, data != null ? data.vector : null);
         }
+
         // Less in the future
-        if (lastKnockbackKnownTaken.size() > 0) {
+        if (!lastKnockbackKnownTaken.isEmpty()) {
             VelocityData data = lastKnockbackKnownTaken.peek();
             return new Pair<>(data, data != null ? data.vector : null);
         }
+
         // Uncertain, might be in the future
         if (player.firstBreadKB != null && player.likelyKB == null) {
             VelocityData data = player.firstBreadKB;
@@ -202,18 +204,11 @@ public class KnockbackHandler extends Check implements PostPredictionCheck {
                 threshold = Math.min(threshold + player.likelyKB.offset, ceiling);
                 if (player.likelyKB.isSetback) { // Don't increase violations if this velocity was setback, just teleport and resend them velocity.
                     player.getSetbackTeleportUtil().executeViolationSetback();
-                } else if (flag()) { // This velocity was sent by the server.
+                } else if (flagAndAlert(player.likelyKB.offset == Integer.MAX_VALUE ? "ignored knockback"
+                        : "o: " + formatOffset(player.likelyKB.offset))) { // This velocity was sent by the server.
                     if (player.likelyKB.offset >= immediate || threshold >= maxAdv) {
                         player.getSetbackTeleportUtil().executeViolationSetback();
                     }
-
-                    String formatOffset = "o: " + formatOffset(player.likelyKB.offset);
-
-                    if (player.likelyKB.offset == Integer.MAX_VALUE) {
-                        formatOffset = "ignored knockback";
-                    }
-
-                    alert(formatOffset);
                 } else {
                     reward();
                 }

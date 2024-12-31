@@ -168,6 +168,7 @@ public class GrimPlayer implements GrimUser {
     public boolean slightlyTouchingWater = false;
     public boolean wasEyeInWater = false;
     public FluidTag fluidOnEyes;
+    public boolean horizontalCollision;
     public boolean verticalCollision;
     public boolean clientControlledVerticalCollision;
     // Okay, this is our 0.03 detection
@@ -558,11 +559,8 @@ public class GrimPlayer implements GrimUser {
 
     public ClientVersion getClientVersion() {
         ClientVersion ver = user.getClientVersion();
-        if (ver == null) {
-            // If temporarily null, assume server version...
-            return ClientVersion.getById(PacketEvents.getAPI().getServerManager().getVersion().getProtocolVersion());
-        }
-        return ver;
+        // If temporarily null, assume server version...
+        return Objects.requireNonNullElseGet(ver, () -> ClientVersion.getById(PacketEvents.getAPI().getServerManager().getVersion().getProtocolVersion()));
     }
 
     // Alright, someone at mojang decided to not send a flying packet every tick with 1.9
@@ -579,9 +577,9 @@ public class GrimPlayer implements GrimUser {
     public boolean isTickingReliablyFor(int ticks) {
         // 1.21.2+: Tick end packet, on servers 1.21.2+
         // 1.8-: Flying packet
-        return !canSkipTicks() || inVehicle()
-                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks)
-                && !uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(0);
+        return !canSkipTicks() || (inVehicle()
+                || !uncertaintyHandler.lastPointThree.hasOccurredSince(ticks))
+                && !uncertaintyHandler.lastVehicleSwitch.hasOccurredSince(1);
     }
 
     public boolean inVehicle() {
@@ -672,9 +670,7 @@ public class GrimPlayer implements GrimUser {
         // Help prevent transaction split
         sendTransaction();
 
-        latencyUtils.addRealTimeTask(lastTransactionSent.get(), () -> {
-            this.vehicleData.wasVehicleSwitch = true;
-        });
+        latencyUtils.addRealTimeTask(lastTransactionSent.get(), () -> this.vehicleData.wasVehicleSwitch = true);
     }
 
     public int getRidingVehicleId() {

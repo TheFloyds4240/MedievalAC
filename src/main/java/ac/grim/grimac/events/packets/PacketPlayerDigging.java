@@ -1,8 +1,8 @@
 package ac.grim.grimac.events.packets;
 
 import ac.grim.grimac.GrimAPI;
-import ac.grim.grimac.checks.impl.movement.NoSlowA;
-import ac.grim.grimac.checks.impl.movement.NoSlowD;
+import ac.grim.grimac.checks.impl.movement.NoSlow;
+import ac.grim.grimac.checks.impl.sprint.SprintC;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
@@ -176,7 +176,7 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
                         && player.packetStateData.getSlowedByUsingItemSlot() != player.packetStateData.lastSlotSelected
                         || player.getInventory().getItemInHand(player.packetStateData.eatingHand).isEmpty()) {
                     player.packetStateData.setSlowedByUsingItem(false);
-                    player.checkManager.getPostPredictionCheck(NoSlowA.class).didSlotChangeLastTick = true;
+                    player.checkManager.getPostPredictionCheck(NoSlow.class).didSlotChangeLastTick = true;
                 }
             }
         }
@@ -224,7 +224,7 @@ public class PacketPlayerDigging extends PacketListenerAbstract {
             handleUseItem(player, item, hand);
 
             if (!wasSlow) {
-                player.checkManager.getPostPredictionCheck(NoSlowD.class).startedSprintingBeforeUse = player.packetStateData.isSlowedByUsingItem() && player.isSprinting;
+                player.checkManager.getPostPredictionCheck(SprintC.class).startedSprintingBeforeUse = player.packetStateData.isSlowedByUsingItem() && player.isSprinting;
             }
         }
     }

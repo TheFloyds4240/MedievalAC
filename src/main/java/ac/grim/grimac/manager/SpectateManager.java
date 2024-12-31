@@ -57,7 +57,7 @@ public class SpectateManager implements Initable {
         handlePlayerStopSpectating(player.getUniqueId());
     }
 
-    //only call this synchronously
+    // only call this synchronously
     public void disable(Player player, boolean teleportBack) {
         PreviousState previousState = spectatingPlayers.get(player.getUniqueId());
         if (previousState != null) {

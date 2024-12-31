@@ -125,7 +125,7 @@ LineOfSightPlace:
     - STRUCTURE_BLOCK
     - JIGSAW
 
-NoSlowA:
+NoSlow:
   # Limite per rilevare l'uso scorretto dell'oggetto
   threshold: 0.001
   # Livello di violazione per l'uso scorretto dell'oggetto
