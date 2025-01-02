@@ -14,6 +14,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUp
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 public class MovementTickerStrider extends MovementTickerRideable {
 
@@ -61,7 +62,7 @@ public class MovementTickerStrider extends MovementTickerRideable {
 
         // Client desyncs the attribute
         // Again I don't know when this was changed, or whether it always existed, so I will just put it behind 1.20+
-        final ValuedAttribute movementSpeedAttr = strider.getAttribute(Attributes.MOVEMENT_SPEED).orElseThrow();
+        final ValuedAttribute movementSpeedAttr = strider.getAttribute(Attributes.MOVEMENT_SPEED).orElseThrow(() -> new NoSuchElementException("Attribute not found"));
         float updatedMovementSpeed = (float) movementSpeedAttr.get();
         if (newSpeed) {
             final WrapperPlayServerUpdateAttributes.Property lastProperty = movementSpeedAttr.property().orElse(null);
