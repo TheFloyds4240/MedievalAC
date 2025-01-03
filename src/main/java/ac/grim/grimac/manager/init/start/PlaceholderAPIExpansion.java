@@ -8,9 +8,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class PlaceholderAPIExpansion extends PlaceholderExpansion {
@@ -32,7 +30,7 @@ public class PlaceholderAPIExpansion extends PlaceholderExpansion {
     public @NotNull List<String> getPlaceholders() {
         Set<String> placeholders = GrimAPI.INSTANCE.getExternalAPI().getStaticReplacements().keySet();
         placeholders.addAll(GrimAPI.INSTANCE.getExternalAPI().getVariableReplacements().keySet());
-        return List.copyOf(placeholders);
+        return Collections.unmodifiableList(new ArrayList<>(placeholders));
     }
 
     @Override

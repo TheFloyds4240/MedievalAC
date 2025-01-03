@@ -36,21 +36,21 @@ public class PlayerBlockHistory {
     public List<WrappedBlockState> getBlockStates(Predicate<BlockModification> filter) {
         return modificationQueue.stream()
                 .filter(filter)
-                .flatMap(mod -> Stream.of(mod.getOldBlockContents(), mod.getNewBlockContents()))
+                .flatMap(mod -> Stream.of(mod.oldBlockContents(), mod.newBlockContents()))
                 .collect(Collectors.toList());// Java 8+ compatible
     }
 
     public List<WrappedBlockState> getPreviousBlockStates(Predicate<BlockModification> filter) {
         return modificationQueue.stream()
                 .filter(filter)
-                .map(BlockModification::getOldBlockContents)
+                .map(BlockModification::oldBlockContents)
                 .collect(Collectors.toList());
     }
 
     public List<WrappedBlockState> getResultingBlockStates(Predicate<BlockModification> filter) {
         return modificationQueue.stream()
                 .filter(filter)
-                .map(BlockModification::getNewBlockContents)
+                .map(BlockModification::newBlockContents)
                 .collect(Collectors.toList());
     }
 
@@ -59,7 +59,7 @@ public class PlayerBlockHistory {
      * @param maxTick The maximum tick age to keep
      */
     public void cleanup(int maxTick) {
-        while (!modificationQueue.isEmpty() && maxTick - modificationQueue.peekFirst().getTick() > 0) {
+        while (!modificationQueue.isEmpty() && maxTick - modificationQueue.peekFirst().tick() > 0) {
             modificationQueue.removeFirst();
         }
     }

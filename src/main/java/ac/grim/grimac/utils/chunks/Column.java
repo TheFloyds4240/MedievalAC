@@ -4,27 +4,50 @@ package ac.grim.grimac.utils.chunks;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 
 public class Column {
-    public final int x;
-    public final int z;
-    public final int transaction;
-    public BaseChunk[] chunks;
+    private final int x;
+    private final int z;
+    private final BaseChunk[] chunks;
+    private final int transaction;
 
+    // Constructor
     public Column(int x, int z, BaseChunk[] chunks, int transaction) {
-        this.chunks = chunks;
         this.x = x;
         this.z = z;
+        this.chunks = chunks;
         this.transaction = transaction;
     }
 
-    public BaseChunk[] getChunks() {
+    // Getters
+    public int x() {
+        return x;
+    }
+
+    public int z() {
+        return z;
+    }
+
+    public BaseChunk[] chunks() {
         return chunks;
     }
 
-    // This ability was removed in 1.17 because of the extended world height
-    // Therefore, the size of the chunks are ALWAYS 16!
+    public int transaction() {
+        return transaction;
+    }
+
+    // Method to merge chunks
     public void mergeChunks(BaseChunk[] toMerge) {
         for (int i = 0; i < 16; i++) {
-            if (toMerge[i] != null) chunks[i] = toMerge[i];
+            if (toMerge[i] != null) {
+                chunks[i] = toMerge[i];
+            }
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Column{x=%d, z=%d, chunks=%s, transaction=%d}",
+                x, z, java.util.Arrays.toString(chunks), transaction
+        );
     }
 }

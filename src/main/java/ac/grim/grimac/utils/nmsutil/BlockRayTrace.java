@@ -194,9 +194,9 @@ public class BlockRayTrace {
             int currentTick = GrimAPI.INSTANCE.getTickManager().currentTick;
 
             List<WrappedBlockState> blockModifications =
-                    player.blockHistory.getBlockStates((blockModification -> blockModification.getLocation().equals(vector3i)
-                            && currentTick - blockModification.getTick() < 2
-                            && (blockModification.getCause() == BlockModification.Cause.START_DIGGING || blockModification.getCause() == BlockModification.Cause.HANDLE_NETTY_SYNC_TRANSACTION)));
+                    player.blockHistory.getBlockStates((blockModification -> blockModification.location().equals(vector3i)
+                            && currentTick - blockModification.tick() < 2
+                            && (blockModification.cause() == BlockModification.Cause.START_DIGGING || blockModification.cause() == BlockModification.Cause.HANDLE_NETTY_SYNC_TRANSACTION)));
             blockModifications.add(0, block);
 
             BlockHitData hitData = null;

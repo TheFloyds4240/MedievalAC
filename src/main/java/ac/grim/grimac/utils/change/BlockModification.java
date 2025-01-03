@@ -2,9 +2,7 @@ package ac.grim.grimac.utils.change;
 
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.util.Vector3i;
-import lombok.Getter;
 
-@Getter
 public class BlockModification {
     private final WrappedBlockState oldBlockContents;
     private final WrappedBlockState newBlockContents;
@@ -19,6 +17,26 @@ public class BlockModification {
         this.location = location;
         this.tick = tick;
         this.cause = cause;
+    }
+
+    public WrappedBlockState oldBlockContents() {
+        return oldBlockContents;
+    }
+
+    public WrappedBlockState newBlockContents() {
+        return newBlockContents;
+    }
+
+    public Vector3i location() {
+        return location;
+    }
+
+    public int tick() {
+        return tick;
+    }
+
+    public Cause cause() {
+        return cause;
     }
 
     @Override
